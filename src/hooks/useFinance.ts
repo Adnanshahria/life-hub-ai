@@ -34,7 +34,18 @@ export function useFinance() {
         mutationFn: async (entry: { type: "income" | "expense"; amount: number; category: string; description?: string; date?: string }) => {
             if (!userId) throw new Error("Not authenticated");
             const id = generateId();
-            const date = entry.date ? new Date(entry.date).toISOString() : new Date().toISOString();
+            // Parse date properly - if date-only string (YYYY-MM-DD), treat as local time
+            let date: string;
+            if (entry.date) {
+                // If it's a date-only format (YYYY-MM-DD), append T00:00:00 to treat as local time
+                if (/^\d{4}-\d{2}-\d{2}$/.test(entry.date)) {
+                    date = new Date(entry.date + "T12:00:00").toISOString(); // Use noon to avoid timezone issues
+                } else {
+                    date = new Date(entry.date).toISOString();
+                }
+            } else {
+                date = new Date().toISOString();
+            }
             await db.execute({
                 sql: "INSERT INTO finance (id, user_id, type, amount, category, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 args: [id, userId, entry.type, entry.amount, entry.category, entry.description || null, date],
@@ -47,6 +58,36 @@ export function useFinance() {
     const deleteEntry = useMutation({
         mutationFn: async (id: string) => {
             await db.execute({ sql: "DELETE FROM finance WHERE id = ?", args: [id] });
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["finance"] }),
+    });
+
+    const updateEntry = useMutation({
+        mutationFn: async (entry: { id: string; type?: "income" | "expense"; amount?: number; category?: string; description?: string; date?: string }) => {
+            const updates: string[] = [];
+            const args: (string | number | null)[] = [];
+
+            if (entry.type) { updates.push("type = ?"); args.push(entry.type); }
+            if (entry.amount !== undefined) { updates.push("amount = ?"); args.push(entry.amount); }
+            if (entry.category) { updates.push("category = ?"); args.push(entry.category); }
+            if (entry.description !== undefined) { updates.push("description = ?"); args.push(entry.description || null); }
+            if (entry.date) {
+                let date: string;
+                if (/^\d{4}-\d{2}-\d{2}$/.test(entry.date)) {
+                    date = new Date(entry.date + "T12:00:00").toISOString();
+                } else {
+                    date = new Date(entry.date).toISOString();
+                }
+                updates.push("date = ?");
+                args.push(date);
+            }
+
+            if (updates.length === 0) return;
+            args.push(entry.id);
+            await db.execute({
+                sql: `UPDATE finance SET ${updates.join(", ")} WHERE id = ?`,
+                args
+            });
         },
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["finance"] }),
     });
@@ -79,5 +120,6 @@ export function useFinance() {
         error: financeQuery.error,
         addEntry,
         deleteEntry,
+        updateEntry,
     };
 }

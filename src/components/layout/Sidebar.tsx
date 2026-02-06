@@ -43,8 +43,8 @@ export function Sidebar() {
     <aside className="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 glass-card rounded-none border-l-0 border-t-0 border-b-0 p-4">
       {/* Logo */}
       <div className="flex items-center gap-3 px-3 py-4 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center glow-primary">
-          <Sparkles className="w-5 h-5 text-primary-foreground" />
+        <div className="w-10 h-10 rounded-xl overflow-hidden">
+          <img src="/logo-192.png" alt="LifeOS" className="w-full h-full object-cover" />
         </div>
         <div>
           <h1 className="text-xl font-bold text-gradient">LifeOS</h1>
