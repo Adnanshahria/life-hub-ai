@@ -31,10 +31,10 @@ export function useFinance() {
     });
 
     const addEntry = useMutation({
-        mutationFn: async (entry: Omit<FinanceEntry, "id" | "user_id" | "date">) => {
+        mutationFn: async (entry: Omit<FinanceEntry, "id" | "user_id"> & { date?: string }) => {
             if (!userId) throw new Error("Not authenticated");
             const id = generateId();
-            const date = new Date().toISOString();
+            const date = entry.date ? new Date(entry.date).toISOString() : new Date().toISOString();
             await db.execute({
                 sql: "INSERT INTO finance (id, user_id, type, amount, category, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 args: [id, userId, entry.type, entry.amount, entry.category, entry.description || null, date],
