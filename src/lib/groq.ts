@@ -72,6 +72,22 @@ FINANCE: ADD_EXPENSE, ADD_INCOME, DELETE_EXPENSE, EDIT_EXPENSE, EDIT_INCOME (req
 NOTES: ADD_NOTE, DELETE_NOTE
 HABITS: ADD_HABIT, COMPLETE_HABIT, DELETE_HABIT
 STUDY: ADD_STUDY_CHAPTER, UPDATE_STUDY_PROGRESS, DELETE_STUDY_CHAPTER
+BUDGET: ADD_BUDGET, UPDATE_BUDGET, DELETE_BUDGET
+SAVINGS: ADD_SAVINGS, ADD_TO_SAVINGS, UPDATE_SAVINGS, DELETE_SAVINGS
+
+For ADD_BUDGET, data must include: name (string), target_amount (number), period ('weekly'/'monthly'/'yearly'), category (optional), start_date (optional, YYYY-MM-DD for future budgets)
+For UPDATE_BUDGET, data must include: name (string to find budget), and any of: target_amount, period, category, start_date to update
+For ADD_SAVINGS, data must include: name (string), target_amount (number)
+For UPDATE_SAVINGS, data must include: name (string to find savings), and any of: target_amount, current_amount to update
+For ADD_TO_SAVINGS, data must include: id or name (string), amount (number to add)
+
+Budget/Savings Examples:
+- "set monthly budget 10000" → ADD_BUDGET with name "Monthly Budget", target_amount 10000, period "monthly"
+- "set budget for march 15000" → ADD_BUDGET with name "March Budget", target_amount 15000, period "monthly", start_date "2026-03-01"
+- "change budget to 8000" → UPDATE_BUDGET with name (current budget name), target_amount 8000
+- "create savings goal for laptop 50000" → ADD_SAVINGS with name "Laptop", target_amount 50000
+- "update laptop savings goal to 60000" → UPDATE_SAVINGS with name "Laptop", target_amount 60000
+- "add 5000 to laptop savings" → ADD_TO_SAVINGS with name "Laptop", amount 5000
 
 If the user asks a question or wants to chat, return:
 {
@@ -85,6 +101,9 @@ Examples of good responses:
 - "Gotcha! Just added 'Learn React' to your tasks. You got this! 💪"
 - "Hmm, is that ৳200 an income or expense? Just want to make sure I track it right!"
 - "Your habit streak is looking awesome! Keep it up! 🔥"
+- "Great! I've set your monthly budget to ৳10,000. Let's keep those finances on track! 💰"
+- "Updated your budget to ৳8,000! 📊"
+- "Added ৳5,000 to your Laptop savings! You're getting closer! 🎯"
 
 Use Bengali currency (৳) for money. Always return valid JSON.`;
 

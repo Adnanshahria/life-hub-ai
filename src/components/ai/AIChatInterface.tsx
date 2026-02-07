@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { processUserMessage, ChatMessage, AIIntent } from "@/lib/groq";
 import { useTasks } from "@/hooks/useTasks";
 import { useFinance } from "@/hooks/useFinance";
+import { useBudget } from "@/hooks/useBudget";
 import { useNotes } from "@/hooks/useNotes";
 import { useHabits } from "@/hooks/useHabits";
 import { useInventory } from "@/hooks/useInventory";
@@ -21,6 +22,7 @@ export function AIChatInterface() {
     // Hooks for executing actions
     const { addTask, updateTask, deleteTask, tasks } = useTasks();
     const { addEntry, deleteEntry, updateEntry, expenses } = useFinance();
+    const { addBudget, updateBudget, addToSavings, deleteBudget, budgets, savingsGoals } = useBudget();
     const { addNote, deleteNote, notes } = useNotes();
     const { addHabit, completeHabit, deleteHabit, habits } = useHabits();
     const { addItem, deleteItem, items } = useInventory();
@@ -196,6 +198,79 @@ export function AIChatInterface() {
                         await updateProgress.mutateAsync({
                             id: chapterToUpdate.id,
                             progress_percentage: data.progress_percentage as number,
+                        });
+                    }
+                    break;
+
+                // BUDGET
+                case "ADD_BUDGET":
+                    await addBudget.mutateAsync({
+                        name: data.name as string || "Monthly Budget",
+                        type: "budget",
+                        target_amount: Number(data.target_amount) || 0,
+                        period: (data.period as "monthly" | "weekly" | "yearly") || "monthly",
+                        category: data.category ? String(data.category) : null,
+                    });
+                    break;
+                case "DELETE_BUDGET":
+                    const budgetToDelete = budgets?.find(b =>
+                        b.name.toLowerCase().includes((data.name as string || "").toLowerCase())
+                    );
+                    if (budgetToDelete) await deleteBudget.mutateAsync(budgetToDelete.id);
+                    break;
+
+                // SAVINGS
+                case "ADD_SAVINGS":
+                    await addBudget.mutateAsync({
+                        name: data.name as string || "Savings Goal",
+                        type: "savings",
+                        target_amount: Number(data.target_amount) || 0,
+                    });
+                    break;
+                case "ADD_TO_SAVINGS":
+                    const savingsGoal = savingsGoals?.find(s =>
+                        s.name.toLowerCase().includes((data.name as string || "").toLowerCase())
+                    );
+                    if (savingsGoal) {
+                        await addToSavings.mutateAsync({
+                            id: savingsGoal.id,
+                            amount: Number(data.amount) || 0
+                        });
+                    }
+                    break;
+                case "DELETE_SAVINGS":
+                    const savingsToDelete = savingsGoals?.find(s =>
+                        s.name.toLowerCase().includes((data.name as string || "").toLowerCase())
+                    );
+                    if (savingsToDelete) await deleteBudget.mutateAsync(savingsToDelete.id);
+                    break;
+
+                // UPDATE BUDGET
+                case "UPDATE_BUDGET":
+                    const budgetToUpdate = budgets?.find(b =>
+                        b.type === "budget" && b.name.toLowerCase().includes((data.name as string || "").toLowerCase())
+                    );
+                    if (budgetToUpdate) {
+                        await updateBudget.mutateAsync({
+                            id: budgetToUpdate.id,
+                            target_amount: data.target_amount ? Number(data.target_amount) : undefined,
+                            period: data.period as "monthly" | "weekly" | "yearly" | undefined,
+                            category: data.category ? String(data.category) : undefined,
+                            start_date: data.start_date ? String(data.start_date) : undefined,
+                        });
+                    }
+                    break;
+
+                // UPDATE SAVINGS
+                case "UPDATE_SAVINGS":
+                    const savingsToUpdate = savingsGoals?.find(s =>
+                        s.name.toLowerCase().includes((data.name as string || "").toLowerCase())
+                    );
+                    if (savingsToUpdate) {
+                        await updateBudget.mutateAsync({
+                            id: savingsToUpdate.id,
+                            target_amount: data.target_amount ? Number(data.target_amount) : undefined,
+                            current_amount: data.current_amount ? Number(data.current_amount) : undefined,
                         });
                     }
                     break;

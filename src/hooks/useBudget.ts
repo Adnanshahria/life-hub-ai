@@ -12,6 +12,7 @@ export interface Budget {
     current_amount: number;
     period: "monthly" | "weekly" | "yearly" | null;
     category: string | null;
+    start_date: string | null;
     created_at: string;
 }
 
@@ -41,12 +42,13 @@ export function useBudget() {
             target_amount: number;
             period?: "monthly" | "weekly" | "yearly" | null;
             category?: string | null;
+            start_date?: string | null;
         }) => {
             if (!userId) throw new Error("Not authenticated");
             const id = generateId();
             await db.execute({
-                sql: "INSERT INTO budgets (id, user_id, name, type, target_amount, current_amount, period, category) VALUES (?, ?, ?, ?, ?, 0, ?, ?)",
-                args: [id, userId, budget.name, budget.type, budget.target_amount, budget.period || null, budget.category || null],
+                sql: "INSERT INTO budgets (id, user_id, name, type, target_amount, current_amount, period, category, start_date) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)",
+                args: [id, userId, budget.name, budget.type, budget.target_amount, budget.period || null, budget.category || null, budget.start_date || null],
             });
             return id;
         },
@@ -61,6 +63,7 @@ export function useBudget() {
             current_amount?: number;
             period?: "monthly" | "weekly" | "yearly" | null;
             category?: string | null;
+            start_date?: string | null;
         }) => {
             const updates: string[] = [];
             const args: (string | number | null)[] = [];
@@ -70,6 +73,7 @@ export function useBudget() {
             if (budget.current_amount !== undefined) { updates.push("current_amount = ?"); args.push(budget.current_amount); }
             if (budget.period !== undefined) { updates.push("period = ?"); args.push(budget.period); }
             if (budget.category !== undefined) { updates.push("category = ?"); args.push(budget.category); }
+            if (budget.start_date !== undefined) { updates.push("start_date = ?"); args.push(budget.start_date); }
 
             if (updates.length === 0) return;
             args.push(budget.id);

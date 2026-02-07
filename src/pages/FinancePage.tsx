@@ -32,7 +32,7 @@ const COLORS = ["#EF4444", "#F87171", "#DC2626", "#FB7185", "#E11D48", "#F43F5E"
 
 export default function FinancePage() {
     const { entries, isLoading, addEntry, deleteEntry, updateEntry } = useFinance();
-    const { budgets, savingsGoals, budgetGoals, totalSavings, budgetRemaining, primaryBudget, addBudget, addToSavings, deleteBudget } = useBudget();
+    const { budgets, savingsGoals, budgetGoals, totalSavings, budgetRemaining, primaryBudget, getBudgetRemaining, addBudget, addToSavings, deleteBudget } = useBudget();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [historyType, setHistoryType] = useState<"all" | "income" | "expense">("all");
@@ -667,7 +667,7 @@ export default function FinancePage() {
                         transition={{ delay: 0.5 }}
                         className="glass-card p-5 col-span-2 md:col-span-2"
                     >
-                        <div className="flex items-center justify-between h-full">
+                        <div className="flex items-center justify-between mb-3">
                             <div>
                                 <h4 className="font-semibold">Manage Goals</h4>
                                 <p className="text-xs text-muted-foreground">{budgetGoals.length} budget(s), {savingsGoals.length} savings</p>
@@ -766,21 +766,27 @@ export default function FinancePage() {
 
                         {/* List existing budgets/savings */}
                         {(budgetGoals.length > 0 || savingsGoals.length > 0) && (
-                            <div className="mt-3 space-y-2 max-h-32 overflow-y-auto">
-                                {budgetGoals.map(b => (
-                                    <div key={b.id} className="flex items-center justify-between text-sm p-2 bg-secondary/50 rounded-lg">
-                                        <div className="flex items-center gap-2">
-                                            <Target className="w-3 h-3 text-blue-400" />
-                                            <span>{b.name}</span>
+                            <div className="mt-3 space-y-2 max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent pr-1">
+                                {budgetGoals.map(b => {
+                                    const remaining = getBudgetRemaining(b);
+                                    return (
+                                        <div key={b.id} className="flex items-center justify-between text-sm p-2 bg-secondary/50 rounded-lg">
+                                            <div className="flex items-center gap-2">
+                                                <Target className="w-3 h-3 text-blue-400" />
+                                                <span>{b.name}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className={remaining >= 0 ? "text-green-400" : "text-red-400"}>
+                                                    ৳{remaining.toLocaleString()} left
+                                                </span>
+                                                <span className="text-muted-foreground text-xs">/ ৳{b.target_amount.toLocaleString()}</span>
+                                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => deleteBudget.mutate(b.id)}>
+                                                    <Trash2 className="w-3 h-3" />
+                                                </Button>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-muted-foreground">৳{b.target_amount.toLocaleString()}</span>
-                                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => deleteBudget.mutate(b.id)}>
-                                                <Trash2 className="w-3 h-3" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                                 {savingsGoals.map(s => (
                                     <div key={s.id} className="flex items-center justify-between text-sm p-2 bg-secondary/50 rounded-lg">
                                         <div className="flex items-center gap-2">

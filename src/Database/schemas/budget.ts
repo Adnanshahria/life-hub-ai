@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS budgets (
     current_amount REAL DEFAULT 0,
     period TEXT CHECK(period IN ('monthly', 'weekly', 'yearly') OR period IS NULL),
     category TEXT,
+    start_date TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
 )
 `;
