@@ -8,6 +8,7 @@ export * from "./schemas";
 import { initUsersTable, initSettingsTable } from "./schemas/users";
 import { initTasksTable } from "./schemas/tasks";
 import { initFinanceTable } from "./schemas/finance";
+import { initBudgetTable } from "./schemas/budget";
 import { initNotesTable } from "./schemas/notes";
 import { initHabitsTable } from "./schemas/habits";
 import { initInventoryTable } from "./schemas/inventory";
@@ -20,6 +21,7 @@ export async function initDatabase(): Promise<void> {
         await initTasksTable();
         await initHabitsTable();
         await initFinanceTable();
+        await initBudgetTable();
         await initNotesTable();
         await initInventoryTable();
         await initStudyTable();

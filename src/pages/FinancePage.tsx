@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Wallet, TrendingUp, TrendingDown, Trash2, ChevronLeft, ChevronRight, Clock, X, Calendar as CalendarIcon, Pencil } from "lucide-react";
+import { Plus, Wallet, TrendingUp, TrendingDown, Trash2, ChevronLeft, ChevronRight, Clock, X, Calendar as CalendarIcon, Pencil, PiggyBank, Target } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFinance, FinanceEntry } from "@/hooks/useFinance";
+import { useBudget } from "@/hooks/useBudget";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
 import { format } from "date-fns";
 
@@ -31,9 +32,25 @@ const COLORS = ["#EF4444", "#F87171", "#DC2626", "#FB7185", "#E11D48", "#F43F5E"
 
 export default function FinancePage() {
     const { entries, isLoading, addEntry, deleteEntry, updateEntry } = useFinance();
+    const { budgets, savingsGoals, budgetGoals, totalSavings, budgetRemaining, primaryBudget, addBudget, addToSavings, deleteBudget } = useBudget();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [historyType, setHistoryType] = useState<"all" | "income" | "expense">("all");
+    const [isBudgetDialogOpen, setIsBudgetDialogOpen] = useState(false);
+    const [newBudget, setNewBudget] = useState<{
+        name: string;
+        type: "budget" | "savings";
+        target_amount: string;
+        period: "monthly" | "weekly" | "yearly" | null;
+        category: string;
+    }>({
+        name: "",
+        type: "budget",
+        target_amount: "",
+        period: "monthly",
+        category: "",
+    });
+    const [savingsAmount, setSavingsAmount] = useState<string>("");
 
     // View mode: daily, weekly, monthly, yearly, custom, all
     type ViewMode = "daily" | "weekly" | "monthly" | "yearly" | "custom" | "all";
@@ -529,19 +546,11 @@ export default function FinancePage() {
                                         value={newEntry.amount}
                                         onChange={(e) => setNewEntry({ ...newEntry, amount: e.target.value })}
                                     />
-                                    <Select
+                                    <Input
+                                        placeholder="Category (e.g. Food, Transport, Salary)"
                                         value={newEntry.category}
-                                        onValueChange={(v) => setNewEntry({ ...newEntry, category: v })}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Category" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {CATEGORIES.map((cat) => (
-                                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                        onChange={(e) => setNewEntry({ ...newEntry, category: e.target.value })}
+                                    />
                                     <Input
                                         placeholder="Description (optional)"
                                         value={newEntry.description}
@@ -608,6 +617,216 @@ export default function FinancePage() {
                             ৳{balance.toLocaleString()}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">Click to view all</p>
+                    </motion.div>
+                </div>
+
+                {/* Budget & Savings Section */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {/* Budget Remaining Card */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.3 }}
+                        className="glass-card p-5"
+                    >
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 rounded-lg bg-blue-500/20">
+                                <Target className="w-5 h-5 text-blue-400" />
+                            </div>
+                            <span className="text-muted-foreground text-sm">Budget Left</span>
+                        </div>
+                        <p className={`text-2xl font-bold ${budgetRemaining >= 0 ? "text-blue-400" : "text-red-400"}`}>
+                            ৳{budgetRemaining.toLocaleString()}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            {primaryBudget ? `${primaryBudget.name} (${primaryBudget.period})` : "No budget set"}
+                        </p>
+                    </motion.div>
+
+                    {/* Total Savings Card */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.4 }}
+                        className="glass-card p-5"
+                    >
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 rounded-lg bg-purple-500/20">
+                                <PiggyBank className="w-5 h-5 text-purple-400" />
+                            </div>
+                            <span className="text-muted-foreground text-sm">Total Savings</span>
+                        </div>
+                        <p className="text-2xl font-bold text-purple-400">৳{totalSavings.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{savingsGoals.length} saving goal(s)</p>
+                    </motion.div>
+
+                    {/* Add Budget/Savings Button */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.5 }}
+                        className="glass-card p-5 col-span-2 md:col-span-2"
+                    >
+                        <div className="flex items-center justify-between h-full">
+                            <div>
+                                <h4 className="font-semibold">Manage Goals</h4>
+                                <p className="text-xs text-muted-foreground">{budgetGoals.length} budget(s), {savingsGoals.length} savings</p>
+                            </div>
+                            <Dialog open={isBudgetDialogOpen} onOpenChange={setIsBudgetDialogOpen}>
+                                <DialogTrigger asChild>
+                                    <Button size="sm" className="gap-2">
+                                        <Plus className="w-4 h-4" />
+                                        Add Goal
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Create Budget or Savings Goal</DialogTitle>
+                                        <DialogDescription>
+                                            Set a spending budget or savings target.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="space-y-4 pt-4">
+                                        <Tabs value={newBudget.type} onValueChange={(v) => setNewBudget({ ...newBudget, type: v as "budget" | "savings" })}>
+                                            <TabsList className="w-full">
+                                                <TabsTrigger
+                                                    value="budget"
+                                                    className="flex-1 data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-all"
+                                                >
+                                                    Budget
+                                                </TabsTrigger>
+                                                <TabsTrigger
+                                                    value="savings"
+                                                    className="flex-1 data-[state=active]:bg-purple-500 data-[state=active]:text-white transition-all"
+                                                >
+                                                    Savings
+                                                </TabsTrigger>
+                                            </TabsList>
+                                        </Tabs>
+
+                                        <Input
+                                            placeholder={newBudget.type === "budget" ? "Budget Name (e.g. Monthly Budget)" : "Savings Goal Name (e.g. Emergency Fund)"}
+                                            value={newBudget.name}
+                                            onChange={(e) => setNewBudget({ ...newBudget, name: e.target.value })}
+                                        />
+
+                                        <Input
+                                            type="number"
+                                            placeholder="Target Amount (৳)"
+                                            value={newBudget.target_amount}
+                                            onChange={(e) => setNewBudget({ ...newBudget, target_amount: e.target.value })}
+                                        />
+
+                                        {newBudget.type === "budget" && (
+                                            <>
+                                                <Select
+                                                    value={newBudget.period || "monthly"}
+                                                    onValueChange={(v) => setNewBudget({ ...newBudget, period: v as "monthly" | "weekly" | "yearly" })}
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Period" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="weekly">Weekly</SelectItem>
+                                                        <SelectItem value="monthly">Monthly</SelectItem>
+                                                        <SelectItem value="yearly">Yearly</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+
+                                                <Input
+                                                    placeholder="Category (optional, leave blank for all expenses)"
+                                                    value={newBudget.category}
+                                                    onChange={(e) => setNewBudget({ ...newBudget, category: e.target.value })}
+                                                />
+                                            </>
+                                        )}
+
+                                        <Button
+                                            className="w-full"
+                                            onClick={async () => {
+                                                if (!newBudget.name || !newBudget.target_amount) return;
+                                                await addBudget.mutateAsync({
+                                                    name: newBudget.name,
+                                                    type: newBudget.type,
+                                                    target_amount: parseFloat(newBudget.target_amount),
+                                                    period: newBudget.type === "budget" ? newBudget.period : null,
+                                                    category: newBudget.category || null,
+                                                });
+                                                setNewBudget({ name: "", type: "budget", target_amount: "", period: "monthly", category: "" });
+                                                setIsBudgetDialogOpen(false);
+                                            }}
+                                            disabled={addBudget.isPending}
+                                        >
+                                            {addBudget.isPending ? "Creating..." : `Create ${newBudget.type}`}
+                                        </Button>
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
+                        </div>
+
+                        {/* List existing budgets/savings */}
+                        {(budgetGoals.length > 0 || savingsGoals.length > 0) && (
+                            <div className="mt-3 space-y-2 max-h-32 overflow-y-auto">
+                                {budgetGoals.map(b => (
+                                    <div key={b.id} className="flex items-center justify-between text-sm p-2 bg-secondary/50 rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            <Target className="w-3 h-3 text-blue-400" />
+                                            <span>{b.name}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-muted-foreground">৳{b.target_amount.toLocaleString()}</span>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => deleteBudget.mutate(b.id)}>
+                                                <Trash2 className="w-3 h-3" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                                {savingsGoals.map(s => (
+                                    <div key={s.id} className="flex items-center justify-between text-sm p-2 bg-secondary/50 rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            <PiggyBank className="w-3 h-3 text-purple-400" />
+                                            <span>{s.name}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-purple-400">৳{s.current_amount.toLocaleString()}</span>
+                                            <span className="text-muted-foreground">/ ৳{s.target_amount.toLocaleString()}</span>
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-6 w-6">
+                                                        <Plus className="w-3 h-3" />
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-48">
+                                                    <div className="space-y-2">
+                                                        <Input
+                                                            type="number"
+                                                            placeholder="Amount"
+                                                            value={savingsAmount}
+                                                            onChange={(e) => setSavingsAmount(e.target.value)}
+                                                        />
+                                                        <Button
+                                                            size="sm"
+                                                            className="w-full"
+                                                            onClick={() => {
+                                                                if (savingsAmount) {
+                                                                    addToSavings.mutate({ id: s.id, amount: parseFloat(savingsAmount) });
+                                                                    setSavingsAmount("");
+                                                                }
+                                                            }}
+                                                        >
+                                                            Add to Savings
+                                                        </Button>
+                                                    </div>
+                                                </PopoverContent>
+                                            </Popover>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => deleteBudget.mutate(s.id)}>
+                                                <Trash2 className="w-3 h-3" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </motion.div>
                 </div>
 

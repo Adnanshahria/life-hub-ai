@@ -5,7 +5,8 @@ import {
   ListTodo,
   Target,
   TrendingUp,
-  CalendarDays
+  CalendarDays,
+  PiggyBank
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -15,6 +16,7 @@ import { ExpenseChart } from "@/components/dashboard/ExpenseChart";
 import { AIBriefing } from "@/components/dashboard/AIBriefing";
 import { useTheme } from "@/hooks/useTheme";
 import { useFinance } from "@/hooks/useFinance";
+import { useBudget } from "@/hooks/useBudget";
 import { useTasks } from "@/hooks/useTasks";
 import { useHabits } from "@/hooks/useHabits";
 import { useAuth } from "@/contexts/AuthContext";
@@ -48,6 +50,7 @@ const Index = () => {
   const { theme } = useTheme();
   const { user } = useAuth();
   const { balance, totalIncome, totalExpenses, expensesByCategory, expenses } = useFinance();
+  const { totalSavings, budgetRemaining, primaryBudget, savingsGoals } = useBudget();
   const { tasks } = useTasks();
   const { habits } = useHabits();
 
@@ -131,27 +134,27 @@ const Index = () => {
           delay={0}
         />
         <StatCard
-          title="Tasks Today"
-          value="4"
-          subtitle="2 in progress"
-          icon={ListTodo}
+          title="Budget Left"
+          value={`৳${budgetRemaining.toLocaleString()}`}
+          subtitle={primaryBudget ? primaryBudget.name : "No budget set"}
+          icon={Target}
+          trend={budgetRemaining >= 0 ? { value: Math.round((budgetRemaining / (primaryBudget?.target_amount || 1)) * 100), isPositive: true } : undefined}
           color="warning"
           delay={0.1}
         />
         <StatCard
-          title="Active Habits"
-          value="4"
-          subtitle="2 completed today"
-          icon={Target}
+          title="Total Savings"
+          value={`৳${totalSavings.toLocaleString()}`}
+          subtitle={`${savingsGoals.length} saving goal(s)`}
+          icon={PiggyBank}
           color="success"
           delay={0.2}
         />
         <StatCard
-          title="Study Progress"
-          value="68%"
-          subtitle="Physics Chapter 5"
-          icon={TrendingUp}
-          trend={{ value: 5, isPositive: true }}
+          title="Tasks Today"
+          value={String(todaysTasks.length)}
+          subtitle={`${inProgressTasks.length} in progress`}
+          icon={ListTodo}
           color="primary"
           delay={0.3}
         />
