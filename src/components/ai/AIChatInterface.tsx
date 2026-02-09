@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Send, Sparkles, Loader2, Bot, User, X, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { processUserMessage, ChatMessage, AIIntent } from "@/lib/groq";
+import { processUserMessage, ChatMessage, AIIntent, executeAction, AllHooks } from "@/ai/core";
 import { useTasks } from "@/hooks/useTasks";
 import { useFinance } from "@/hooks/useFinance";
 import { useBudget } from "@/hooks/useBudget";
@@ -20,7 +20,7 @@ export function AIChatInterface() {
     const inputRef = useRef<HTMLInputElement>(null);
 
     // Hooks for executing actions
-    const { addTask, updateTask, deleteTask, tasks } = useTasks();
+    const { addTask, updateTask, deleteTask, completeTask, tasks } = useTasks();
     const { addEntry, deleteEntry, updateEntry, expenses } = useFinance();
     const { addBudget, updateBudget, addToSavings, deleteBudget, budgets, savingsGoals } = useBudget();
     const { addNote, deleteNote, notes } = useNotes();
@@ -86,16 +86,50 @@ export function AIChatInterface() {
             switch (action) {
                 // TASKS
                 case "ADD_TASK":
+                    // Default to today's date if not specified - use LOCAL date, not UTC
+                    const now = new Date();
+                    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                    const hasExpectedCost = data.expected_cost && Number(data.expected_cost) > 0;
+                    // If expected_cost is set, automatically set context_type to "finance"
+                    const taskContextType = hasExpectedCost ? "finance" : ((data.context_type as string) || "general");
+                    // Determine finance type
+                    const taskFinanceType = (data.finance_type as "income" | "expense") || (hasExpectedCost ? "expense" : undefined);
+
+                    // For expense tasks, link to budget
+                    let taskBudgetId = data.budget_id as string | undefined;
+                    if (taskFinanceType === "expense" && !taskBudgetId && budgets?.length > 0) {
+                        // Find first available budget or match by name if specified
+                        const matchingBudget = data.budget_name
+                            ? budgets.find(b => b.type === "budget" && b.name.toLowerCase().includes((data.budget_name as string).toLowerCase()))
+                            : budgets.find(b => b.type === "budget");
+                        taskBudgetId = matchingBudget?.id;
+                    }
+
+                    // For income tasks, link to savings goal
+                    let taskContextId = data.context_id as string | undefined;
+                    if (taskFinanceType === "income" && !taskContextId && savingsGoals?.length > 0) {
+                        // Find matching savings goal by name or use first available
+                        const matchingSavings = data.savings_name
+                            ? savingsGoals.find(s => s.name.toLowerCase().includes((data.savings_name as string).toLowerCase()))
+                            : savingsGoals[0]; // Default to first savings goal
+                        taskContextId = matchingSavings?.id;
+                    }
+
                     await addTask.mutateAsync({
                         title: data.title as string,
-                        priority: (data.priority as "low" | "medium" | "high") || "medium",
+                        priority: (data.priority as "low" | "medium" | "high" | "urgent") || "medium",
                         status: "todo",
-                        due_date: data.due_date as string,
+                        due_date: (data.due_date as string) || today,
+                        context_type: taskContextType as "general" | "study" | "finance" | "habit" | "project",
+                        context_id: taskContextId,
+                        expected_cost: hasExpectedCost ? Number(data.expected_cost) : undefined,
+                        finance_type: taskFinanceType,
+                        budget_id: taskBudgetId,
                     });
                     break;
                 case "COMPLETE_TASK":
                     const taskToComplete = tasks?.find(t => t.title.toLowerCase().includes((data.title as string || "").toLowerCase()));
-                    if (taskToComplete) await updateTask.mutateAsync({ id: taskToComplete.id, status: "done" });
+                    if (taskToComplete) await completeTask.mutateAsync(taskToComplete.id);
                     break;
                 case "DELETE_TASK":
                     const taskToDelete = tasks?.find(t => t.title.toLowerCase().includes((data.title as string || "").toLowerCase()));
@@ -261,6 +295,31 @@ export function AIChatInterface() {
                     }
                     break;
 
+                // WITHDRAW FROM SAVINGS - also creates expense entry
+                case "WITHDRAW_FROM_SAVINGS":
+                    const savingsForWithdraw = savingsGoals?.find(s =>
+                        s.name.toLowerCase().includes((data.name as string || "").toLowerCase())
+                    );
+                    if (savingsForWithdraw) {
+                        const withdrawAmount = Number(data.amount) || 0;
+                        // Update savings balance
+                        await updateBudget.mutateAsync({
+                            id: savingsForWithdraw.id,
+                            current_amount: Math.max(0, savingsForWithdraw.current_amount - withdrawAmount),
+                        });
+                        // Create expense entry in finance history
+                        const withdrawDate = new Date();
+                        const withdrawDateStr = `${withdrawDate.getFullYear()}-${String(withdrawDate.getMonth() + 1).padStart(2, '0')}-${String(withdrawDate.getDate()).padStart(2, '0')}`;
+                        await addEntry.mutateAsync({
+                            type: "expense",
+                            amount: withdrawAmount,
+                            category: `Savings: ${savingsForWithdraw.name}`,
+                            description: `Withdrawn from ${savingsForWithdraw.name}`,
+                            date: withdrawDateStr,
+                        });
+                    }
+                    break;
+
                 // UPDATE SAVINGS
                 case "UPDATE_SAVINGS":
                     const savingsToUpdate = savingsGoals?.find(s =>
@@ -297,6 +356,10 @@ export function AIChatInterface() {
             const habitStatus = habits?.map(h => `- ${h.habit_name} (Streak: ${h.streak_count})`).join("\n") || "No habits tracked";
             const notesList = notes?.map(n => `- ${n.title} (${n.tags})`).join("\n") || "No notes";
 
+            // Add budgets and savings info for AI
+            const budgetsList = budgets?.filter(b => b.type === "budget").map(b => `- ${b.name}: ৳${b.target_amount} (${b.period})`).join("\n") || "No budgets";
+            const savingsList = savingsGoals?.map(s => `- ${s.name}: ৳${s.current_amount}/${s.target_amount}`).join("\n") || "No savings goals";
+
             const context = `
 Current Date: ${new Date().toLocaleDateString()}
 
@@ -307,6 +370,12 @@ ${activeTasks}
 ${recentExpenses}
 Total Income: ৳${expenses?.filter(e => e.type === "income").reduce((a, b) => a + b.amount, 0) || 0}
 Total Expenses: ৳${expenses?.filter(e => e.type === "expense").reduce((a, b) => a + b.amount, 0) || 0}
+
+[BUDGETS]
+${budgetsList}
+
+[SAVINGS GOALS]
+${savingsList}
 
 [HABITS]
 ${habitStatus}

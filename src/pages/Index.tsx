@@ -83,6 +83,7 @@ const Index = () => {
   const displayTasks = tasks?.slice(0, 4).map(t => ({
     id: t.id,
     title: t.title,
+    description: t.description,
     status: t.status as "todo" | "in-progress" | "done",
     priority: t.priority as "low" | "medium" | "high",
     dueDate: t.due_date ? new Date(t.due_date).toLocaleString() : undefined,

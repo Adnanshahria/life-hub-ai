@@ -43,4 +43,75 @@ The Finance page provides comprehensive income and expense tracking with date ra
 - `Tabs` for view mode selection
 
 ## Categories
-Food, Transport, Entertainment, Bills, Shopping, Freelance, Salary, Other
+**Expense**: Food, Transport, Rent, Bills, Shopping, Entertainment, Health, Education, Other
+**Income**: Salary, Freelance, Business, Gift, Investment, Other
+
+> When selecting "Other", a text input appears to enter a custom category name.
+
+## Budget & Savings Goals
+- Create budget goals (monthly/weekly/yearly spending limits)
+- Create savings goals with target amounts
+- Track progress with visual progress bars
+- Edit goal targets via popover buttons
+- Dashboard cards show budget remaining and total savings
+- **Sorting**: Sort goals by Date (newest first) or Amount (highest first)
+
+### Savings Transaction History
+- Click "Total Savings" card to view full transaction history
+- Each deposit/withdrawal is logged with date, amount, and description
+- **Edit** any transaction (change type, amount, date, description)
+- **Delete** transactions with automatic balance reversal
+
+### Balance Calculation
+`Available Balance = Total Income - Total Expenses`
+(Savings are tracked separately and not subtracted from balance)
+
+## Special Items (2026-02-09)
+Track one-time or unusual transactions separately from regular entries:
+
+- **Mark as Special**: Toggle in entry dialog when adding income/expense
+- **Collapsible Section**: Shows special income, expenses, and balance
+- **Include in Totals**: Toggle to optionally include special items in main stats
+- **Visual Indicators**: Star icon for special items
+
+### AI Actions for Special Items
+- `ADD_SPECIAL_EXPENSE`: Add special expense
+- `ADD_SPECIAL_INCOME`: Add special income  
+- `ADD_SPECIAL_BUDGET`: Create special budget goal
+- `ADD_SPECIAL_SAVINGS`: Create special savings goal
+- `TOGGLE_SPECIAL`: Toggle special status on existing entry
+
+## PDF Export (2026-02-09)
+Download transaction history as PDF from any History modal:
+- Income History, Expense History, All Transactions
+- Savings History with deposit/withdrawal breakdown
+- Auto-generated summary with totals
+
+## Key Components Used
+- `useFinance` hook: entries, addEntry, updateEntry, deleteEntry
+- `useBudget` hook: budgets, savingsGoals, addToSavings, updateSavingsTransaction
+- `Calendar` + `Popover` from shadcn/ui for date selection
+- `LineChart`, `PieChart` from recharts for visualization
+- `Tabs` for view mode selection
+- `jsPDF` + `jspdf-autotable` for PDF generation
+
+## Mobile Optimization (2026-02-09)
+All cards and modals are mobile-responsive:
+
+### Responsive Cards
+- **Smaller padding**: `p-3 sm:p-5` for compact mobile view
+- **Smaller text**: `text-lg sm:text-2xl` for amounts, `text-xs sm:text-sm` for labels
+- **Reduced gaps**: `gap-2 sm:gap-4` between grid items
+- **Truncated text**: Long names/descriptions use `truncate` class
+
+### Responsive Rows
+- **Goals list**: Stacks vertically on xs screens (`flex-col xs:flex-row`)
+- **Transaction items**: `min-w-0 flex-1` prevents overflow, text truncates
+
+### Bottom Sheet Modals
+History and Savings History modals use mobile-friendly bottom sheet pattern:
+- Slides up from bottom on mobile (`items-end sm:items-center`)
+- Handle bar for drag indication (`sm:hidden`)
+- Rounded top corners on mobile (`rounded-t-2xl sm:rounded-xl`)
+- Spring animation for smooth transitions
+

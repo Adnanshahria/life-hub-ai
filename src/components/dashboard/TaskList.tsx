@@ -4,6 +4,7 @@ import { Circle, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
 interface Task {
   id: string;
   title: string;
+  description?: string;
   status: "todo" | "in-progress" | "done";
   priority: "low" | "medium" | "high";
   dueDate?: string;
@@ -47,10 +48,10 @@ export function TaskList({ tasks, onToggle }: TaskListProps) {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.05 * index }}
-              className={`flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-secondary/50 ${
-                task.status === "done" ? "opacity-60" : ""
-              }`}
+              className={`flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-secondary/50 ${task.status === "done" ? "opacity-60" : ""
+                }`}
             >
+              <span className="text-xs text-muted-foreground font-mono w-5 shrink-0">{index + 1}.</span>
               <button
                 onClick={() => onToggle?.(task.id)}
                 className="shrink-0"
@@ -63,12 +64,16 @@ export function TaskList({ tasks, onToggle }: TaskListProps) {
               </button>
               <div className="flex-1 min-w-0">
                 <p
-                  className={`font-medium truncate ${
-                    task.status === "done" ? "line-through text-muted-foreground" : ""
-                  }`}
+                  className={`font-medium truncate ${task.status === "done" ? "line-through text-muted-foreground" : ""
+                    }`}
                 >
                   {task.title}
                 </p>
+                {task.description && (
+                  <p className="text-xs text-muted-foreground truncate mt-0.5">
+                    {task.description}
+                  </p>
+                )}
                 {task.dueDate && (
                   <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                     <Clock className="w-3 h-3" />

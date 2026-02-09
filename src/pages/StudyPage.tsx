@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Book, GraduationCap, Trash2, Lightbulb } from "lucide-react";
+import { Plus, Book, GraduationCap, Trash2, Lightbulb, CalendarPlus, Clock } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,15 +20,35 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { useStudy, StudyChapter } from "@/hooks/useStudy";
+import { useTaskIntegration } from "@/hooks/useTaskIntegration";
 import { getStudyTips } from "@/lib/groq";
+import { useToast } from "@/hooks/use-toast";
 
 export default function StudyPage() {
     const { chapters, subjects, chaptersBySubject, subjectProgress, isLoading, addChapter, updateProgress, deleteChapter } = useStudy();
+    const { createStudyTask } = useTaskIntegration();
+    const { toast } = useToast();
+
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
+    const [selectedChapter, setSelectedChapter] = useState<StudyChapter | null>(null);
     const [newChapter, setNewChapter] = useState({ subject: "", chapter_name: "" });
+    const [scheduleData, setScheduleData] = useState({
+        due_date: new Date().toISOString().split("T")[0],
+        duration: "60",
+        start_time: "",
+    });
     const [aiTips, setAiTips] = useState<string | null>(null);
     const [loadingTips, setLoadingTips] = useState(false);
+    const [scheduling, setScheduling] = useState(false);
 
     const handleAddChapter = async () => {
         if (!newChapter.subject.trim() || !newChapter.chapter_name.trim()) return;
@@ -50,6 +70,42 @@ export default function StudyPage() {
             setAiTips("Failed to get tips. Please try again.");
         }
         setLoadingTips(false);
+    };
+
+    const handleScheduleSession = async () => {
+        if (!selectedChapter) return;
+        setScheduling(true);
+        try {
+            await createStudyTask({
+                chapter: selectedChapter,
+                dueDate: scheduleData.due_date,
+                startTime: scheduleData.start_time || undefined,
+                estimatedDuration: parseInt(scheduleData.duration),
+            });
+            toast({
+                title: "Study session scheduled! 📚",
+                description: `Task created for ${selectedChapter.chapter_name}`,
+            });
+            setScheduleDialogOpen(false);
+            setSelectedChapter(null);
+        } catch (error) {
+            toast({
+                title: "Failed to schedule",
+                description: "Please try again",
+                variant: "destructive",
+            });
+        }
+        setScheduling(false);
+    };
+
+    const openScheduleDialog = (chapter: StudyChapter) => {
+        setSelectedChapter(chapter);
+        setScheduleData({
+            due_date: new Date().toISOString().split("T")[0],
+            duration: "60",
+            start_time: "",
+        });
+        setScheduleDialogOpen(true);
     };
 
     const getStatusColor = (progress: number) => {
@@ -100,6 +156,90 @@ export default function StudyPage() {
                         </DialogContent>
                     </Dialog>
                 </div>
+
+                {/* Schedule Session Dialog */}
+                <Dialog open={scheduleDialogOpen} onOpenChange={setScheduleDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <CalendarPlus className="w-5 h-5 text-primary" />
+                                Schedule Study Session
+                            </DialogTitle>
+                        </DialogHeader>
+                        {selectedChapter && (
+                            <div className="space-y-4 pt-4">
+                                <div className="bg-secondary/50 p-3 rounded-lg">
+                                    <p className="font-medium">{selectedChapter.subject}</p>
+                                    <p className="text-sm text-muted-foreground">{selectedChapter.chapter_name}</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Date</label>
+                                    <Input
+                                        type="date"
+                                        value={scheduleData.due_date}
+                                        onChange={(e) => setScheduleData({ ...scheduleData, due_date: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Start Time (optional)</label>
+                                    <Input
+                                        type="time"
+                                        value={scheduleData.start_time}
+                                        onChange={(e) => setScheduleData({ ...scheduleData, start_time: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Duration</label>
+                                    <Select
+                                        value={scheduleData.duration}
+                                        onValueChange={(v) => setScheduleData({ ...scheduleData, duration: v })}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="30">30 minutes</SelectItem>
+                                            <SelectItem value="45">45 minutes</SelectItem>
+                                            <SelectItem value="60">1 hour</SelectItem>
+                                            <SelectItem value="90">1.5 hours</SelectItem>
+                                            <SelectItem value="120">2 hours</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        className="flex-1"
+                                        onClick={() => {
+                                            const today = new Date().toISOString().split("T")[0];
+                                            setScheduleData({ ...scheduleData, due_date: today });
+                                        }}
+                                    >
+                                        Today
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        className="flex-1"
+                                        onClick={() => {
+                                            const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+                                            setScheduleData({ ...scheduleData, due_date: tomorrow });
+                                        }}
+                                    >
+                                        Tomorrow
+                                    </Button>
+                                </div>
+
+                                <Button onClick={handleScheduleSession} className="w-full" disabled={scheduling}>
+                                    {scheduling ? "Scheduling..." : "Schedule Session →"}
+                                </Button>
+                            </div>
+                        )}
+                    </DialogContent>
+                </Dialog>
 
                 {/* AI Tips Card */}
                 {aiTips && (
@@ -182,6 +322,15 @@ export default function StudyPage() {
                                                     <div className="flex items-center justify-between mb-2">
                                                         <span className="font-medium">{chapter.chapter_name}</span>
                                                         <div className="flex items-center gap-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => openScheduleDialog(chapter)}
+                                                                className="gap-1 h-7 px-2"
+                                                            >
+                                                                <CalendarPlus className="w-3 h-3" />
+                                                                <span className="hidden sm:inline">Schedule</span>
+                                                            </Button>
                                                             <Badge
                                                                 variant={chapter.status === "completed" ? "default" : "secondary"}
                                                                 className={chapter.status === "completed" ? "bg-green-500" : ""}
@@ -223,3 +372,4 @@ export default function StudyPage() {
         </AppLayout>
     );
 }
+

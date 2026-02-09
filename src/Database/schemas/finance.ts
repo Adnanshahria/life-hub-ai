@@ -8,10 +8,17 @@ CREATE TABLE IF NOT EXISTS finance (
     amount REAL NOT NULL,
     category TEXT NOT NULL,
     description TEXT,
-    date TEXT DEFAULT CURRENT_TIMESTAMP
+    date TEXT DEFAULT CURRENT_TIMESTAMP,
+    is_special INTEGER DEFAULT 0
 )
 `;
 
 export async function initFinanceTable() {
     await db.execute(financeSchema);
+    // Migration: Add is_special column if it doesn't exist
+    try {
+        await db.execute("ALTER TABLE finance ADD COLUMN is_special INTEGER DEFAULT 0");
+    } catch (e) {
+        // Column already exists, ignore error
+    }
 }
