@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { Sidebar } from "./Sidebar";
 import { BottomNav } from "./BottomNav";
 import { AIChatInterface } from "../ai/AIChatInterface";
+import { GlobalSearch } from "../ui/GlobalSearch";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -28,6 +29,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       {/* AI Chat Interface */}
       <AIChatInterface />
+      <GlobalSearch />
 
       {/* Bottom Nav - Mobile only */}
       <BottomNav />

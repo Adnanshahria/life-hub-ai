@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { useSettings } from "@/hooks/useSettings";
 import { DEFAULT_USER_ID } from "@/lib/turso";
+import { SEO } from "@/components/seo/SEO";
 
 export default function SettingsPage() {
     const { settings, isLoading, updateSettings } = useSettings();
@@ -70,6 +71,7 @@ export default function SettingsPage() {
 
     return (
         <AppLayout>
+            <SEO title="Settings" description="Manage your preferences and profile." />
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { SEO } from "@/components/seo/SEO";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Wallet, TrendingUp, TrendingDown, Trash2, ChevronLeft, ChevronRight, Clock, X, Calendar as CalendarIcon, Pencil, PiggyBank, Target, Download, Star, ChevronDown } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -417,6 +418,7 @@ export default function FinancePage() {
 
     return (
         <AppLayout>
+            <SEO title="Finance" description="Track your income, expenses, and budget." />
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

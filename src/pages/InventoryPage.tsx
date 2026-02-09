@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { SEO } from "@/components/seo/SEO";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Plus, Package, Store, Trash2, Edit2, LayoutGrid, List,
@@ -89,15 +90,44 @@ export default function InventoryPage() {
     }, [items]);
 
     // Filtering
+    // Sorting State
+    const [sortConfig, setSortConfig] = useState<{ key: keyof InventoryItem; direction: "asc" | "desc" }>({ key: "item_name", direction: "asc" });
+
+    const handleSort = (key: keyof InventoryItem) => {
+        setSortConfig(current => ({
+            key,
+            direction: current.key === key && current.direction === "asc" ? "desc" : "asc"
+        }));
+    };
+
+    // Filtering & Sorting
     const filteredItems = useMemo(() => {
-        return items.filter(item => {
+        let result = items.filter(item => {
             const matchesSearch = item.item_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 item.store?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 item.notes?.toLowerCase().includes(searchTerm.toLowerCase());
             const matchesCategory = categoryFilter === "all" || item.category === categoryFilter;
             return matchesSearch && matchesCategory;
         });
-    }, [items, searchTerm, categoryFilter]);
+
+        // Apply Sorting
+        return result.sort((a, b) => {
+            const aValue = a[sortConfig.key];
+            const bValue = b[sortConfig.key];
+
+            if (aValue === bValue) return 0;
+
+            // Handle undefined/null values
+            if (aValue === undefined || aValue === null) return 1;
+            if (bValue === undefined || bValue === null) return -1;
+
+            if (sortConfig.direction === "asc") {
+                return aValue < bValue ? -1 : 1;
+            } else {
+                return aValue > bValue ? -1 : 1;
+            }
+        });
+    }, [items, searchTerm, categoryFilter, sortConfig]);
 
     const handleAddItem = async () => {
         if (!newItem.item_name.trim()) return;
@@ -155,6 +185,7 @@ export default function InventoryPage() {
 
     return (
         <AppLayout>
+            <SEO title="Inventory" description="Manage your personal inventory and assets." />
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -433,11 +464,36 @@ export default function InventoryPage() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Item</TableHead>
-                                        <TableHead>Category</TableHead>
-                                        <TableHead>Purchased</TableHead>
-                                        <TableHead>Value</TableHead>
-                                        <TableHead>Status</TableHead>
+                                        <TableHead
+                                            className="cursor-pointer hover:bg-muted/50 transition-colors"
+                                            onClick={() => handleSort("item_name")}
+                                        >
+                                            Item {sortConfig.key === "item_name" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                                        </TableHead>
+                                        <TableHead
+                                            className="cursor-pointer hover:bg-muted/50 transition-colors"
+                                            onClick={() => handleSort("category")}
+                                        >
+                                            Category {sortConfig.key === "category" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                                        </TableHead>
+                                        <TableHead
+                                            className="cursor-pointer hover:bg-muted/50 transition-colors"
+                                            onClick={() => handleSort("purchase_date")}
+                                        >
+                                            Purchased {sortConfig.key === "purchase_date" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                                        </TableHead>
+                                        <TableHead
+                                            className="cursor-pointer hover:bg-muted/50 transition-colors"
+                                            onClick={() => handleSort("cost")}
+                                        >
+                                            Cost {sortConfig.key === "cost" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                                        </TableHead>
+                                        <TableHead
+                                            className="cursor-pointer hover:bg-muted/50 transition-colors"
+                                            onClick={() => handleSort("status")}
+                                        >
+                                            Status {sortConfig.key === "status" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                                        </TableHead>
                                         <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -576,7 +632,7 @@ export default function InventoryPage() {
                         </div>
                     </DialogContent>
                 </Dialog>
-            </motion.div>
-        </AppLayout>
+            </motion.div >
+        </AppLayout >
     );
 }

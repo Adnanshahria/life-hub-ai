@@ -3,18 +3,21 @@
 import { AIModule, InventoryHooks } from '../core/types';
 
 export const INVENTORY_ACTIONS = [
-    "ADD_INVENTORY_ITEM",
-    "DELETE_INVENTORY_ITEM",
+    "ADD_INVENTORY",
+    "UPDATE_INVENTORY",
+    "DELETE_INVENTORY",
 ];
 
 export const INVENTORY_PROMPT = `INVENTORY RULES:
-For ADD_INVENTORY_ITEM, data must include: name (string), quantity (optional number), category (optional string)
-For DELETE_INVENTORY_ITEM, data must include: id or name
+For ADD_INVENTORY, data must include: item_name (string), quantity (number, default 1), category (string), cost (number, optional), store (string, optional).
+For UPDATE_INVENTORY, data must include: item_name (to identify), and any fields to update (quantity, status, notes, warranty_expiry, category).
+For DELETE_INVENTORY, data must include: item_name.
 
-Inventory Examples:
-- "add item laptop to inventory" → ADD_INVENTORY_ITEM with name "Laptop"
-- "I have 3 notebooks" → ADD_INVENTORY_ITEM with name "Notebooks", quantity 3
-- "remove laptop from inventory" → DELETE_INVENTORY_ITEM with name "laptop"`;
+IMPORTANT:
+- Always use specific item names.
+- "bought 5 pens" -> ADD_INVENTORY { item_name: "Pens", quantity: 5 }
+- "sold my old phone" -> UPDATE_INVENTORY { item_name: "Phone", status: "sold" }
+- "update macbook warranty to 2026-01-01" -> UPDATE_INVENTORY { item_name: "Macbook", warranty_expiry: "2026-01-01" }`;
 
 export async function executeInventoryAction(
     action: string,
@@ -22,17 +25,33 @@ export async function executeInventoryAction(
     hooks: InventoryHooks
 ): Promise<void> {
     switch (action) {
-        case "ADD_INVENTORY_ITEM":
+        case "ADD_INVENTORY":
             await hooks.addItem.mutateAsync({
-                name: String(data.name),
+                item_name: String(data.item_name),
                 quantity: data.quantity ? Number(data.quantity) : 1,
-                category: data.category ? String(data.category) : null,
+                category: data.category ? String(data.category) : "General",
+                cost: data.cost ? Number(data.cost) : undefined,
+                store: data.store ? String(data.store) : undefined,
             });
             break;
 
-        case "DELETE_INVENTORY_ITEM": {
+        case "UPDATE_INVENTORY": {
+            const itemToUpdate = hooks.items?.find(i =>
+                i.item_name.toLowerCase().includes((data.item_name as string || "").toLowerCase())
+            );
+            if (itemToUpdate && hooks.updateItem) {
+                await hooks.updateItem.mutateAsync({
+                    ...itemToUpdate,
+                    ...data,
+                    id: itemToUpdate.id, // Ensure ID is preserved
+                });
+            }
+            break;
+        }
+
+        case "DELETE_INVENTORY": {
             const itemToDelete = hooks.items?.find(i =>
-                i.name.toLowerCase().includes((data.name as string || data.id as string || "").toLowerCase())
+                i.item_name.toLowerCase().includes((data.item_name as string || "").toLowerCase())
             );
             if (itemToDelete) await hooks.deleteItem.mutateAsync(itemToDelete.id);
             break;

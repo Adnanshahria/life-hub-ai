@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
+import { SEO } from "@/components/seo/SEO";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -38,6 +39,7 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
+            <SEO title="Login" description="Sign in to LifeOS to access your dashboard." />
             {/* Background gradient effects */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />

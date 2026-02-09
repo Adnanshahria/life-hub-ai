@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Plus, Book, GraduationCap, Trash2, Lightbulb, CalendarPlus, Clock } from "lucide-react";
+import { Plus, Book, GraduationCap, Trash2, Lightbulb, CalendarPlus, Clock, Play, Pause, RotateCcw } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
+import { SEO } from "@/components/seo/SEO";
 import {
     Dialog,
     DialogContent,
@@ -39,6 +40,7 @@ export default function StudyPage() {
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
+    const [timerDialogOpen, setTimerDialogOpen] = useState(false);
     const [selectedChapter, setSelectedChapter] = useState<StudyChapter | null>(null);
     const [newChapter, setNewChapter] = useState({ subject: "", chapter_name: "" });
     const [scheduleData, setScheduleData] = useState({
@@ -49,6 +51,43 @@ export default function StudyPage() {
     const [aiTips, setAiTips] = useState<string | null>(null);
     const [loadingTips, setLoadingTips] = useState(false);
     const [scheduling, setScheduling] = useState(false);
+
+    // Timer State
+    const [timerActive, setTimerActive] = useState(false);
+    const [timerTime, setTimerTime] = useState(25 * 60); // 25 minutes default
+    const [timerDuration, setTimerDuration] = useState(25);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        if (timerActive && timerTime > 0) {
+            timerRef.current = setInterval(() => {
+                setTimerTime((prev) => prev - 1);
+            }, 1000);
+        } else if (timerTime === 0) {
+            setTimerActive(false);
+            if (timerRef.current) clearInterval(timerRef.current);
+            toast({
+                title: "Session Complete! 🎉",
+                description: "Great job focusing!",
+            });
+            // Optional: Auto-update progress lightly? 
+        }
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+        };
+    }, [timerActive, timerTime, toast]);
+
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const toggleTimer = () => setTimerActive(!timerActive);
+    const resetTimer = () => {
+        setTimerActive(false);
+        setTimerTime(timerDuration * 60);
+    };
 
     const handleAddChapter = async () => {
         if (!newChapter.subject.trim() || !newChapter.chapter_name.trim()) return;
@@ -108,6 +147,14 @@ export default function StudyPage() {
         setScheduleDialogOpen(true);
     };
 
+    const openTimerDialog = (chapter: StudyChapter) => {
+        setSelectedChapter(chapter);
+        setTimerDuration(25);
+        setTimerTime(25 * 60);
+        setTimerActive(false);
+        setTimerDialogOpen(true);
+    };
+
     const getStatusColor = (progress: number) => {
         if (progress >= 100) return "text-green-400";
         if (progress > 0) return "text-yellow-400";
@@ -116,6 +163,7 @@ export default function StudyPage() {
 
     return (
         <AppLayout>
+            <SEO title="Study Tracker" description="Track your academic progress, schedule study sessions, and use the focus timer." />
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -241,6 +289,77 @@ export default function StudyPage() {
                     </DialogContent>
                 </Dialog>
 
+                {/* Focus Timer Dialog */}
+                <Dialog open={timerDialogOpen} onOpenChange={setTimerDialogOpen}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <Clock className="w-5 h-5 text-primary" />
+                                Focus Timer
+                            </DialogTitle>
+                        </DialogHeader>
+                        {selectedChapter && (
+                            <div className="flex flex-col items-center space-y-6 py-4">
+                                <div className="text-center">
+                                    <p className="text-sm text-muted-foreground uppercase tracking-wider">Focusing On</p>
+                                    <h3 className="text-xl font-bold">{selectedChapter.chapter_name}</h3>
+                                    <p className="text-primary">{selectedChapter.subject}</p>
+                                </div>
+
+                                <div className="relative w-48 h-48 flex items-center justify-center rounded-full border-4 border-primary/20 bg-secondary/20">
+                                    <div className="text-5xl font-mono font-bold tracking-tight">
+                                        {formatTime(timerTime)}
+                                    </div>
+                                    {timerActive && (
+                                        <motion.div
+                                            className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent"
+                                            animate={{ rotate: 360 }}
+                                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                        />
+                                    )}
+                                </div>
+
+                                <div className="flex items-center gap-4 w-full justify-center">
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-12 w-12 rounded-full"
+                                        onClick={resetTimer}
+                                    >
+                                        <RotateCcw className="w-5 h-5" />
+                                    </Button>
+                                    <Button
+                                        size="icon"
+                                        className="h-16 w-16 rounded-full shadow-lg shadow-primary/20"
+                                        onClick={toggleTimer}
+                                    >
+                                        {timerActive ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8 ml-1" />}
+                                    </Button>
+                                </div>
+
+                                {!timerActive && (
+                                    <div className="w-full space-y-2">
+                                        <div className="flex justify-between text-xs text-muted-foreground px-1">
+                                            <span>Duration</span>
+                                            <span>{timerDuration} min</span>
+                                        </div>
+                                        <Slider
+                                            value={[timerDuration]}
+                                            min={5}
+                                            max={120}
+                                            step={5}
+                                            onValueChange={(vals) => {
+                                                setTimerDuration(vals[0]);
+                                                setTimerTime(vals[0] * 60);
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </DialogContent>
+                </Dialog>
+
                 {/* AI Tips Card */}
                 {aiTips && (
                     <motion.div
@@ -322,6 +441,15 @@ export default function StudyPage() {
                                                     <div className="flex items-center justify-between mb-2">
                                                         <span className="font-medium">{chapter.chapter_name}</span>
                                                         <div className="flex items-center gap-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => openTimerDialog(chapter)}
+                                                                className="gap-1 h-7 px-2"
+                                                            >
+                                                                <Clock className="w-3 h-3" />
+                                                                <span className="hidden sm:inline">Focus</span>
+                                                            </Button>
                                                             <Button
                                                                 variant="outline"
                                                                 size="sm"

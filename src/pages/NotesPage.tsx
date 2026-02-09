@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, FileText, Trash2, Tag, Search } from "lucide-react";
+import { Plus, FileText, Trash2, Tag, Search, Edit2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { SEO } from "@/components/seo/SEO";
 import {
     Dialog,
     DialogContent,
@@ -50,6 +53,10 @@ export default function NotesPage() {
 
     return (
         <AppLayout>
+            <SEO
+                title="Notes"
+                description="Capture your thoughts and ideas with Markdown support."
+            />
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -78,7 +85,7 @@ export default function NotesPage() {
                                     New Note
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-2xl">
+                            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                                 <DialogHeader>
                                     <DialogTitle>Create New Note</DialogTitle>
                                 </DialogHeader>
@@ -87,13 +94,25 @@ export default function NotesPage() {
                                         placeholder="Note title..."
                                         value={newNote.title}
                                         onChange={(e) => setNewNote({ ...newNote, title: e.target.value })}
+                                        className="text-lg font-semibold"
                                     />
-                                    <Textarea
-                                        placeholder="Write your note here... (Markdown supported)"
-                                        value={newNote.content}
-                                        onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
-                                        className="min-h-[200px]"
-                                    />
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <Textarea
+                                            placeholder="Write your note here... (Markdown supported)"
+                                            value={newNote.content}
+                                            onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
+                                            className="min-h-[300px] font-mono text-sm"
+                                        />
+                                        <div className="border border-border rounded-md p-4 min-h-[300px] prose prose-invert prose-sm overflow-y-auto bg-secondary/30">
+                                            {newNote.content ? (
+                                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                                    {newNote.content}
+                                                </ReactMarkdown>
+                                            ) : (
+                                                <p className="text-muted-foreground italic">Preview will appear here...</p>
+                                            )}
+                                        </div>
+                                    </div>
                                     <Input
                                         placeholder="Tags (comma separated)"
                                         value={newNote.tags}
@@ -125,42 +144,69 @@ export default function NotesPage() {
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: index * 0.05 }}
-                                className="glass-card p-4 cursor-pointer hover:border-primary/50 transition-colors group"
+                                className="glass-card p-5 cursor-pointer hover:border-primary/50 transition-all group flex flex-col h-[280px]"
                                 onClick={() => setSelectedNote(note)}
                             >
-                                <div className="flex items-start justify-between mb-2">
-                                    <div className="flex items-center gap-2">
-                                        <FileText className="w-4 h-4 text-primary" />
-                                        <h3 className="font-semibold truncate">{note.title}</h3>
+                                <div className="flex items-start justify-between mb-3">
+                                    <div className="flex items-center gap-2 overflow-hidden">
+                                        <FileText className="w-4 h-4 text-primary shrink-0" />
+                                        <h3 className="font-semibold truncate text-lg">{note.title}</h3>
                                     </div>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            deleteNote.mutate(note.id);
-                                        }}
-                                    >
-                                        <Trash2 className="w-3 h-3" />
-                                    </Button>
+                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-7 w-7 text-muted-foreground hover:text-primary"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedNote(note);
+                                            }}
+                                        >
+                                            <Edit2 className="w-3 h-3" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                deleteNote.mutate(note.id);
+                                            }}
+                                        >
+                                            <Trash2 className="w-3 h-3" />
+                                        </Button>
+                                    </div>
                                 </div>
-                                <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
-                                    {note.content || "No content"}
-                                </p>
-                                {note.tags && (
-                                    <div className="flex flex-wrap gap-1">
-                                        {note.tags.split(",").map((tag, i) => (
-                                            <Badge key={i} variant="secondary" className="text-xs">
-                                                <Tag className="w-2 h-2 mr-1" />
-                                                {tag.trim()}
-                                            </Badge>
-                                        ))}
+
+                                <div className="flex-1 overflow-hidden relative mb-3">
+                                    <div className="prose prose-invert prose-sm line-clamp-[8] text-muted-foreground text-sm">
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                            {note.content || "No content"}
+                                        </ReactMarkdown>
                                     </div>
-                                )}
-                                <p className="text-xs text-muted-foreground mt-2">
-                                    {new Date(note.created_at).toLocaleDateString()}
-                                </p>
+                                    <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
+                                </div>
+
+                                <div className="mt-auto">
+                                    {note.tags && (
+                                        <div className="flex flex-wrap gap-1 mb-2">
+                                            {note.tags.split(",").slice(0, 3).map((tag, i) => (
+                                                <Badge key={i} variant="secondary" className="text-[10px] h-5">
+                                                    <Tag className="w-2 h-2 mr-1" />
+                                                    {tag.trim()}
+                                                </Badge>
+                                            ))}
+                                            {note.tags.split(",").length > 3 && (
+                                                <Badge variant="secondary" className="text-[10px] h-5">
+                                                    +{note.tags.split(",").length - 3}
+                                                </Badge>
+                                            )}
+                                        </div>
+                                    )}
+                                    <p className="text-[10px] text-muted-foreground">
+                                        {new Date(note.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' })}
+                                    </p>
+                                </div>
                             </motion.div>
                         ))
                     )}
@@ -168,7 +214,7 @@ export default function NotesPage() {
 
                 {/* Edit Note Dialog */}
                 <Dialog open={!!selectedNote} onOpenChange={(open) => !open && setSelectedNote(null)}>
-                    <DialogContent className="max-w-2xl">
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>Edit Note</DialogTitle>
                         </DialogHeader>
@@ -178,13 +224,21 @@ export default function NotesPage() {
                                     placeholder="Note title..."
                                     value={selectedNote.title}
                                     onChange={(e) => setSelectedNote({ ...selectedNote, title: e.target.value })}
+                                    className="text-lg font-semibold"
                                 />
-                                <Textarea
-                                    placeholder="Write your note here... (Markdown supported)"
-                                    value={selectedNote.content || ""}
-                                    onChange={(e) => setSelectedNote({ ...selectedNote, content: e.target.value })}
-                                    className="min-h-[200px]"
-                                />
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <Textarea
+                                        placeholder="Write your note here... (Markdown supported)"
+                                        value={selectedNote.content || ""}
+                                        onChange={(e) => setSelectedNote({ ...selectedNote, content: e.target.value })}
+                                        className="min-h-[300px] font-mono text-sm"
+                                    />
+                                    <div className="border border-border rounded-md p-4 min-h-[300px] prose prose-invert prose-sm overflow-y-auto bg-secondary/30">
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                            {selectedNote.content || ""}
+                                        </ReactMarkdown>
+                                    </div>
+                                </div>
                                 <Input
                                     placeholder="Tags (comma separated)"
                                     value={selectedNote.tags || ""}

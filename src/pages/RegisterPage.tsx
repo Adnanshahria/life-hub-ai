@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
+import { SEO } from "@/components/seo/SEO";
 
 export default function RegisterPage() {
     const [name, setName] = useState("");
@@ -56,6 +57,7 @@ export default function RegisterPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
+            <SEO title="Register" description="Create a new LifeOS account to get started." />
             {/* Background gradient effects */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />

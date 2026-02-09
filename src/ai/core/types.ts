@@ -91,8 +91,16 @@ export interface StudyHooks {
 
 export interface InventoryHooks {
     addItem: { mutateAsync: (data: unknown) => Promise<void> };
+    updateItem: { mutateAsync: (data: unknown) => Promise<void> };
     deleteItem: { mutateAsync: (id: string) => Promise<void> };
-    items: Array<{ id: string; name: string }>;
+    items: Array<{
+        id: string;
+        item_name: string;
+        category?: string;
+        quantity: number;
+        status: string;
+        cost?: number;
+    }>;
 }
 
 export interface AllHooks {

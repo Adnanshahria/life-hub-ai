@@ -1,5 +1,16 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, Loader2, Bot, User, X, Trash2 } from "lucide-react";
+import {
+    Send,
+    Sparkles,
+    User,
+    Bot,
+    Loader2,
+    X,
+    Maximize2,
+    Minimize2,
+    Search,
+    Trash2
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { processUserMessage, ChatMessage, AIIntent, executeAction, AllHooks } from "@/ai/core";
@@ -25,7 +36,7 @@ export function AIChatInterface() {
     const { addBudget, updateBudget, addToSavings, deleteBudget, budgets, savingsGoals } = useBudget();
     const { addNote, deleteNote, notes } = useNotes();
     const { addHabit, completeHabit, deleteHabit, habits } = useHabits();
-    const { addItem, deleteItem, items } = useInventory();
+    const { addItem, deleteItem, updateItem, items } = useInventory();
     const { addChapter, updateProgress, deleteChapter, chapters } = useStudy();
 
     // Load history from localStorage
@@ -54,10 +65,10 @@ export function AIChatInterface() {
         }
     }, [messages, isOpen]);
 
-    // Keyboard shortcut
+    // Keyboard shortcut - CMD+J for AI, CMD+K handled by GlobalSearch
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+            if ((e.metaKey || e.ctrlKey) && e.key === "j") {
                 e.preventDefault();
                 setIsOpen((prev) => !prev);
             }
@@ -68,6 +79,11 @@ export function AIChatInterface() {
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [isOpen]);
+
+    // Handle Search Button Click
+    const handleSearchClick = () => {
+        window.dispatchEvent(new CustomEvent("openGlobalSearch"));
+    };
 
     // Focus input on open
     useEffect(() => {
@@ -88,7 +104,7 @@ export function AIChatInterface() {
                 case "ADD_TASK":
                     // Default to today's date if not specified - use LOCAL date, not UTC
                     const now = new Date();
-                    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                    const today = `${now.getFullYear()} -${String(now.getMonth() + 1).padStart(2, '0')} -${String(now.getDate()).padStart(2, '0')} `;
                     const hasExpectedCost = data.expected_cost && Number(data.expected_cost) > 0;
                     // If expected_cost is set, automatically set context_type to "finance"
                     const taskContextType = hasExpectedCost ? "finance" : ((data.context_type as string) || "general");
@@ -206,12 +222,29 @@ export function AIChatInterface() {
                 case "ADD_INVENTORY":
                     await addItem.mutateAsync({
                         item_name: data.item_name as string,
-                        cost: Number(data.cost),
-                        store: data.store as string,
+                        quantity: Number(data.quantity) || 1,
+                        category: data.category ? String(data.category) : undefined,
+                        cost: data.cost ? Number(data.cost) : undefined,
+                        store: data.store ? String(data.store) : undefined,
+                        status: "active",
                     });
                     break;
+                case "UPDATE_INVENTORY":
+                    const itemToUpdate = items?.find(i =>
+                        i.item_name.toLowerCase().includes((data.item_name as string || "").toLowerCase())
+                    );
+                    if (itemToUpdate) {
+                        await updateItem.mutateAsync({
+                            ...itemToUpdate,
+                            ...data,
+                            id: itemToUpdate.id
+                        });
+                    }
+                    break;
                 case "DELETE_INVENTORY":
-                    const itemToDelete = items?.find(i => i.item_name.toLowerCase().includes((data.item_name as string || "").toLowerCase()));
+                    const itemToDelete = items?.find(i =>
+                        i.item_name.toLowerCase().includes((data.item_name as string || "").toLowerCase())
+                    );
                     if (itemToDelete) await deleteItem.mutateAsync(itemToDelete.id);
                     break;
 
@@ -309,12 +342,12 @@ export function AIChatInterface() {
                         });
                         // Create expense entry in finance history
                         const withdrawDate = new Date();
-                        const withdrawDateStr = `${withdrawDate.getFullYear()}-${String(withdrawDate.getMonth() + 1).padStart(2, '0')}-${String(withdrawDate.getDate()).padStart(2, '0')}`;
+                        const withdrawDateStr = `${withdrawDate.getFullYear()} -${String(withdrawDate.getMonth() + 1).padStart(2, '0')} -${String(withdrawDate.getDate()).padStart(2, '0')} `;
                         await addEntry.mutateAsync({
                             type: "expense",
                             amount: withdrawAmount,
-                            category: `Savings: ${savingsForWithdraw.name}`,
-                            description: `Withdrawn from ${savingsForWithdraw.name}`,
+                            category: `Savings: ${savingsForWithdraw.name} `,
+                            description: `Withdrawn from ${savingsForWithdraw.name} `,
                             date: withdrawDateStr,
                         });
                     }
@@ -350,44 +383,71 @@ export function AIChatInterface() {
         setIsLoading(true);
 
         try {
-            // Calculate detailed context for AI
-            const activeTasks = tasks?.filter(t => t.status === "todo").map(t => `- [${t.priority}] ${t.title} (Due: ${t.due_date})`).join("\n") || "No active tasks";
-            const recentExpenses = expenses?.slice(0, 10).map(e => `- ${e.type === 'income' ? '+' : '-'}৳${e.amount}: ${e.description} (${e.category})`).join("\n") || "No recent transactions";
-            const habitStatus = habits?.map(h => `- ${h.habit_name} (Streak: ${h.streak_count})`).join("\n") || "No habits tracked";
-            const notesList = notes?.map(n => `- ${n.title} (${n.tags})`).join("\n") || "No notes";
+            // 1. Gather Context Data
+            const currentLocation = window.location.pathname; // using window.location since we might be outside Router context or just easier here. Actually better to use useLocation if inside Router.
+            // Wait, AIChatInterface is likely inside AppLayout which is inside Router. Let's assume Router context.
+            // But to be safe and avoid Hook errors if I forget the import in this block, I'll use window.location for now or add the hook.
+            // Let's add the hook at the top level component.
 
-            // Add budgets and savings info for AI
-            const budgetsList = budgets?.filter(b => b.type === "budget").map(b => `- ${b.name}: ৳${b.target_amount} (${b.period})`).join("\n") || "No budgets";
-            const savingsList = savingsGoals?.map(s => `- ${s.name}: ৳${s.current_amount}/${s.target_amount}`).join("\n") || "No savings goals";
+            // CONTEXT CONSTRUCTION
+            const contextData = {
+                current_page: currentLocation,
+                current_date: new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+                finance: {
+                    balance: (expenses?.filter(e => e.type === "income").reduce((a, b) => a + b.amount, 0) || 0) - (expenses?.filter(e => e.type === "expense").reduce((a, b) => a + b.amount, 0) || 0),
+                    recent_transactions: expenses?.slice(0, 15).map(e => ({ date: e.date, type: e.type, amount: e.amount, category: e.category, desc: e.description })),
+                    budgets: budgets?.filter(b => b.type === "budget").map(b => ({ name: b.name, limit: b.target_amount, period: b.period })),
+                    savings: savingsGoals?.map(s => ({ name: s.name, current: s.current_amount, target: s.target_amount })),
+                },
+                tasks: {
+                    active: tasks?.filter(t => t.status === "todo").map(t => ({ title: t.title, priority: t.priority, due: t.due_date, context: t.context_type })),
+                    completed_recently: tasks?.filter(t => t.status === "done").slice(0, 5).map(t => t.title),
+                },
+                inventory: items?.map(i => ({ name: i.item_name, qty: i.quantity, status: i.status, category: i.category, value: i.cost })),
+                habits: habits?.map(h => ({
+                    name: h.habit_name,
+                    streak: h.streak_count,
+                    completed_today: h.last_completed_date?.startsWith(new Date().toISOString().split('T')[0]) ?? false
+                })),
+                notes: notes?.map(n => ({ title: n.title, tags: n.tags })),
+                study: chapters?.map(c => ({ subject: c.subject, chapter: c.chapter_name, progress: c.progress_percentage })),
+            };
 
-            const context = `
-Current Date: ${new Date().toLocaleDateString()}
+            const contextString = `
+[SYSTEM CONTEXT - GOD MODE]
+Current Location: ${window.location.pathname}
+Date: ${contextData.current_date}
 
-[ACTIVE TASKS]
-${activeTasks}
+=== FINANCE ===
+Total Balance: ৳${contextData.finance.balance}
+Recent 15 Transactions:
+${contextData.finance.recent_transactions.map(t => `- ${t.date || 'N/A'}: ${t.type.toUpperCase()} ৳${t.amount} (${t.category}) "${t.desc}"`).join('\n')}
+Budgets: ${contextData.finance.budgets.map(b => `${b.name}: ৳${b.limit}/${b.period}`).join(', ')}
+Savings: ${contextData.finance.savings.map(s => `${s.name}: ৳${s.current}/৳${s.target}`).join(', ')}
 
-[RECENT FINANCE]
-${recentExpenses}
-Total Income: ৳${expenses?.filter(e => e.type === "income").reduce((a, b) => a + b.amount, 0) || 0}
-Total Expenses: ৳${expenses?.filter(e => e.type === "expense").reduce((a, b) => a + b.amount, 0) || 0}
+=== TASKS ===
+Active Tasks:
+${contextData.tasks.active.map(t => `- [${t.priority.toUpperCase()}] ${t.title} (Due: ${t.due}) [${t.context}]`).join('\n')}
+Recently Completed: ${contextData.tasks.completed_recently.join(', ')}
 
-[BUDGETS]
-${budgetsList}
+=== INVENTORY ===
+Items:
+${contextData.inventory.map(i => `- ${i.name} (x${i.qty}) [${i.category}] ${i.status === 'sold' ? '(SOLD)' : ''}`).join('\n')}
 
-[SAVINGS GOALS]
-${savingsList}
+=== HABITS ===
+${contextData.habits.map(h => `- ${h.name}: Streak ${h.streak} ${h.completed_today ? '(DONE TODAY)' : '(PENDING)'}`).join('\n')}
 
-[HABITS]
-${habitStatus}
+=== STUDY ===
+${contextData.study.map(s => `- ${s.subject}: ${s.chapter} (${s.progress}%)`).join('\n')}
 
-[NOTES]
-${notesList}
+=== NOTES ===
+${contextData.notes.map(n => `- ${n.title} [${n.tags}]`).join('\n')}
 `;
 
-            // Process with history and context - pass current messages (not including the one we just added)
-            const result = await processUserMessage(userMsg, messages.filter(m => m.role !== "system"), context);
+            // Process with history and context
+            const result = await processUserMessage(userMsg, messages.filter(m => m.role !== "system"), contextString);
 
-            // Execute any detected action (skip CLARIFY - that's just the AI asking a question)
+            // Execute any detected action
             if (!["CHAT", "UNKNOWN", "GET_SUMMARY", "ANALYZE_BUDGET", "CLARIFY"].includes(result.action)) {
                 await executeIntent(result);
                 toast.success("Action executed successfully");
@@ -406,7 +466,19 @@ ${notesList}
 
     return (
         <>
-            {/* Floating Trigger Button */}
+            {/* Search Trigger Button */}
+            {!isOpen && (
+                <motion.button
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="fixed bottom-36 md:bottom-24 right-4 md:right-6 z-50 w-12 h-12 md:w-14 md:h-14 rounded-full bg-secondary shadow-lg flex items-center justify-center hover:scale-105 transition-transform border border-border"
+                    onClick={handleSearchClick}
+                >
+                    <Search className="w-6 h-6 text-foreground" />
+                </motion.button>
+            )}
+
+            {/* Floating Trigger Button for AI */}
             {!isOpen && (
                 <motion.button
                     initial={{ scale: 0 }}

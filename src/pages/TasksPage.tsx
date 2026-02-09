@@ -1,10 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
+import { SEO } from "@/components/seo/SEO";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import {
     Plus, Check, Clock, AlertTriangle, Trash2, Pin, PinOff, Edit,
     BookOpen, Wallet, Heart, Folder, Calendar, Timer, DollarSign,
-    ChevronDown, Filter, LayoutGrid, List, ArrowUpDown, Archive, Zap, CalendarClock
+    ChevronDown, Filter, LayoutGrid, List, ArrowUpDown, Archive, Zap, CalendarClock, Package, Boxes
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ import { useTasks, Task } from "@/hooks/useTasks";
 import { useStudy } from "@/hooks/useStudy";
 import { useBudget } from "@/hooks/useBudget";
 import { useHabits } from "@/hooks/useHabits";
+import { useInventory } from "@/hooks/useInventory";
 
 const priorityColors = {
     low: "bg-green-500/20 text-green-400 border-green-500/30",
@@ -54,6 +56,7 @@ const contextIcons = {
     finance: <Wallet className="w-4 h-4" />,
     habit: <Heart className="w-4 h-4" />,
     project: <Folder className="w-4 h-4" />,
+    inventory: <Package className="w-4 h-4" />,
 };
 
 const statusIcons = {
@@ -99,6 +102,7 @@ export default function TasksPage() {
     const { chapters } = useStudy();
     const { budgets } = useBudget();
     const { habits } = useHabits();
+    const { items: inventoryItems } = useInventory();
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -305,6 +309,10 @@ export default function TasksPage() {
             const habit = habits.find(h => h.id === task.context_id);
             return habit?.habit_name || null;
         }
+        if (task.context_type === "inventory" && task.context_id) {
+            const item = inventoryItems.find(i => i.id === task.context_id);
+            return item?.item_name || null;
+        }
         return null;
     };
 
@@ -455,6 +463,7 @@ export default function TasksPage() {
 
     return (
         <AppLayout>
+            <SEO title="Tasks" description="Manage your tasks, projects, and to-dos." />
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -539,7 +548,7 @@ export default function TasksPage() {
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-48 p-2">
-                                {["all", "general", "study", "finance", "habit"].map((ctx) => (
+                                {["all", "general", "study", "finance", "habit", "inventory"].map((ctx) => (
                                     <button
                                         key={ctx}
                                         onClick={() => setContextFilter(ctx)}
@@ -646,6 +655,7 @@ export default function TasksPage() {
                                                 <SelectItem value="study">📚 Study</SelectItem>
                                                 <SelectItem value="finance">💰 Finance</SelectItem>
                                                 <SelectItem value="habit">💪 Habit</SelectItem>
+                                                <SelectItem value="inventory">📦 Inventory</SelectItem>
                                             </SelectContent>
                                         </Select>
 
@@ -685,6 +695,24 @@ export default function TasksPage() {
                                                     {habits.map(habit => (
                                                         <SelectItem key={habit.id} value={habit.id}>
                                                             {habit.habit_name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        )}
+
+                                        {newTask.context_type === "inventory" && (
+                                            <Select
+                                                value={newTask.context_id}
+                                                onValueChange={(v) => setNewTask({ ...newTask, context_id: v })}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select item..." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {inventoryItems.map(item => (
+                                                        <SelectItem key={item.id} value={item.id}>
+                                                            {item.item_name}
                                                         </SelectItem>
                                                     ))}
                                                 </SelectContent>
@@ -853,38 +881,88 @@ export default function TasksPage() {
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="text-sm font-medium">Due Date</label>
-                                            <DatePicker
-                                                value={editingTask.due_date || ""}
-                                                onChange={(date) => setEditingTask({ ...editingTask, due_date: date })}
-                                                placeholder="Due date"
-                                            />
+                                            <label className="text-sm font-medium">Link to Module</label>
+                                            <Select
+                                                value={editingTask.context_type || "general"}
+                                                onValueChange={(v) => setEditingTask({ ...editingTask, context_type: v as Task["context_type"], context_id: "" })}
+                                            >
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="general">📁 General</SelectItem>
+                                                    <SelectItem value="study">📚 Study</SelectItem>
+                                                    <SelectItem value="finance">💰 Finance</SelectItem>
+                                                    <SelectItem value="habit">💪 Habit</SelectItem>
+                                                    <SelectItem value="inventory">📦 Inventory</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+
+                                            {editingTask.context_type === "study" && (
+                                                <Select
+                                                    value={editingTask.context_id || ""}
+                                                    onValueChange={(v) => setEditingTask({ ...editingTask, context_id: v })}
+                                                >
+                                                    <SelectTrigger className="mt-2"><SelectValue placeholder="Select chapter..." /></SelectTrigger>
+                                                    <SelectContent>
+                                                        {Object.entries(chaptersBySubject).map(([subject, chs]) => (
+                                                            <SelectGroup key={subject}>
+                                                                <SelectLabel>{subject}</SelectLabel>
+                                                                {chs.map(ch => <SelectItem key={ch.id} value={ch.id}>{ch.chapter_name}</SelectItem>)}
+                                                            </SelectGroup>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
+
+                                            {editingTask.context_type === "inventory" && (
+                                                <Select
+                                                    value={editingTask.context_id || ""}
+                                                    onValueChange={(v) => setEditingTask({ ...editingTask, context_id: v })}
+                                                >
+                                                    <SelectTrigger className="mt-2"><SelectValue placeholder="Select item..." /></SelectTrigger>
+                                                    <SelectContent>
+                                                        {inventoryItems.map(item => (
+                                                            <SelectItem key={item.id} value={item.id}>{item.item_name}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
+
+                                            {editingTask.context_type === "finance" && (
+                                                <div className="mt-4 grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="text-sm font-medium">Expected Cost (৳)</label>
+                                                        <Input
+                                                            type="number"
+                                                            value={editingTask.expected_cost || ""}
+                                                            onChange={(e) => setEditingTask({ ...editingTask, expected_cost: Number(e.target.value) || undefined })}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-sm font-medium">Type</label>
+                                                        <Select
+                                                            value={editingTask.finance_type || "expense"}
+                                                            onValueChange={(v) => setEditingTask({ ...editingTask, finance_type: v as "income" | "expense" })}
+                                                        >
+                                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="expense">Expense</SelectItem>
+                                                                <SelectItem value="income">Income</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
-                                        {editingTask.context_type === "finance" && (
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <label className="text-sm font-medium">Expected Cost (৳)</label>
-                                                    <Input
-                                                        type="number"
-                                                        value={editingTask.expected_cost || ""}
-                                                        onChange={(e) => setEditingTask({ ...editingTask, expected_cost: Number(e.target.value) || undefined })}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="text-sm font-medium">Type</label>
-                                                    <Select
-                                                        value={editingTask.finance_type || "expense"}
-                                                        onValueChange={(v) => setEditingTask({ ...editingTask, finance_type: v as "income" | "expense" })}
-                                                    >
-                                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="expense">Expense</SelectItem>
-                                                            <SelectItem value="income">Income</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="text-sm font-medium">Due Date</label>
+                                                <DatePicker
+                                                    value={editingTask.due_date || ""}
+                                                    onChange={(date) => setEditingTask({ ...editingTask, due_date: date })}
+                                                    placeholder="Due date"
+                                                />
                                             </div>
-                                        )}
+                                        </div>
                                         <div className="flex justify-end gap-2 pt-4">
                                             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                                                 Cancel

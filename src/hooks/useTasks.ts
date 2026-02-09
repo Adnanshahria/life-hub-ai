@@ -12,7 +12,7 @@ export interface Task {
     due_date?: string;
     created_at: string;
     completed_at?: string;
-    context_type?: "general" | "study" | "finance" | "habit" | "project";
+    context_type?: "general" | "study" | "finance" | "habit" | "project" | "inventory";
     context_id?: string;
     budget_id?: string;
     expected_cost?: number;

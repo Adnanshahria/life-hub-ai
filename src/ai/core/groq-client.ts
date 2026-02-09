@@ -30,7 +30,9 @@ export async function callGroqAPI(
     });
 
     if (!response.ok) {
-        throw new Error(`Groq API error: ${response.status}`);
+        const errorBody = await response.text();
+        console.error("Groq API Error Body:", errorBody);
+        throw new Error(`Groq API error: ${response.status} - ${errorBody}`);
     }
 
     const data: GroqResponse = await response.json();

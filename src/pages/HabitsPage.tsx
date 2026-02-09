@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Flame, Check, Trash2 } from "lucide-react";
+import { Plus, Flame, Check, Trash2, CalendarDays } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { SEO } from "@/components/seo/SEO";
 import {
     Dialog,
     DialogContent,
@@ -13,6 +14,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { useHabits, Habit } from "@/hooks/useHabits";
+import { cn } from "@/lib/utils";
 
 export default function HabitsPage() {
     const { habits, isLoading, addHabit, completeHabit, deleteHabit } = useHabits();
@@ -26,6 +28,56 @@ export default function HabitsPage() {
         setIsDialogOpen(false);
     };
 
+    const isCompletedOnDate = (habit: Habit, date: Date) => {
+        // We only have last_completed_date and streak_count.
+        // We can infer recent history:
+        // If streak is N, and last_completed was Today, then Today, Yesterday, ..., (Today - N + 1) are done.
+        // If last_completed was Yesterday, then Yesterday, ..., (Yesterday - N + 1) are done.
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const checkDate = new Date(date);
+        checkDate.setHours(0, 0, 0, 0);
+
+        const diffDays = Math.round((today.getTime() - checkDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        // If last completed was today
+        const lastCompleted = habit.last_completed_date ? new Date(habit.last_completed_date) : null;
+        if (lastCompleted) lastCompleted.setHours(0, 0, 0, 0);
+
+        if (lastCompleted && lastCompleted.getTime() === today.getTime()) {
+            // Completed today, so the last N days (including today) are done.
+            // diffDays = 0 (Today) -> Done
+            // diffDays = 1 (Yesterday) -> Done if streak >= 2
+            return diffDays < habit.streak_count;
+        } else if (lastCompleted) {
+            // Last completed was in the past
+            // If it was yesterday, streak preserved.
+            const daysSinceLast = Math.round((today.getTime() - lastCompleted.getTime()) / (1000 * 60 * 60 * 24));
+            if (daysSinceLast === 1) {
+                // Completed yesterday
+                // diffDays 1 -> done (yesterday)
+                // diffDays 0 -> not done (today)
+                // diffDays 2 -> done (day before yesterday) if streak >= 2
+                return (diffDays > 0) && (diffDays <= habit.streak_count);
+            }
+        }
+
+        return false;
+    };
+
+    const getLast7Days = () => {
+        const days = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            days.push(d);
+        }
+        return days;
+    };
+
+    const last7Days = getLast7Days();
+
     const isCompletedToday = (habit: Habit) => {
         if (!habit.last_completed_date) return false;
         const today = new Date().toISOString().split("T")[0];
@@ -38,6 +90,7 @@ export default function HabitsPage() {
 
     return (
         <AppLayout>
+            <SEO title="Habits" description="Build lasting habits with streak tracking and visual progress." />
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -117,7 +170,7 @@ export default function HabitsPage() {
                 </div>
 
                 {/* Habit List */}
-                <div className="space-y-3">
+                <div className="space-y-4">
                     {isLoading ? (
                         <div className="text-center py-8 text-muted-foreground">Loading habits...</div>
                     ) : habits.length === 0 ? (
@@ -133,53 +186,79 @@ export default function HabitsPage() {
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: index * 0.05 }}
-                                    className={`glass-card p-4 flex items-center gap-4 transition-all ${completed ? "border-green-500/50 bg-green-500/5" : ""
-                                        }`}
+                                    className={cn(
+                                        "glass-card p-6 transition-all group",
+                                        completed ? "border-green-500/30 bg-green-500/5" : "hover:border-primary/30"
+                                    )}
                                 >
-                                    {/* Complete Button */}
-                                    <button
-                                        onClick={() => !completed && completeHabit.mutate(habit)}
-                                        disabled={completed}
-                                        className={`p-3 rounded-full transition-all ${completed
-                                                ? "bg-green-500/20 text-green-400 cursor-default"
-                                                : "bg-muted hover:bg-primary/20 hover:text-primary"
-                                            }`}
-                                    >
-                                        <Check className="w-5 h-5" />
-                                    </button>
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                        <div className="flex items-center gap-4 flex-1">
+                                            {/* Checkbox-like Button */}
+                                            <button
+                                                onClick={() => !completed && completeHabit.mutate(habit)}
+                                                disabled={completed}
+                                                className={cn(
+                                                    "w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-sm",
+                                                    completed
+                                                        ? "bg-green-500 text-white scale-110 shadow-green-500/20"
+                                                        : "bg-secondary hover:bg-primary/10 hover:ring-2 hover:ring-primary/20 text-muted-foreground"
+                                                )}
+                                            >
+                                                <Check className={cn("w-6 h-6", completed ? "stroke-[3px]" : "")} />
+                                            </button>
 
-                                    {/* Habit Info */}
-                                    <div className="flex-1">
-                                        <p className={`font-medium text-lg ${completed ? "text-green-400" : ""}`}>
-                                            {habit.habit_name}
-                                        </p>
-                                        {habit.last_completed_date && (
-                                            <p className="text-sm text-muted-foreground">
-                                                Last: {new Date(habit.last_completed_date).toLocaleDateString()}
-                                            </p>
-                                        )}
+                                            <div>
+                                                <h3 className={cn("font-semibold text-lg", completed && "text-green-500")}>
+                                                    {habit.habit_name}
+                                                </h3>
+                                                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                                                    <div className="flex items-center gap-1">
+                                                        <Flame className={cn("w-4 h-4", habit.streak_count > 0 ? "text-orange-500 fill-orange-500" : "")} />
+                                                        <span className={cn(habit.streak_count > 0 && "text-orange-500 font-medium")}>
+                                                            {habit.streak_count} day streak
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Weekly Visualize */}
+                                        <div className="flex items-center gap-2 self-end md:self-auto">
+                                            <div className="hidden md:flex gap-1 mr-4">
+                                                {last7Days.map((date, i) => {
+                                                    const isDone = isCompletedOnDate(habit, date);
+                                                    const isToday = date.toDateString() === new Date().toDateString();
+                                                    return (
+                                                        <div key={i} className="flex flex-col items-center gap-1">
+                                                            <div
+                                                                className={cn(
+                                                                    "w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-medium border transition-all",
+                                                                    isDone
+                                                                        ? "bg-green-500 border-green-500 text-white"
+                                                                        : isToday
+                                                                            ? "border-primary/50 bg-primary/10 text-foreground"
+                                                                            : "border-border bg-secondary/30 text-muted-foreground"
+                                                                )}
+                                                                title={date.toDateString()}
+                                                            >
+                                                                {date.getDate()}
+                                                            </div>
+                                                            <span className="text-[9px] text-muted-foreground uppercase">{date.toLocaleDateString('en-US', { weekday: 'narrow' })}</span>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => deleteHabit.mutate(habit.id)}
+                                                className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </div>
                                     </div>
-
-                                    {/* Streak */}
-                                    <div className="flex items-center gap-2">
-                                        <Flame className={`w-5 h-5 ${habit.streak_count > 0 ? "text-orange-400" : "text-muted-foreground"}`} />
-                                        <Badge
-                                            variant={habit.streak_count > 0 ? "default" : "secondary"}
-                                            className={habit.streak_count > 0 ? "bg-orange-500/20 text-orange-400 border-orange-500/30" : ""}
-                                        >
-                                            {habit.streak_count} day{habit.streak_count !== 1 ? "s" : ""}
-                                        </Badge>
-                                    </div>
-
-                                    {/* Delete */}
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => deleteHabit.mutate(habit.id)}
-                                        className="text-muted-foreground hover:text-destructive"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </Button>
                                 </motion.div>
                             );
                         })

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { SEO } from "@/components/seo/SEO";
 import { motion } from "framer-motion";
 import {
   Wallet,
@@ -105,6 +106,7 @@ const Index = () => {
 
   return (
     <AppLayout>
+      <SEO title="Dashboard" description="Overview of your tasks, finance, and habits." />
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -114,17 +116,17 @@ const Index = () => {
         <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
           <CalendarDays className="w-4 h-4" />
           <span>{today}</span>
-        </div>
+        </div >
         <h1 className="text-3xl md:text-4xl font-bold">
           Good afternoon, <span className="text-gradient">{user?.name?.split(" ")[0] || "User"}</span>
         </h1>
         <p className="text-muted-foreground mt-1">
           Here's your daily snapshot
         </p>
-      </motion.div>
+      </motion.div >
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      < div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6" >
         <StatCard
           title="All-Time Balance"
           value={formatBalance(balance)}
@@ -159,12 +161,12 @@ const Index = () => {
           color="primary"
           delay={0.3}
         />
-      </div>
+      </div >
 
       {/* Main Grid */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      < div className="grid lg:grid-cols-3 gap-6" >
         {/* Left Column - Tasks & Habits */}
-        <div className="lg:col-span-2 space-y-6">
+        < div className="lg:col-span-2 space-y-6" >
           <TaskList tasks={displayTasks.length > 0 ? displayTasks : []} />
           <div className="grid md:grid-cols-2 gap-6">
             <HabitTracker habits={displayHabits.length > 0 ? displayHabits : []} />
@@ -173,10 +175,10 @@ const Index = () => {
               total={totalExpenses}
             />
           </div>
-        </div>
+        </div >
 
         {/* Right Column - AI Briefing */}
-        <div className="space-y-6">
+        < div className="space-y-6" >
           <AIBriefing insights={mockInsights} />
 
           {/* Quick Actions */}
@@ -204,9 +206,9 @@ const Index = () => {
               ))}
             </div>
           </motion.div>
-        </div>
-      </div>
-    </AppLayout>
+        </div >
+      </div >
+    </AppLayout >
   );
 };
 
