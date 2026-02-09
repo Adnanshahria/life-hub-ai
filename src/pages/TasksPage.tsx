@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "react-router-dom";
 import {
     Plus, Check, Clock, AlertTriangle, Trash2, Pin, PinOff, Edit,
     BookOpen, Wallet, Heart, Folder, Calendar, Timer, DollarSign,
@@ -120,6 +121,18 @@ export default function TasksPage() {
         });
         return grouped;
     }, [chapters]);
+
+    const location = useLocation();
+
+    // Check for incoming state to pre-fill task (e.g. from Inventory)
+    useEffect(() => {
+        if (location.state && location.state.newTask) {
+            setNewTask({ ...defaultNewTask, ...location.state.newTask });
+            setIsDialogOpen(true);
+            // Clear state to prevent reopening on refresh (optional, but good practice)
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
 
     const handleAddTask = async () => {
         if (!newTask.title.trim()) return;
