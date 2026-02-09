@@ -1,6 +1,10 @@
-import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Plus, FileText, Trash2, Tag, Search, Edit2, StickyNote, BookOpen, Clock, X, Pin, PinOff } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import { motion } from "framer-motion";
+import {
+    Plus, FileText, Trash2, Tag, Search, StickyNote, BookOpen, Clock,
+    Pin, PinOff, CheckSquare, Square, Eye, EyeOff, Bold, Italic, Heading,
+    List, ListChecks, Copy, Check
+} from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -13,6 +17,7 @@ import {
     Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { useNotes, Note } from "@/hooks/useNotes";
+import { cn } from "@/lib/utils";
 
 const TAG_COLORS = [
     "bg-violet-500/15 text-violet-400 border-violet-500/20",
@@ -31,6 +36,134 @@ function getTagColor(tag: string) {
     return TAG_COLORS[Math.abs(hash) % TAG_COLORS.length];
 }
 
+// ===== CHECKLIST HELPERS =====
+function parseChecklist(content: string): { text: string; checked: boolean }[] | null {
+    const lines = content.split("\n").filter(l => l.trim());
+    const checklistLines = lines.filter(l => /^\s*[-*]\s*\[[ xX]\]/.test(l));
+    if (checklistLines.length === 0) return null;
+    return lines.map(l => {
+        const match = l.match(/^\s*[-*]\s*\[([ xX])\]\s*(.*)/);
+        if (match) return { text: match[2], checked: match[1] !== " " };
+        return { text: l, checked: false };
+    });
+}
+
+function toggleChecklistItem(content: string, index: number): string {
+    const lines = content.split("\n");
+    let checkIdx = 0;
+    return lines.map(line => {
+        const match = line.match(/^(\s*[-*]\s*\[)([ xX])(\]\s*.*)/);
+        if (match) {
+            if (checkIdx === index) {
+                checkIdx++;
+                const newState = match[2] === " " ? "x" : " ";
+                return match[1] + newState + match[3];
+            }
+            checkIdx++;
+        }
+        return line;
+    }).join("\n");
+}
+
+function addChecklistItem(content: string): string {
+    const trimmed = content.trimEnd();
+    return trimmed + (trimmed ? "\n" : "") + "- [ ] ";
+}
+
+function getChecklistStats(content: string): { total: number; checked: number } | null {
+    const items = parseChecklist(content);
+    if (!items) return null;
+    const checkItems = items.filter(i => content.includes(`[${i.checked ? "x" : " "}] ${i.text}`));
+    const total = (content.match(/\[[ xX]\]/g) || []).length;
+    const checked = (content.match(/\[[xX]\]/g) || []).length;
+    if (total === 0) return null;
+    return { total, checked };
+}
+
+// ===== TOOLBAR COMPONENT =====
+function NoteToolbar({ content, onContentChange, textareaRef }: {
+    content: string;
+    onContentChange: (content: string) => void;
+    textareaRef?: React.RefObject<HTMLTextAreaElement>;
+}) {
+    const [copied, setCopied] = useState(false);
+
+    const insertAtCursor = useCallback((prefix: string, suffix: string = "") => {
+        const ta = textareaRef?.current;
+        if (!ta) { onContentChange(content + prefix); return; }
+        const start = ta.selectionStart;
+        const end = ta.selectionEnd;
+        const selected = content.substring(start, end);
+        const before = content.substring(0, start);
+        const after = content.substring(end);
+        const newContent = before + prefix + selected + suffix + after;
+        onContentChange(newContent);
+        setTimeout(() => {
+            ta.focus();
+            ta.selectionStart = start + prefix.length;
+            ta.selectionEnd = start + prefix.length + selected.length;
+        }, 10);
+    }, [content, onContentChange, textareaRef]);
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(content);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+    };
+
+    const tools = [
+        { icon: Bold, label: "Bold", action: () => insertAtCursor("**", "**") },
+        { icon: Italic, label: "Italic", action: () => insertAtCursor("*", "*") },
+        { icon: Heading, label: "Heading", action: () => insertAtCursor("## ") },
+        { icon: List, label: "Bullet List", action: () => insertAtCursor("- ") },
+        { icon: ListChecks, label: "Checklist", action: () => onContentChange(addChecklistItem(content)) },
+        { icon: copied ? Check : Copy, label: "Copy", action: handleCopy },
+    ];
+
+    return (
+        <div className="flex items-center gap-1 py-2 px-1 border-t border-border/50 bg-secondary/20 rounded-b-lg">
+            {tools.map((tool, i) => (
+                <Button key={i} variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={tool.action} title={tool.label}>
+                    <tool.icon className="w-4 h-4" />
+                </Button>
+            ))}
+        </div>
+    );
+}
+
+// ===== INTERACTIVE CHECKLIST VIEWER =====
+function ChecklistView({ content, onToggle }: { content: string; onToggle?: (index: number) => void }) {
+    const lines = content.split("\n");
+    let checkIdx = 0;
+    return (
+        <div className="space-y-1.5">
+            {lines.map((line, i) => {
+                const match = line.match(/^\s*[-*]\s*\[([ xX])\]\s*(.*)/);
+                if (match) {
+                    const idx = checkIdx++;
+                    const checked = match[1] !== " ";
+                    return (
+                        <div key={i} className="flex items-start gap-2 group cursor-pointer" onClick={() => onToggle?.(idx)}>
+                            <div className={cn(
+                                "w-5 h-5 rounded border flex items-center justify-center shrink-0 mt-0.5 transition-all",
+                                checked ? "bg-primary border-primary" : "border-muted-foreground/40 hover:border-primary/60"
+                            )}>
+                                {checked && <Check className="w-3 h-3 text-primary-foreground stroke-[3px]" />}
+                            </div>
+                            <span className={cn("text-sm flex-1", checked && "line-through text-muted-foreground")}>{match[2]}</span>
+                        </div>
+                    );
+                }
+                if (line.trim()) {
+                    return <p key={i} className="text-sm text-muted-foreground">{line}</p>;
+                }
+                return null;
+            })}
+        </div>
+    );
+}
+
+// ===== MAIN PAGE =====
 export default function NotesPage() {
     const { notes, isLoading, addNote, updateNote, deleteNote } = useNotes();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -38,10 +171,15 @@ export default function NotesPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [activeTag, setActiveTag] = useState<string | null>(null);
     const [newNote, setNewNote] = useState({ title: "", content: "", tags: "" });
+    const [showPreview, setShowPreview] = useState(false);
+    const [showEditPreview, setShowEditPreview] = useState(false);
     const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => {
         const saved = localStorage.getItem("lifeos-pinned-notes");
         return saved ? new Set(JSON.parse(saved)) : new Set();
     });
+
+    const newTextareaRef = { current: null as HTMLTextAreaElement | null };
+    const editTextareaRef = { current: null as HTMLTextAreaElement | null };
 
     const togglePin = (id: string) => {
         setPinnedIds(prev => {
@@ -65,7 +203,6 @@ export default function NotesPage() {
             const matchesTag = !activeTag || note.tags?.split(",").map(t => t.trim()).includes(activeTag);
             return matchesSearch && matchesTag;
         });
-        // Sort: pinned first, then by date
         result.sort((a, b) => {
             const aPinned = pinnedIds.has(a.id);
             const bPinned = pinnedIds.has(b.id);
@@ -80,6 +217,7 @@ export default function NotesPage() {
         if (!newNote.title.trim()) return;
         await addNote.mutateAsync(newNote);
         setNewNote({ title: "", content: "", tags: "" });
+        setShowPreview(false);
         setIsDialogOpen(false);
     };
 
@@ -87,6 +225,13 @@ export default function NotesPage() {
         if (!selectedNote) return;
         await updateNote.mutateAsync(selectedNote);
         setSelectedNote(null);
+        setShowEditPreview(false);
+    };
+
+    const handleCardChecklistToggle = async (note: Note, index: number) => {
+        const newContent = toggleChecklistItem(note.content || "", index);
+        const updated = { ...note, content: newContent };
+        await updateNote.mutateAsync(updated);
     };
 
     const totalNotes = notes.length;
@@ -94,7 +239,7 @@ export default function NotesPage() {
 
     return (
         <AppLayout>
-            <SEO title="Notes" description="Capture your thoughts and ideas with Markdown support." />
+            <SEO title="Notes" description="Capture your thoughts and ideas with Markdown and checklist support." />
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
 
                 {/* ===== HEADER ===== */}
@@ -106,27 +251,51 @@ export default function NotesPage() {
                             </div>
                             <h1 className="text-3xl font-bold">Notes</h1>
                         </div>
-                        <p className="text-muted-foreground ml-14">Capture your thoughts and ideas</p>
+                        <p className="text-muted-foreground ml-14">Capture thoughts, checklists, and ideas</p>
                     </div>
                     <div className="flex gap-2">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <Input placeholder="Search notes..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 w-48 md:w-64" />
                         </div>
-                        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                        <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) setShowPreview(false); }}>
                             <DialogTrigger asChild>
                                 <Button className="gap-2 shadow-lg shadow-primary/20"><Plus className="w-4 h-4" /> New Note</Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                                 <DialogHeader><DialogTitle>Create New Note</DialogTitle></DialogHeader>
-                                <div className="space-y-4 pt-4">
+                                <div className="space-y-3 pt-4">
                                     <Input placeholder="Note title..." value={newNote.title} onChange={(e) => setNewNote({ ...newNote, title: e.target.value })} className="text-lg font-semibold" />
-                                    <div className="grid md:grid-cols-2 gap-4">
-                                        <Textarea placeholder="Write your note here... (Markdown supported)" value={newNote.content} onChange={(e) => setNewNote({ ...newNote, content: e.target.value })} className="min-h-[300px] font-mono text-sm" />
-                                        <div className="border border-border rounded-md p-4 min-h-[300px] prose prose-invert prose-sm overflow-y-auto bg-secondary/30">
-                                            {newNote.content ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{newNote.content}</ReactMarkdown> : <p className="text-muted-foreground italic">Preview will appear here...</p>}
+
+                                    {showPreview ? (
+                                        <div className="border border-border rounded-lg p-4 min-h-[250px] prose prose-invert prose-sm overflow-y-auto bg-secondary/30">
+                                            {newNote.content ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{newNote.content}</ReactMarkdown> : <p className="text-muted-foreground italic">Nothing to preview yet...</p>}
                                         </div>
+                                    ) : (
+                                        <Textarea
+                                            ref={(el) => { newTextareaRef.current = el; }}
+                                            placeholder="Write your note... (Markdown supported, use - [ ] for checklists)"
+                                            value={newNote.content}
+                                            onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
+                                            className="min-h-[250px] font-mono text-sm"
+                                        />
+                                    )}
+
+                                    {/* Toolbar */}
+                                    <div className="flex items-center justify-between">
+                                        <NoteToolbar
+                                            content={newNote.content}
+                                            onContentChange={(c) => setNewNote({ ...newNote, content: c })}
+                                            textareaRef={newTextareaRef as React.RefObject<HTMLTextAreaElement>}
+                                        />
+                                        <Button variant="ghost" size="sm" onClick={() => setShowPreview(!showPreview)}
+                                            className="text-xs gap-1 text-muted-foreground"
+                                        >
+                                            {showPreview ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                                            {showPreview ? "Edit" : "Preview"}
+                                        </Button>
                                     </div>
+
                                     <Input placeholder="Tags (comma separated)" value={newNote.tags} onChange={(e) => setNewNote({ ...newNote, tags: e.target.value })} />
                                     <Button onClick={handleAddNote} className="w-full" disabled={addNote.isPending}>
                                         {addNote.isPending ? "Creating..." : "Create Note"}
@@ -197,13 +366,19 @@ export default function NotesPage() {
                     ) : (
                         filteredNotes.map((note, index) => {
                             const isPinned = pinnedIds.has(note.id);
+                            const checklistStats = note.content ? getChecklistStats(note.content) : null;
+                            const hasChecklist = checklistStats !== null;
+
                             return (
                                 <motion.div
                                     key={note.id}
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: index * 0.04 }}
-                                    className={`glass-card p-5 cursor-pointer transition-all group flex flex-col h-[280px] ${isPinned ? "border-primary/30 bg-primary/5" : "hover:border-primary/30"}`}
+                                    className={cn(
+                                        "glass-card p-5 cursor-pointer transition-all group flex flex-col h-[280px]",
+                                        isPinned ? "border-primary/30 bg-primary/5" : "hover:border-primary/30"
+                                    )}
                                     onClick={() => setSelectedNote(note)}
                                 >
                                     <div className="flex items-start justify-between mb-3">
@@ -225,26 +400,47 @@ export default function NotesPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex-1 overflow-hidden relative mb-3">
-                                        <div className="prose prose-invert prose-sm line-clamp-[8] text-muted-foreground text-sm">
-                                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{note.content || "No content"}</ReactMarkdown>
-                                        </div>
-                                        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
+                                    {/* Content: Show checklist view OR text preview */}
+                                    <div className="flex-1 overflow-hidden relative mb-3" onClick={(e) => { if (hasChecklist) e.stopPropagation(); }}>
+                                        {hasChecklist ? (
+                                            <div className="space-y-1">
+                                                <ChecklistView
+                                                    content={note.content || ""}
+                                                    onToggle={(idx) => handleCardChecklistToggle(note, idx)}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="prose prose-invert prose-sm line-clamp-[8] text-muted-foreground text-sm">
+                                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{note.content || "No content"}</ReactMarkdown>
+                                            </div>
+                                        )}
+                                        <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
                                     </div>
 
                                     <div className="mt-auto">
-                                        {note.tags && (
-                                            <div className="flex flex-wrap gap-1 mb-2">
-                                                {note.tags.split(",").slice(0, 3).map((tag, i) => (
-                                                    <Badge key={i} variant="outline" className={`text-[10px] h-5 border ${getTagColor(tag.trim())}`}>
-                                                        #{tag.trim()}
-                                                    </Badge>
-                                                ))}
-                                                {note.tags.split(",").length > 3 && (
-                                                    <Badge variant="secondary" className="text-[10px] h-5">+{note.tags.split(",").length - 3}</Badge>
-                                                )}
-                                            </div>
-                                        )}
+                                        <div className="flex flex-wrap gap-1 mb-2">
+                                            {/* Checklist progress badge */}
+                                            {checklistStats && (
+                                                <Badge variant="outline" className={cn(
+                                                    "text-[10px] h-5 gap-1",
+                                                    checklistStats.checked === checklistStats.total
+                                                        ? "border-green-500/30 text-green-400"
+                                                        : "border-blue-500/30 text-blue-400"
+                                                )}>
+                                                    <CheckSquare className="w-3 h-3" />
+                                                    {checklistStats.checked}/{checklistStats.total}
+                                                </Badge>
+                                            )}
+                                            {/* Tags */}
+                                            {note.tags && note.tags.split(",").slice(0, 3).map((tag, i) => (
+                                                <Badge key={i} variant="outline" className={`text-[10px] h-5 border ${getTagColor(tag.trim())}`}>
+                                                    #{tag.trim()}
+                                                </Badge>
+                                            ))}
+                                            {note.tags && note.tags.split(",").length > 3 && (
+                                                <Badge variant="secondary" className="text-[10px] h-5">+{note.tags.split(",").length - 3}</Badge>
+                                            )}
+                                        </div>
                                         <div className="flex items-center justify-between">
                                             <p className="text-[10px] text-muted-foreground">
                                                 {new Date(note.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' })}
@@ -259,18 +455,42 @@ export default function NotesPage() {
                 </div>
 
                 {/* ===== EDIT NOTE DIALOG ===== */}
-                <Dialog open={!!selectedNote} onOpenChange={(open) => !open && setSelectedNote(null)}>
+                <Dialog open={!!selectedNote} onOpenChange={(open) => { if (!open) { setSelectedNote(null); setShowEditPreview(false); } }}>
                     <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader><DialogTitle>Edit Note</DialogTitle></DialogHeader>
                         {selectedNote && (
-                            <div className="space-y-4 pt-4">
+                            <div className="space-y-3 pt-4">
                                 <Input placeholder="Note title..." value={selectedNote.title} onChange={(e) => setSelectedNote({ ...selectedNote, title: e.target.value })} className="text-lg font-semibold" />
-                                <div className="grid md:grid-cols-2 gap-4">
-                                    <Textarea placeholder="Write your note here... (Markdown supported)" value={selectedNote.content || ""} onChange={(e) => setSelectedNote({ ...selectedNote, content: e.target.value })} className="min-h-[300px] font-mono text-sm" />
-                                    <div className="border border-border rounded-md p-4 min-h-[300px] prose prose-invert prose-sm overflow-y-auto bg-secondary/30">
+
+                                {showEditPreview ? (
+                                    <div className="border border-border rounded-lg p-4 min-h-[250px] prose prose-invert prose-sm overflow-y-auto bg-secondary/30">
                                         <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedNote.content || ""}</ReactMarkdown>
                                     </div>
+                                ) : (
+                                    <Textarea
+                                        ref={(el) => { editTextareaRef.current = el; }}
+                                        placeholder="Write your note... (Markdown supported, use - [ ] for checklists)"
+                                        value={selectedNote.content || ""}
+                                        onChange={(e) => setSelectedNote({ ...selectedNote, content: e.target.value })}
+                                        className="min-h-[250px] font-mono text-sm"
+                                    />
+                                )}
+
+                                {/* Toolbar */}
+                                <div className="flex items-center justify-between">
+                                    <NoteToolbar
+                                        content={selectedNote.content || ""}
+                                        onContentChange={(c) => setSelectedNote({ ...selectedNote, content: c })}
+                                        textareaRef={editTextareaRef as React.RefObject<HTMLTextAreaElement>}
+                                    />
+                                    <Button variant="ghost" size="sm" onClick={() => setShowEditPreview(!showEditPreview)}
+                                        className="text-xs gap-1 text-muted-foreground"
+                                    >
+                                        {showEditPreview ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                                        {showEditPreview ? "Edit" : "Preview"}
+                                    </Button>
                                 </div>
+
                                 <Input placeholder="Tags (comma separated)" value={selectedNote.tags || ""} onChange={(e) => setSelectedNote({ ...selectedNote, tags: e.target.value })} />
                                 <Button onClick={handleUpdateNote} className="w-full" disabled={updateNote.isPending}>
                                     {updateNote.isPending ? "Saving..." : "Save Changes"}
