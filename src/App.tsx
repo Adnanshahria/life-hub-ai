@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { AIProvider } from "@/contexts/AIContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -17,6 +18,7 @@ import HabitsPage from "./pages/HabitsPage";
 import SettingsPage from "./pages/SettingsPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import WelcomePage from "./pages/WelcomePage";
 import { initDatabase } from "./lib/turso";
 
 const queryClient = new QueryClient();
@@ -52,24 +54,27 @@ const App = () => {
             }}
           />
           <BrowserRouter>
-            <Routes>
-              {/* Public routes */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
+            <AIProvider>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/welcome" element={<WelcomePage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
 
-              {/* Protected routes */}
-              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-              <Route path="/tasks" element={<ProtectedRoute><TasksPage /></ProtectedRoute>} />
-              <Route path="/finance" element={<ProtectedRoute><FinancePage /></ProtectedRoute>} />
-              <Route path="/notes" element={<ProtectedRoute><NotesPage /></ProtectedRoute>} />
-              <Route path="/inventory" element={<ProtectedRoute><InventoryPage /></ProtectedRoute>} />
-              <Route path="/study" element={<ProtectedRoute><StudyPage /></ProtectedRoute>} />
-              <Route path="/habits" element={<ProtectedRoute><HabitsPage /></ProtectedRoute>} />
-              <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+                {/* Protected routes */}
+                <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                <Route path="/tasks" element={<ProtectedRoute><TasksPage /></ProtectedRoute>} />
+                <Route path="/finance" element={<ProtectedRoute><FinancePage /></ProtectedRoute>} />
+                <Route path="/notes" element={<ProtectedRoute><NotesPage /></ProtectedRoute>} />
+                <Route path="/inventory" element={<ProtectedRoute><InventoryPage /></ProtectedRoute>} />
+                <Route path="/study" element={<ProtectedRoute><StudyPage /></ProtectedRoute>} />
+                <Route path="/habits" element={<ProtectedRoute><HabitsPage /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
 
-              {/* Catch-all */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+                {/* Catch-all */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AIProvider>
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>

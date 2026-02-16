@@ -21,6 +21,7 @@ import { useNotes } from "@/hooks/useNotes";
 import { useHabits } from "@/hooks/useHabits";
 import { useInventory } from "@/hooks/useInventory";
 import { useStudy } from "@/hooks/useStudy";
+import { useAI } from "@/contexts/AIContext";
 
 // Render inline markdown formatting: **bold**, *italic*
 function renderFormattedText(text: string): React.ReactNode {
@@ -54,7 +55,7 @@ function renderFormattedText(text: string): React.ReactNode {
 }
 
 export function AIChatInterface() {
-    const [isOpen, setIsOpen] = useState(false);
+    const { isChatOpen: isOpen, setChatOpen: setIsOpen, bubbleMessage, bubbleAction, pageContext } = useAI();
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -101,7 +102,7 @@ export function AIChatInterface() {
         const handleKeyDown = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key === "j") {
                 e.preventDefault();
-                setIsOpen((prev) => !prev);
+                setIsOpen(!isOpen);
             }
             if (e.key === "Escape" && isOpen) {
                 setIsOpen(false);
@@ -486,6 +487,7 @@ export function AIChatInterface() {
 ⏰ Current Time: ${hour}:${String(minute).padStart(2, '0')} (${timePeriod})
 📅 Day: ${dayOfWeek}, ${now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
 📍 Current Page: ${window.location.pathname}
+📝 Page Context: ${pageContext}
 
 ═══ TASKS (${activeTasks.length} active) ═══
 🔴 OVERDUE (${overdueTasks.length}): ${overdueTasks.map(t => `"${t.title}" (was due ${t.due_date})`).join(', ') || 'None'}
@@ -518,15 +520,23 @@ ${items?.map(i => `- ${i.item_name} (x${i.quantity}) [${i.category || 'uncategor
 `;
 
             // Process with history and context
-            const result = await processUserMessage(userMsg, messages.filter(m => m.role !== "system"), contextString);
+            const results = await processUserMessage(userMsg, messages.filter(m => m.role !== "system"), contextString);
 
-            // Execute any detected action
-            if (!["CHAT", "UNKNOWN", "GET_SUMMARY", "ANALYZE_BUDGET", "CLARIFY"].includes(result.action)) {
-                await executeIntent(result);
-                toast.success("Action executed successfully");
+            // Execute all detected actions (supports batch)
+            let actionsExecuted = 0;
+            for (const result of results) {
+                if (!["CHAT", "UNKNOWN", "GET_SUMMARY", "ANALYZE_BUDGET", "CLARIFY"].includes(result.action)) {
+                    await executeIntent(result);
+                    actionsExecuted++;
+                }
+            }
+            if (actionsExecuted > 0) {
+                toast.success(actionsExecuted > 1 ? `${actionsExecuted} actions executed!` : "Action executed successfully");
             }
 
-            setMessages(prev => [...prev, { role: "assistant", content: result.response_text }]);
+            // Use the response text from the first intent (carries the combined summary)
+            const responseText = results[0]?.response_text || "Done!";
+            setMessages(prev => [...prev, { role: "assistant", content: responseText }]);
         } catch (error) {
             console.error("AI Chat Error:", error);
             const errorMsg = error instanceof Error ? error.message : "Unknown error";
@@ -550,6 +560,29 @@ ${items?.map(i => `- ${i.item_name} (x${i.quantity}) [${i.category || 'uncategor
                     <Search className="w-6 h-6 text-foreground" />
                 </motion.button>
             )}
+
+            {/* Smart Bubble */}
+            <AnimatePresence>
+                {!isOpen && bubbleMessage && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                        className="fixed bottom-36 md:bottom-24 right-4 md:right-6 z-50 max-w-[250px] pointer-events-auto"
+                    >
+                        <div
+                            className="bg-primary text-primary-foreground p-4 rounded-2xl rounded-tr-sm shadow-xl cursor-pointer hover:bg-primary/90 transition-colors relative"
+                            onClick={() => {
+                                if (bubbleAction) bubbleAction();
+                                setIsOpen(true);
+                            }}
+                        >
+                            <div className="text-sm font-medium">{bubbleMessage}</div>
+                            <div className="absolute -bottom-2 -right-2 w-4 h-4 bg-primary rotate-45 transform origin-center" />
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Floating Trigger Button for AI */}
             {!isOpen && (

@@ -38,7 +38,9 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useInventory, InventoryItem } from "@/hooks/useInventory";
 import { useTasks } from "@/hooks/useTasks";
+import { SmartFillButton } from "@/components/ai/SmartFillButton";
 import { useNavigate } from "react-router-dom";
+import { useAI } from "@/contexts/AIContext";
 
 const CATEGORIES = [
     "Electronics", "Furniture", "Clothing", "Tools", "Vehicles",
@@ -48,9 +50,21 @@ const CATEGORIES = [
 export default function InventoryPage() {
     const { items, totalValue, isLoading, addItem, updateItem, deleteItem, markAsSold } = useInventory();
     const navigate = useNavigate(); // For redirecting to tasks
+    const { setPageContext, showBubble } = useAI();
+
+    // Set Page Context
+
+
     const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
     const [searchTerm, setSearchTerm] = useState("");
     const [categoryFilter, setCategoryFilter] = useState<string>("all");
+
+    // Set Page Context
+    useMemo(() => {
+        setPageContext(`User is on Inventory Page. 
+        Total Items: ${items.length}, Total Value: ৳${totalValue.toLocaleString()}.
+        Viewing: ${viewMode} mode.`);
+    }, [items.length, totalValue, viewMode, setPageContext]);
 
     // Dialog States
     const [isAddOpen, setIsAddOpen] = useState(false);
@@ -143,6 +157,13 @@ export default function InventoryPage() {
             warranty_expiry: newItem.warranty_expiry || undefined,
             record_purchase: newItem.record_purchase, // Logic handled in hook
         });
+
+        showBubble(
+            newItem.record_purchase
+                ? `Added ${newItem.item_name} and recorded expense of ৳${newItem.cost}!`
+                : `Added ${newItem.item_name} to your inventory.`
+        );
+
         setNewItem({
             item_name: "", category: "Other", quantity: 1, cost: "",
             purchase_date: new Date().toISOString().split('T')[0], store: "",
@@ -211,7 +232,23 @@ export default function InventoryPage() {
                                 </DialogTrigger>
                                 <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
                                     <DialogHeader>
-                                        <DialogTitle>Add New Item</DialogTitle>
+                                        <DialogTitle className="flex justify-between items-center">
+                                            Add New Item
+                                            <SmartFillButton
+                                                onFill={(data: any) => setNewItem(prev => ({ ...prev, ...data }))}
+                                                schemaDescription={`
+                                                    {
+                                                        "item_name": "string (name of product)",
+                                                        "category": "string (one of: Electronics, Furniture, Clothing, Tools, Vehicles, Books, Home, Appliances, Other)",
+                                                        "cost": "number (price in BDT)",
+                                                        "store": "string (where it was bought)",
+                                                        "notes": "string (any extra details)",
+                                                        "quantity": "number"
+                                                    }
+                                                `}
+                                                exampleText="Bought a Samsung Monitor for 25000tk from Ryans Computers"
+                                            />
+                                        </DialogTitle>
                                         <DialogDescription>Add a new item to your inventory with details like category, cost, and warranty.</DialogDescription>
                                     </DialogHeader>
                                     <div className="space-y-4 pt-4">

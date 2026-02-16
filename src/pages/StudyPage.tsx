@@ -19,8 +19,12 @@ import {
 } from "@/components/ui/select";
 import { useStudy, StudyChapter } from "@/hooks/useStudy";
 import { useTaskIntegration } from "@/hooks/useTaskIntegration";
+import { SmartFillButton } from "@/components/ai/SmartFillButton";
+import { StudyAnalytics } from "@/components/study/StudyAnalytics";
 import { getStudyTips } from "@/lib/groq";
 import { useToast } from "@/hooks/use-toast";
+import { useAI } from "@/contexts/AIContext";
+import { useHabits } from "@/hooks/useHabits";
 
 // Color palette for subjects
 const SUBJECT_COLORS = [
@@ -58,6 +62,11 @@ export default function StudyPage() {
     const { chapters, subjects, chaptersBySubject, subjectProgress, isLoading, addChapter, updateProgress, deleteChapter } = useStudy();
     const { createStudyTask } = useTaskIntegration();
     const { toast } = useToast();
+    const { setPageContext, showBubble, setChatOpen } = useAI();
+    const { addHabit, habits } = useHabits();
+
+    // Set Page Context
+
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
@@ -84,6 +93,8 @@ export default function StudyPage() {
         localStorage.setItem("lifeos-study-sessions", sessionsCompleted.toString());
     }, [sessionsCompleted]);
 
+
+
     useEffect(() => {
         if (timerActive && timerTime > 0) {
             timerRef.current = setInterval(() => setTimerTime((prev) => prev - 1), 1000);
@@ -92,9 +103,25 @@ export default function StudyPage() {
             if (timerRef.current) clearInterval(timerRef.current);
             setSessionsCompleted(prev => prev + 1);
             toast({ title: "🎉 Session Complete!", description: "Great focus! Take a short break." });
+
+            // Trigger Smart Bubble
+            showBubble(
+                "Great session! 🧠 Want to log this as a 'Study' habit?",
+                () => {
+                    const studyHabit = habits.find(h => h.habit_name.toLowerCase().includes("study"));
+                    if (studyHabit) {
+                        // If habit exists, ask to complete it via chat
+                        setChatOpen(true);
+                        // Ideally we'd auto-complete, but for now let's open chat with context
+                    } else {
+                        // Open chat to add habit
+                        setChatOpen(true);
+                    }
+                }
+            );
         }
         return () => { if (timerRef.current) clearInterval(timerRef.current); };
-    }, [timerActive, timerTime, toast]);
+    }, [timerActive, timerTime, toast, showBubble, setChatOpen, habits]);
 
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
@@ -110,6 +137,14 @@ export default function StudyPage() {
     const completedChapters = chapters.filter(c => c.status === "completed").length;
     const inProgressChapters = chapters.filter(c => c.status === "in-progress").length;
     const overallProgress = totalChapters > 0 ? Math.round(chapters.reduce((sum, c) => sum + c.progress_percentage, 0) / totalChapters) : 0;
+
+    // Set Page Context
+    useEffect(() => {
+        setPageContext(`User is on Study Page. 
+        Active Timer: ${timerActive ? "Yes" : "No"} (${formatTime(timerTime)} remaining).
+        Total Chapters: ${totalChapters}, Completed: ${completedChapters}.
+        Current Focus Subject: ${activeSubject || "None"}.`);
+    }, [timerActive, timerTime, totalChapters, completedChapters, activeSubject, setPageContext]);
 
     const getSubjectColor = (index: number) => SUBJECT_COLORS[index % SUBJECT_COLORS.length];
 
@@ -219,6 +254,9 @@ export default function StudyPage() {
                         </DialogContent>
                     </Dialog>
                 </div>
+
+                {/* ===== ANALYTICS DASHBOARD ===== */}
+                <StudyAnalytics chapters={chapters} />
 
                 {/* ===== STATS GRID ===== */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -432,6 +470,9 @@ export default function StudyPage() {
                                                         <Badge variant={chapter.status === "completed" ? "default" : "secondary"} className={`text-[10px] px-2 ${chapter.status === "completed" ? "bg-green-500/80" : ""}`}>
                                                             {chapter.status === "not-started" ? "New" : chapter.status === "in-progress" ? "Active" : "Done"}
                                                         </Badge>
+                                                        {chapter.review_due_at && new Date(chapter.review_due_at) <= new Date() && (
+                                                            <Badge variant="destructive" className="text-[10px] px-2 animate-pulse">Review Due</Badge>
+                                                        )}
                                                         <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => deleteChapter.mutate(chapter.id)}>
                                                             <Trash2 className="w-3.5 h-3.5" />
                                                         </Button>
@@ -442,6 +483,14 @@ export default function StudyPage() {
                                                     <span className={`text-sm font-mono font-medium w-10 text-right ${getStatusColor(chapter.progress_percentage)}`}>
                                                         {chapter.progress_percentage}%
                                                     </span>
+                                                </div>
+
+                                                {/* SRS Grading Buttons */}
+                                                <div className="flex gap-2 mt-3 pt-2 border-t border-border/50 justify-end">
+                                                    <span className="text-[10px] text-muted-foreground mr-auto flex items-center">Rate Mastery:</span>
+                                                    <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={() => updateProgress.mutate({ id: chapter.id, progress_percentage: 100, mastery_rating: 1 })}>Hard (1d)</Button>
+                                                    <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={() => updateProgress.mutate({ id: chapter.id, progress_percentage: 100, mastery_rating: 3 })}>Good (1w)</Button>
+                                                    <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={() => updateProgress.mutate({ id: chapter.id, progress_percentage: 100, mastery_rating: 5 })}>Easy (1m)</Button>
                                                 </div>
                                             </motion.div>
                                         ))}

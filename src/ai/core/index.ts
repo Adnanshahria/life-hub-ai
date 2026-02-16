@@ -52,12 +52,12 @@ ${RESPONSE_EXAMPLES}`;
     return prompt;
 }
 
-// Process user message through Groq and return intent
+// Process user message through Groq and return intents (supports batch)
 export async function processUserMessage(
     userMessage: string,
     history: ChatMessage[] = [],
     context?: string
-): Promise<AIIntent> {
+): Promise<AIIntent[]> {
     const recentHistory = history.slice(-10);
     const systemPrompt = buildSystemPrompt(context);
 
@@ -72,11 +72,11 @@ export async function processUserMessage(
         return parseAIResponse(content);
     } catch (error) {
         console.error("AI processing error:", error);
-        return {
+        return [{
             action: "CHAT",
             data: {},
             response_text: "Oops! Something went wrong. Mind trying again? 🙏",
-        };
+        }];
     }
 }
 
