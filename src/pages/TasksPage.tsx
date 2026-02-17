@@ -483,7 +483,7 @@ export default function TasksPage() {
 
                     {/* Single-row controls */}
                     {/* Single-row controls - Top Toolbar */}
-                    <div className="top-toolbar mb-4">
+                    <div className="top-toolbar">
 
                         {/* Tab Dropdown */}
                         <Select value={tabView} onValueChange={(v) => setTabView(v as typeof tabView)}>

@@ -148,7 +148,7 @@ export default function StudyPage() {
                         <p className="text-muted-foreground text-sm">Track your learning progress</p>
                     </div>
 
-                    <div className="top-toolbar mb-4">
+                    <div className="top-toolbar">
                         {/* Subject Filter */}
                         <Select value={activeSubject} onValueChange={setActiveSubject}>
                             <SelectTrigger className="w-auto min-w-[120px]">

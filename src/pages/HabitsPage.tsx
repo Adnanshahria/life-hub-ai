@@ -167,7 +167,7 @@ export default function HabitsPage() {
                         <h1 className="text-3xl font-bold">Habits</h1>
                     </div>
 
-                    <div className="top-toolbar mb-4">
+                    <div className="top-toolbar">
                         {/* Category Filter */}
                         <Select value={activeCategory} onValueChange={setActiveCategory}>
                             <SelectTrigger className="w-auto min-w-[100px]">

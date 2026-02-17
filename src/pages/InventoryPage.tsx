@@ -221,7 +221,7 @@ export default function InventoryPage() {
                             <p className="text-muted-foreground text-sm">Manage your assets and belongings</p>
                         </div>
 
-                        <div className="top-toolbar mb-4 w-full">
+                        <div className="top-toolbar">
                             {/* View Toggle */}
                             <div className="flex bg-secondary rounded-lg p-0.5 shrink-0">
                                 <button

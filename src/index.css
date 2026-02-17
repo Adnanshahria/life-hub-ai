@@ -281,25 +281,37 @@
     @apply bg-primary/10 text-primary;
   }
 
+  /* Floating per-page top toolbar — mirrors bottom nav style on mobile */
+  /* Common styles */
   .top-toolbar {
-    @apply fixed top-6 z-40 flex items-center justify-center gap-1.5 sm:gap-3 flex-wrap w-fit max-w-[95vw] transition-all duration-300;
-    left: 50%;
-    transform: translateX(-50%);
-    background: hsl(var(--card) / 0.95);
-    backdrop-filter: blur(24px) saturate(1.8);
-    -webkit-backdrop-filter: blur(24px) saturate(1.8);
-    border: 2px solid hsl(var(--border));
-    border-top-color: hsl(var(--foreground) / 0.05);
-    border-radius: 50px;
-    padding: 6px 16px;
-    box-shadow:
-      0 10px 40px -10px rgba(0, 0, 0, 0.2),
-      0 0 20px -5px rgba(0, 0, 0, 0.1);
+    @apply flex items-center gap-1.5 sm:gap-3 flex-wrap transition-all duration-300;
   }
 
+  /* Mobile/Tablet: Fixed floating pill */
+  @media (max-width: 767px) {
+    .top-toolbar {
+      @apply fixed top-6 z-40 justify-center w-fit max-w-[95vw];
+      left: 50%;
+      transform: translateX(-50%);
+      background: hsl(var(--card) / 0.95);
+      backdrop-filter: blur(24px) saturate(1.8);
+      -webkit-backdrop-filter: blur(24px) saturate(1.8);
+      border: 2px solid hsl(var(--border));
+      border-top-color: hsl(var(--foreground) / 0.05);
+      border-radius: 50px;
+      padding: 6px 16px;
+      box-shadow:
+        0 10px 40px -10px rgba(0, 0, 0, 0.2),
+        0 0 20px -5px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  /* Desktop: Static header component */
   @media (min-width: 768px) {
     .top-toolbar {
-      left: calc(50% + 8rem);
+      @apply static w-auto bg-transparent border-none p-0 shadow-none justify-end;
+      transform: none;
+      backdrop-filter: none;
     }
   }
 

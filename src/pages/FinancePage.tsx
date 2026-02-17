@@ -432,7 +432,7 @@ export default function FinancePage() {
                     </div>
 
                     {/* Single-row controls */}
-                    <div className="top-toolbar mb-4">
+                    <div className="top-toolbar">
 
                         {/* Default / Special dropdown */}
                         <Select value={financeViewMode} onValueChange={(v) => setFinanceViewMode(v as typeof financeViewMode)}>

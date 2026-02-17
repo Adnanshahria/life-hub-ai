@@ -705,7 +705,7 @@ export default function NotesPage() {
                         </div>
                         <p className="text-sm text-muted-foreground ml-14">Capture thoughts and checklists seamlessly</p>
                     </div>
-                    <div className="flex gap-2 w-full sm:w-auto">
+                    <div className="top-toolbar w-full sm:w-auto">
                         <div className="relative flex-1 sm:flex-initial">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <Input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 w-full sm:w-48 md:w-64 glass-input" />
