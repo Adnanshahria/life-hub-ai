@@ -1,5 +1,6 @@
 import sharp from 'sharp';
-import { readFileSync } from 'fs';
+import pngToIco from 'png-to-ico';
+import { readFileSync, writeFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -9,8 +10,8 @@ const svgPath = resolve(publicDir, 'logo.svg');
 const svgBuffer = readFileSync(svgPath);
 
 const sizes = [
-    { name: 'favicon-32.png', size: 32 },
     { name: 'favicon-16.png', size: 16 },
+    { name: 'favicon-32.png', size: 32 },
     { name: 'logo-192.png', size: 192 },
     { name: 'logo-512.png', size: 512 },
     { name: 'apple-touch-icon.png', size: 180 },
@@ -24,11 +25,10 @@ for (const { name, size } of sizes) {
     console.log(`✅ Generated ${name} (${size}x${size})`);
 }
 
-// Generate ICO-style favicon (just a 32x32 PNG named favicon.ico — browsers accept it)
-await sharp(svgBuffer)
-    .resize(32, 32)
-    .png()
-    .toFile(resolve(publicDir, 'favicon.ico'));
-console.log('✅ Generated favicon.ico (32x32 PNG)');
+// Generate proper ICO file from the 32x32 PNG
+const png32Path = resolve(publicDir, 'favicon-32.png');
+const icoBuffer = await pngToIco(png32Path);
+writeFileSync(resolve(publicDir, 'favicon.ico'), icoBuffer);
+console.log('✅ Generated favicon.ico (proper ICO format)');
 
 console.log('\n🎉 All icons generated from logo.svg!');
