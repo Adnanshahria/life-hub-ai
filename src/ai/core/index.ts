@@ -1,7 +1,7 @@
 // AI Core - Main orchestrator for all AI modules
 
 import { ChatMessage, AIIntent, AllHooks } from './types';
-import { NOVA_PERSONALITY, RESPONSE_EXAMPLES } from './personality';
+import { ORBIT_PERSONALITY, RESPONSE_EXAMPLES } from './personality';
 import { callGroqAPI, parseAIResponse } from './groq-client';
 
 // Import all modules
@@ -36,7 +36,7 @@ function buildSystemPrompt(context?: string): string {
         `NAVIGATION: NAVIGATE`,
     ].join('\n');
 
-    let prompt = `${NOVA_PERSONALITY}
+    let prompt = `${ORBIT_PERSONALITY}
 
 Available actions:
 ${allActions}

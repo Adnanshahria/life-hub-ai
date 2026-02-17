@@ -8,24 +8,24 @@
 
 @layer base {
   :root {
-    /* Light mode - clean whites with cyan accent */
-    --background: 220 20% 97%;
-    --foreground: 220 25% 10%;
+    /* Light mode - soft sky-blue tinted */
+    --background: 204 60% 96%;
+    --foreground: 210 30% 12%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 25% 10%;
+    --card: 204 50% 98%;
+    --card-foreground: 210 30% 12%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 10%;
+    --popover: 204 50% 98%;
+    --popover-foreground: 210 30% 12%;
 
     --primary: 187 85% 43%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 15% 92%;
-    --secondary-foreground: 220 25% 20%;
+    --secondary: 204 35% 91%;
+    --secondary-foreground: 210 25% 22%;
 
-    --muted: 220 15% 95%;
-    --muted-foreground: 220 10% 45%;
+    --muted: 204 30% 93%;
+    --muted-foreground: 210 15% 40%;
 
     --accent: 187 85% 43%;
     --accent-foreground: 0 0% 100%;
@@ -39,25 +39,25 @@
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 220 15% 88%;
-    --input: 220 15% 88%;
+    --border: 204 30% 86%;
+    --input: 204 30% 86%;
     --ring: 187 85% 43%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 25% 20%;
+    --sidebar-background: 204 50% 98%;
+    --sidebar-foreground: 210 25% 22%;
     --sidebar-primary: 187 85% 43%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 95%;
-    --sidebar-accent-foreground: 220 25% 20%;
-    --sidebar-border: 220 15% 88%;
+    --sidebar-accent: 204 30% 93%;
+    --sidebar-accent-foreground: 210 25% 22%;
+    --sidebar-border: 204 30% 86%;
     --sidebar-ring: 187 85% 43%;
 
     /* Custom LifeOS tokens */
     --glow-primary: 187 85% 53%;
-    --glass-bg: 0 0% 100% / 0.7;
-    --glass-border: 0 0% 100% / 0.3;
+    --glass-bg: 204 50% 99% / 0.75;
+    --glass-border: 204 40% 90% / 0.5;
     --gradient-start: 187 85% 43%;
     --gradient-end: 199 89% 48%;
   }
@@ -354,5 +354,23 @@
     50% {
       transform: translateY(-10px);
     }
+  }
+
+  /* Ice / Frost utilities */
+  .text-gradient-ice {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #38bdf8, #22d3ee, #818cf8);
+  }
+
+  .frost-card {
+    transition: box-shadow 0.3s ease;
+  }
+
+  .frost-card:hover {
+    box-shadow:
+      0 8px 32px -4px rgba(0, 0, 0, 0.15),
+      0 0 0 1px rgba(56, 189, 248, 0.12),
+      inset 0 1px 0 0 rgba(186, 230, 253, 0.1),
+      0 0 50px -15px rgba(56, 189, 248, 0.2);
   }
 }

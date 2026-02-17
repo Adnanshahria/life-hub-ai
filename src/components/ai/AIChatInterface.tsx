@@ -652,7 +652,7 @@ ${items?.map(i => `- ${i.item_name} (x${i.quantity}) [${i.category || 'uncategor
                                             <Bot className="w-5 h-5 text-primary" />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-sm">Nova</h3>
+                                            <h3 className="font-bold text-sm">Orbit AI</h3>
                                             <p className="text-[10px] text-muted-foreground">Your friendly AI assistant</p>
                                         </div>
                                     </div>

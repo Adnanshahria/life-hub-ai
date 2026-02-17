@@ -1,10 +1,10 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SEO } from "@/components/seo/SEO";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Wallet, ListTodo, Target, TrendingUp, CalendarDays, PiggyBank,
   BookOpen, Flame, BarChart3, Activity, ArrowUpRight, ArrowDownRight,
-  GraduationCap, CheckCircle2, Clock, Zap, Brain
+  GraduationCap, CheckCircle2, Clock, Zap, Brain, Sparkles, Loader2, AlertCircle, Lightbulb
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ import { useStudy } from "@/hooks/useStudy";
 import { useNotes } from "@/hooks/useNotes";
 import { useAuth } from "@/contexts/AuthContext";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { callGroqAPI } from "@/ai/core/groq-client";
 
 // Color palette
 const CATEGORY_COLORS: Record<string, string> = {
@@ -111,6 +112,84 @@ const Index = () => {
   // Recent transactions
   const recentTransactions = (regularEntries || []).slice(0, 5);
 
+  // ===== AI SUMMARY =====
+  const [aiSummary, setAiSummary] = useState<{ summary: string; alerts: string[]; tips: string[] } | null>(null);
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+
+  // Load cached summary from localStorage
+  useEffect(() => {
+    const cached = localStorage.getItem("lifeos-daily-summary");
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        // Only use cache if from today
+        if (parsed.date === todayStr) {
+          setAiSummary(parsed.data);
+        }
+      } catch { }
+    }
+  }, []);
+
+  const generateAISummary = async () => {
+    setIsSummaryLoading(true);
+    setSummaryError(null);
+    try {
+      const contextPrompt = `You are an intelligent daily briefing AI for a personal life management app called LifeOS. Analyze ALL of the user's data below and generate a concise, actionable daily summary.
+
+Today's Date: ${today}
+Time: ${new Date().toLocaleTimeString()}
+
+=== TASKS (${allTasks.length} total, ${completedTasks.length} completed, ${pendingTasks.length} pending) ===
+High Priority: ${highPriorityTasks.map(t => t.title).join(', ') || 'None'}
+Pending Tasks: ${pendingTasks.slice(0, 8).map(t => `"${t.title}" [${t.priority}] due:${t.due_date || 'none'}`).join('; ') || 'None'}
+Completed Today: ${completedTasks.filter(t => t.due_date?.startsWith(todayStr)).map(t => t.title).join(', ') || 'None'}
+
+=== HABITS (${allHabits.length} total, ${habitsCompletedToday}/${allHabits.length} done today) ===
+${allHabits.map(h => `${h.habit_name}: streak=${h.streak_count}, done_today=${h.last_completed_date?.startsWith(todayStr) ? 'yes' : 'no'}`).join('\n') || 'No habits'}
+
+=== FINANCE ===
+Balance: ৳${balance}
+This Month Spending: ৳${thisMonthTotal}
+Budget Remaining: ৳${budgetRemaining}
+Total Savings: ৳${totalSavings}
+Top Expense Categories: ${expenseChartData.slice(0, 3).map(c => `${c.name}=৳${c.value}`).join(', ') || 'None'}
+
+=== STUDY (${studyProgress}% overall) ===
+${(subjectProgress || []).slice(0, 5).map(s => `${s.subject}: ${s.progress}%`).join(', ') || 'No study data'}
+
+=== NOTES (${(notes || []).length} total) ===
+${(notes || []).slice(0, 5).map(n => `"${n.title}"`).join(', ') || 'No notes'}
+
+Respond in this EXACT JSON format:
+{
+  "summary": "A 2-3 sentence overview of the user's day so far and what they should focus on",
+  "alerts": ["important warnings or overdue items - max 3 items"],
+  "tips": ["actionable suggestions based on their data - max 3 items"]
+}`;
+
+      const response = await callGroqAPI([
+        { role: "system", content: contextPrompt },
+        { role: "user", content: "Generate my daily AI briefing summary." }
+      ], { temperature: 0.5, maxTokens: 512 });
+
+      const parsed = JSON.parse(response);
+      const summaryData = {
+        summary: parsed.summary || "No summary available.",
+        alerts: parsed.alerts || [],
+        tips: parsed.tips || [],
+      };
+      setAiSummary(summaryData);
+      // Cache for today
+      localStorage.setItem("lifeos-daily-summary", JSON.stringify({ date: todayStr, data: summaryData }));
+    } catch (err) {
+      console.error("AI Summary error:", err);
+      setSummaryError("Failed to generate summary. Check your API key.");
+    } finally {
+      setIsSummaryLoading(false);
+    }
+  };
+
   return (
     <AppLayout>
       <SEO title="Dashboard" description="Overview of your tasks, finance, habits, and study progress." />
@@ -157,104 +236,114 @@ const Index = () => {
       {/* ===== MAIN GRID ===== */}
       <div className="grid lg:grid-cols-3 gap-4 mb-6">
 
-        {/* === LEFT: Activity & Tasks === */}
+        {/* === LEFT: AI Summary === */}
         <div className="lg:col-span-2 space-y-4">
 
-          {/* Activity Overview */}
+          {/* AI Daily Summary */}
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            className="glass-card p-5 border border-white/5"
+            className="glass-card p-5 border border-white/5 relative overflow-hidden"
           >
-            <div className="flex items-center gap-2 mb-4">
-              <Activity className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold">Activity Overview</h3>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { label: "Tasks Done", value: completedTasks.length, total: allTasks.length, color: "#3b82f6", icon: CheckCircle2 },
-                { label: "Habits Today", value: habitsCompletedToday, total: allHabits.length, color: "#10b981", icon: Flame },
-                { label: "Study Progress", value: studyProgress, total: 100, color: "#8b5cf6", icon: GraduationCap, suffix: "%" },
-                { label: "Notes Written", value: (notes || []).length, total: null, color: "#f59e0b", icon: BookOpen },
-              ].map((item, i) => (
-                <div key={item.label} className="flex items-center gap-3">
-                  <div className="relative">
-                    <MiniRing progress={item.total ? (item.value / item.total) * 100 : 100} color={item.color} />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <item.icon className="w-4 h-4" style={{ color: item.color }} />
-                    </div>
+            {/* Subtle gradient background */}
+            <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full blur-[60px] opacity-30" style={{ background: "linear-gradient(135deg, #38bdf8, #6366f1)" }} />
+
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-sky-400/20 to-indigo-500/20">
+                    <Brain className="w-5 h-5 text-sky-400" />
                   </div>
                   <div>
-                    <p className="text-lg font-bold">{item.value}{item.suffix || ""}</p>
-                    <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                    <h3 className="font-semibold">Orbit AI Summary</h3>
+                    <p className="text-[10px] text-muted-foreground">Your intelligent daily briefing</p>
                   </div>
                 </div>
-              ))}
+                <button
+                  onClick={generateAISummary}
+                  disabled={isSummaryLoading}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-sky-400 to-indigo-500 text-white text-sm font-medium hover:opacity-90 transition-all disabled:opacity-60 shadow-lg shadow-sky-500/20"
+                >
+                  {isSummaryLoading ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing...</>
+                  ) : (
+                    <><Sparkles className="w-4 h-4" /> {aiSummary ? 'Refresh' : 'Generate Summary'}</>
+                  )}
+                </button>
+              </div>
+
+              <AnimatePresence mode="wait">
+                {summaryError && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm"
+                  >
+                    {summaryError}
+                  </motion.div>
+                )}
+
+                {aiSummary ? (
+                  <motion.div
+                    key="summary"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="space-y-4"
+                  >
+                    {/* Summary text */}
+                    <p className="text-sm text-muted-foreground leading-relaxed">{aiSummary.summary}</p>
+
+                    <div className="grid md:grid-cols-2 gap-3">
+                      {/* Alerts */}
+                      {aiSummary.alerts.length > 0 && (
+                        <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/15">
+                          <div className="flex items-center gap-1.5 mb-2">
+                            <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
+                            <span className="text-xs font-semibold text-amber-400">Attention</span>
+                          </div>
+                          <ul className="space-y-1">
+                            {aiSummary.alerts.map((alert, i) => (
+                              <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                                <span className="w-1 h-1 rounded-full bg-amber-400 mt-1.5 shrink-0" />
+                                {alert}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Tips */}
+                      {aiSummary.tips.length > 0 && (
+                        <div className="p-3 rounded-lg bg-sky-500/5 border border-sky-500/15">
+                          <div className="flex items-center gap-1.5 mb-2">
+                            <Lightbulb className="w-3.5 h-3.5 text-sky-400" />
+                            <span className="text-xs font-semibold text-sky-400">Suggestions</span>
+                          </div>
+                          <ul className="space-y-1">
+                            {aiSummary.tips.map((tip, i) => (
+                              <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                                <span className="w-1 h-1 rounded-full bg-sky-400 mt-1.5 shrink-0" />
+                                {tip}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                ) : !isSummaryLoading && !summaryError && (
+                  <motion.div
+                    key="placeholder"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex flex-col items-center justify-center py-6 text-center"
+                  >
+                    <Sparkles className="w-10 h-10 text-muted-foreground/30 mb-2" />
+                    <p className="text-sm text-muted-foreground">Click "Generate Summary" to get your AI-powered daily briefing</p>
+                    <p className="text-[10px] text-muted-foreground/60 mt-1">Orbit will analyze your tasks, habits, finances, and more</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
-
-          {/* Task Progress + Habits Row */}
-          <div className="grid md:grid-cols-2 gap-4">
-            {/* Today's Tasks */}
-            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
-              className="glass-card p-5 border border-white/5"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <ListTodo className="w-4 h-4 text-blue-400" />
-                  <h3 className="font-semibold text-sm">Recent Tasks</h3>
-                </div>
-                <Badge variant="secondary" className="text-[10px]">{pendingTasks.length} pending</Badge>
-              </div>
-              <div className="space-y-2">
-                {pendingTasks.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">All clear! 🎉</p>
-                ) : (
-                  pendingTasks.slice(0, 5).map((task, i) => (
-                    <div key={task.id} className="flex items-center gap-2 p-2 rounded-lg bg-secondary/30">
-                      <div className={`w-2 h-2 rounded-full shrink-0 ${task.priority === "high" ? "bg-red-400" : task.priority === "medium" ? "bg-amber-400" : "bg-muted-foreground/40"}`} />
-                      <span className="text-sm truncate flex-1">{task.title}</span>
-                      {task.due_date && <span className="text-[10px] text-muted-foreground shrink-0">{new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>}
-                    </div>
-                  ))
-                )}
-              </div>
-            </motion.div>
-
-            {/* Habits Summary */}
-            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-              className="glass-card p-5 border border-white/5"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Flame className="w-4 h-4 text-orange-400" />
-                  <h3 className="font-semibold text-sm">Habits</h3>
-                </div>
-                <Badge variant="secondary" className="text-[10px]">{habitCompletionRate}% today</Badge>
-              </div>
-              <div className="space-y-2">
-                {allHabits.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">No habits yet</p>
-                ) : (
-                  allHabits.slice(0, 5).map((habit) => {
-                    const done = habit.last_completed_date?.split("T")[0] === todayStr;
-                    return (
-                      <div key={habit.id} className="flex items-center gap-2 p-2 rounded-lg bg-secondary/30">
-                        <div className={`w-5 h-5 rounded flex items-center justify-center shrink-0 ${done ? "bg-green-500 text-white" : "bg-secondary"}`}>
-                          {done && <CheckCircle2 className="w-3 h-3" />}
-                        </div>
-                        <span className={`text-sm truncate flex-1 ${done ? "text-muted-foreground line-through" : ""}`}>{habit.habit_name}</span>
-                        {habit.streak_count > 0 && (
-                          <div className="flex items-center gap-0.5 text-orange-400">
-                            <Flame className="w-3 h-3 fill-current" />
-                            <span className="text-[10px] font-medium">{habit.streak_count}</span>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </motion.div>
-          </div>
         </div>
 
         {/* === RIGHT COLUMN === */}
@@ -359,6 +448,106 @@ const Index = () => {
                     </span>
                   </div>
                 ))
+              )}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* ===== BOTTOM ROW: Activity Overview + Tasks + Habits ===== */}
+      <div className="space-y-4 mb-6">
+
+        {/* Activity Overview - Full Width */}
+        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
+          className="glass-card p-5 border border-white/5"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <Activity className="w-5 h-5 text-primary" />
+            <h3 className="font-semibold">Activity Overview</h3>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { label: "Tasks Done", value: completedTasks.length, total: allTasks.length, color: "#3b82f6", icon: CheckCircle2 },
+              { label: "Habits Today", value: habitsCompletedToday, total: allHabits.length, color: "#10b981", icon: Flame },
+              { label: "Study Progress", value: studyProgress, total: 100, color: "#8b5cf6", icon: GraduationCap, suffix: "%" },
+              { label: "Notes Written", value: (notes || []).length, total: null, color: "#f59e0b", icon: BookOpen },
+            ].map((item, i) => (
+              <div key={item.label} className="flex items-center gap-3">
+                <div className="relative">
+                  <MiniRing progress={item.total ? (item.value / item.total) * 100 : 100} color={item.color} />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <item.icon className="w-4 h-4" style={{ color: item.color }} />
+                  </div>
+                </div>
+                <div>
+                  <p className="text-lg font-bold">{item.value}{item.suffix || ""}</p>
+                  <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Tasks + Habits Row */}
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* Recent Tasks */}
+          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65 }}
+            className="glass-card p-5 border border-white/5"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <ListTodo className="w-4 h-4 text-blue-400" />
+                <h3 className="font-semibold text-sm">Recent Tasks</h3>
+              </div>
+              <Badge variant="secondary" className="text-[10px]">{pendingTasks.length} pending</Badge>
+            </div>
+            <div className="space-y-2">
+              {pendingTasks.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">All clear! 🎉</p>
+              ) : (
+                pendingTasks.slice(0, 5).map((task, i) => (
+                  <div key={task.id} className="flex items-center gap-2 p-2 rounded-lg bg-secondary/30">
+                    <div className={`w-2 h-2 rounded-full shrink-0 ${task.priority === "high" ? "bg-red-400" : task.priority === "medium" ? "bg-amber-400" : "bg-muted-foreground/40"}`} />
+                    <span className="text-sm truncate flex-1">{task.title}</span>
+                    {task.due_date && <span className="text-[10px] text-muted-foreground shrink-0">{new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>}
+                  </div>
+                ))
+              )}
+            </div>
+          </motion.div>
+
+          {/* Habits Summary */}
+          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
+            className="glass-card p-5 border border-white/5"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Flame className="w-4 h-4 text-orange-400" />
+                <h3 className="font-semibold text-sm">Habits</h3>
+              </div>
+              <Badge variant="secondary" className="text-[10px]">{habitCompletionRate}% today</Badge>
+            </div>
+            <div className="space-y-2">
+              {allHabits.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No habits yet</p>
+              ) : (
+                allHabits.slice(0, 5).map((habit) => {
+                  const done = habit.last_completed_date?.split("T")[0] === todayStr;
+                  return (
+                    <div key={habit.id} className="flex items-center gap-2 p-2 rounded-lg bg-secondary/30">
+                      <div className={`w-5 h-5 rounded flex items-center justify-center shrink-0 ${done ? "bg-green-500 text-white" : "bg-secondary"}`}>
+                        {done && <CheckCircle2 className="w-3 h-3" />}
+                      </div>
+                      <span className={`text-sm truncate flex-1 ${done ? "text-muted-foreground line-through" : ""}`}>{habit.habit_name}</span>
+                      {habit.streak_count > 0 && (
+                        <div className="flex items-center gap-0.5 text-orange-400">
+                          <Flame className="w-3 h-3 fill-current" />
+                          <span className="text-[10px] font-medium">{habit.streak_count}</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
               )}
             </div>
           </motion.div>
