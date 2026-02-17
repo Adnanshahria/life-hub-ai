@@ -425,225 +425,209 @@ export default function FinancePage() {
                 className="space-y-6"
             >
                 {/* Header */}
-                <div className="flex flex-col gap-3">
-                    {/* Row 1: Title + View Mode Tabs */}
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="hidden md:block">
-                            <h1 className="text-3xl font-bold">Finance</h1>
-                            <p className="text-muted-foreground">Track your income and expenses</p>
-                        </div>
-
-                        {/* Default / Special Toggle */}
-                        <div className="flex items-center gap-3 flex-wrap">
-                            <div className="flex p-1 bg-secondary rounded-lg">
-                                <button
-                                    onClick={() => setFinanceViewMode("default")}
-                                    className={`px-4 py-1.5 text-sm rounded-md transition-all flex items-center gap-2 ${financeViewMode === "default"
-                                        ? "bg-primary text-primary-foreground shadow-sm"
-                                        : "hover:bg-secondary-foreground/10"
-                                        }`}
-                                >
-                                    <Wallet className="w-4 h-4" />
-                                    Default
-                                </button>
-                                <button
-                                    onClick={() => setFinanceViewMode("special")}
-                                    className={`px-4 py-1.5 text-sm rounded-md transition-all flex items-center gap-2 ${financeViewMode === "special"
-                                        ? "bg-yellow-500 text-black shadow-sm"
-                                        : "hover:bg-secondary-foreground/10"
-                                        }`}
-                                >
-                                    <Star className="w-4 h-4" />
-                                    Special
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* View Mode Selector */}
-                        <div className="flex flex-wrap gap-1 p-1 bg-secondary rounded-lg w-fit">
-                            {(["daily", "weekly", "monthly", "yearly", "custom", "all"] as const).map((mode) => (
-                                <button
-                                    key={mode}
-                                    onClick={() => setViewMode(mode)}
-                                    className={`px-3 py-1.5 text-sm rounded-md transition-all capitalize ${viewMode === mode
-                                        ? "bg-primary text-primary-foreground shadow-sm"
-                                        : "hover:bg-secondary-foreground/10"
-                                        }`}
-                                >
-                                    {mode === "all" ? "All Time" : mode}
-                                </button>
-                            ))}
-                        </div>
+                <div className="flex items-center gap-4">
+                    <div className="hidden md:flex items-center gap-3 shrink-0">
+                        <h1 className="text-3xl font-bold">Finance</h1>
+                        <p className="text-muted-foreground text-sm">Track your income and expenses</p>
                     </div>
 
-                    {/* Row 2: Date Controls + Add Entry Button */}
-                    <div className="flex items-center justify-between gap-3 flex-wrap">
-                        {/* Date Controls */}
-                        <div className="flex flex-wrap items-center gap-2">
-                            {viewMode === "daily" && (
-                                <>
-                                    <Button variant="outline" size="icon" onClick={() => changeDate(-1)}>
-                                        <ChevronLeft className="w-4 h-4" />
-                                    </Button>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button variant="outline" className="gap-2 font-medium">
-                                                <CalendarIcon className="w-4 h-4" />
-                                                {format(new Date(selectedDate + "T12:00:00"), "MMM d, yyyy")}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <Calendar
-                                                mode="single"
-                                                selected={new Date(selectedDate + "T12:00:00")}
-                                                onSelect={(date) => date && setSelectedDate(getLocalDateStr(date))}
-                                                initialFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                    <Button variant="outline" size="icon" onClick={() => changeDate(1)}>
-                                        <ChevronRight className="w-4 h-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="sm" onClick={() => setSelectedDate(getLocalDateStr(new Date()))}>
-                                        Today
-                                    </Button>
-                                </>
-                            )}
-                            {viewMode === "weekly" && (
-                                <>
-                                    <Button variant="outline" size="icon" onClick={() => changeDate(-7)}>
-                                        <ChevronLeft className="w-4 h-4" />
-                                    </Button>
-                                    <div className="px-4 py-2 bg-secondary rounded-lg text-sm font-medium">
-                                        {(() => {
-                                            const range = getDateRange();
-                                            const start = new Date(range.start + "T12:00:00");
-                                            const end = new Date(range.end + "T12:00:00");
-                                            return `${format(start, "MMM d")} - ${format(end, "MMM d, yyyy")}`;
-                                        })()}
-                                    </div>
-                                    <Button variant="outline" size="icon" onClick={() => changeDate(7)}>
-                                        <ChevronRight className="w-4 h-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="sm" onClick={() => setSelectedDate(getLocalDateStr(new Date()))}>
-                                        This Week
-                                    </Button>
-                                </>
-                            )}
-                            {viewMode === "monthly" && (
-                                <>
-                                    <Button variant="outline" size="icon" onClick={() => {
-                                        const d = new Date(selectedDate + "T12:00:00");
-                                        d.setMonth(d.getMonth() - 1);
-                                        setSelectedDate(getLocalDateStr(d));
-                                    }}>
-                                        <ChevronLeft className="w-4 h-4" />
-                                    </Button>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button variant="outline" className="gap-2 font-medium">
-                                                <CalendarIcon className="w-4 h-4" />
-                                                {format(new Date(selectedDate + "T12:00:00"), "MMMM yyyy")}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <Calendar
-                                                mode="single"
-                                                selected={new Date(selectedDate + "T12:00:00")}
-                                                onSelect={(date) => date && setSelectedDate(getLocalDateStr(date))}
-                                                initialFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                    <Button variant="outline" size="icon" onClick={() => {
-                                        const d = new Date(selectedDate + "T12:00:00");
-                                        d.setMonth(d.getMonth() + 1);
-                                        setSelectedDate(getLocalDateStr(d));
-                                    }}>
-                                        <ChevronRight className="w-4 h-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="sm" onClick={() => setSelectedDate(getLocalDateStr(new Date()))}>
-                                        This Month
-                                    </Button>
-                                </>
-                            )}
-                            {viewMode === "yearly" && (
-                                <>
-                                    <Button variant="outline" size="icon" onClick={() => {
-                                        const d = new Date(selectedDate + "T12:00:00");
-                                        d.setFullYear(d.getFullYear() - 1);
-                                        setSelectedDate(getLocalDateStr(d));
-                                    }}>
-                                        <ChevronLeft className="w-4 h-4" />
-                                    </Button>
-                                    <Select value={selectedDate.substring(0, 4)} onValueChange={(v) => setSelectedDate(v + "-01-01")}>
-                                        <SelectTrigger className="w-[120px]">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i).map(year => (
-                                                <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <Button variant="outline" size="icon" onClick={() => {
-                                        const d = new Date(selectedDate + "T12:00:00");
-                                        d.setFullYear(d.getFullYear() + 1);
-                                        setSelectedDate(getLocalDateStr(d));
-                                    }}>
-                                        <ChevronRight className="w-4 h-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="sm" onClick={() => setSelectedDate(getLocalDateStr(new Date()))}>
-                                        This Year
-                                    </Button>
-                                </>
-                            )}
-                            {viewMode === "custom" && (
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <span className="text-sm text-muted-foreground">From:</span>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button variant="outline" size="sm" className="gap-2">
-                                                <CalendarIcon className="w-4 h-4" />
-                                                {format(new Date(customStartDate + "T12:00:00"), "MMM d, yyyy")}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <Calendar
-                                                mode="single"
-                                                selected={new Date(customStartDate + "T12:00:00")}
-                                                onSelect={(date) => date && setCustomStartDate(getLocalDateStr(date))}
-                                                initialFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                    <span className="text-sm text-muted-foreground">To:</span>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button variant="outline" size="sm" className="gap-2">
-                                                <CalendarIcon className="w-4 h-4" />
-                                                {format(new Date(customEndDate + "T12:00:00"), "MMM d, yyyy")}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <Calendar
-                                                mode="single"
-                                                selected={new Date(customEndDate + "T12:00:00")}
-                                                onSelect={(date) => date && setCustomEndDate(getLocalDateStr(date))}
-                                                initialFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                </div>
-                            )}
+                    {/* Single-row controls */}
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap flex-1">
+
+                        {/* Default / Special dropdown */}
+                        <div className="relative">
+                            <select
+                                value={financeViewMode}
+                                onChange={(e) => setFinanceViewMode(e.target.value as typeof financeViewMode)}
+                                className="appearance-none bg-secondary/50 border border-border rounded-lg px-3 pr-8 py-1.5 text-xs sm:text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors"
+                            >
+                                <option value="default">Default</option>
+                                <option value="special">Special</option>
+                            </select>
+                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
                         </div>
+
+                        {/* Period dropdown */}
+                        <div className="relative">
+                            <select
+                                value={viewMode}
+                                onChange={(e) => setViewMode(e.target.value as typeof viewMode)}
+                                className="appearance-none bg-secondary/50 border border-border rounded-lg px-3 pr-8 py-1.5 text-xs sm:text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors"
+                            >
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="yearly">Yearly</option>
+                                <option value="custom">Custom</option>
+                                <option value="all">All Time</option>
+                            </select>
+                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+                        </div>
+
+                        {/* Date Controls */}
+                        {viewMode === "daily" && (
+                            <>
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => changeDate(-1)}>
+                                    <ChevronLeft className="w-3.5 h-3.5" />
+                                </Button>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs sm:text-sm font-medium">
+                                            <CalendarIcon className="w-3.5 h-3.5" />
+                                            {format(new Date(selectedDate + "T12:00:00"), "MMM d, yyyy")}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={new Date(selectedDate + "T12:00:00")}
+                                            onSelect={(date) => date && setSelectedDate(getLocalDateStr(date))}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => changeDate(1)}>
+                                    <ChevronRight className="w-3.5 h-3.5" />
+                                </Button>
+                                <Button variant="ghost" size="sm" className="hidden sm:inline-flex h-8 text-xs" onClick={() => setSelectedDate(getLocalDateStr(new Date()))}>
+                                    Today
+                                </Button>
+                            </>
+                        )}
+                        {viewMode === "weekly" && (
+                            <>
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => changeDate(-7)}>
+                                    <ChevronLeft className="w-3.5 h-3.5" />
+                                </Button>
+                                <div className="px-3 py-1.5 bg-secondary rounded-lg text-xs sm:text-sm font-medium">
+                                    {(() => {
+                                        const range = getDateRange();
+                                        const start = new Date(range.start + "T12:00:00");
+                                        const end = new Date(range.end + "T12:00:00");
+                                        return `${format(start, "MMM d")} - ${format(end, "MMM d")}`;
+                                    })()}
+                                </div>
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => changeDate(7)}>
+                                    <ChevronRight className="w-3.5 h-3.5" />
+                                </Button>
+                                <Button variant="ghost" size="sm" className="hidden sm:inline-flex h-8 text-xs" onClick={() => setSelectedDate(getLocalDateStr(new Date()))}>
+                                    This Week
+                                </Button>
+                            </>
+                        )}
+                        {viewMode === "monthly" && (
+                            <>
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => {
+                                    const d = new Date(selectedDate + "T12:00:00");
+                                    d.setMonth(d.getMonth() - 1);
+                                    setSelectedDate(getLocalDateStr(d));
+                                }}>
+                                    <ChevronLeft className="w-3.5 h-3.5" />
+                                </Button>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs sm:text-sm font-medium">
+                                            <CalendarIcon className="w-3.5 h-3.5" />
+                                            {format(new Date(selectedDate + "T12:00:00"), "MMMM yyyy")}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={new Date(selectedDate + "T12:00:00")}
+                                            onSelect={(date) => date && setSelectedDate(getLocalDateStr(date))}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => {
+                                    const d = new Date(selectedDate + "T12:00:00");
+                                    d.setMonth(d.getMonth() + 1);
+                                    setSelectedDate(getLocalDateStr(d));
+                                }}>
+                                    <ChevronRight className="w-3.5 h-3.5" />
+                                </Button>
+                                <Button variant="ghost" size="sm" className="hidden sm:inline-flex h-8 text-xs" onClick={() => setSelectedDate(getLocalDateStr(new Date()))}>
+                                    This Month
+                                </Button>
+                            </>
+                        )}
+                        {viewMode === "yearly" && (
+                            <>
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => {
+                                    const d = new Date(selectedDate + "T12:00:00");
+                                    d.setFullYear(d.getFullYear() - 1);
+                                    setSelectedDate(getLocalDateStr(d));
+                                }}>
+                                    <ChevronLeft className="w-3.5 h-3.5" />
+                                </Button>
+                                <Select value={selectedDate.substring(0, 4)} onValueChange={(v) => setSelectedDate(v + "-01-01")}>
+                                    <SelectTrigger className="w-[100px] h-8 text-xs sm:text-sm">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i).map(year => (
+                                            <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => {
+                                    const d = new Date(selectedDate + "T12:00:00");
+                                    d.setFullYear(d.getFullYear() + 1);
+                                    setSelectedDate(getLocalDateStr(d));
+                                }}>
+                                    <ChevronRight className="w-3.5 h-3.5" />
+                                </Button>
+                                <Button variant="ghost" size="sm" className="hidden sm:inline-flex h-8 text-xs" onClick={() => setSelectedDate(getLocalDateStr(new Date()))}>
+                                    This Year
+                                </Button>
+                            </>
+                        )}
+                        {viewMode === "custom" && (
+                            <div className="flex flex-wrap items-center gap-1.5">
+                                <span className="text-xs text-muted-foreground">From:</span>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
+                                            <CalendarIcon className="w-3.5 h-3.5" />
+                                            {format(new Date(customStartDate + "T12:00:00"), "MMM d, yyyy")}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={new Date(customStartDate + "T12:00:00")}
+                                            onSelect={(date) => date && setCustomStartDate(getLocalDateStr(date))}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                                <span className="text-xs text-muted-foreground">To:</span>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
+                                            <CalendarIcon className="w-3.5 h-3.5" />
+                                            {format(new Date(customEndDate + "T12:00:00"), "MMM d, yyyy")}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={new Date(customEndDate + "T12:00:00")}
+                                            onSelect={(date) => date && setCustomEndDate(getLocalDateStr(date))}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
+                        )}
 
                         {/* Add Entry Button */}
                         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                             <DialogTrigger asChild>
-                                <Button className="gap-2">
-                                    <Plus className="w-4 h-4" />
-                                    Add Entry
+                                <Button size="icon" className="h-8 w-8 sm:w-auto sm:px-3 sm:gap-1.5 shadow-lg shadow-primary/20">
+                                    <Plus className="w-3.5 h-3.5" />
+                                    <span className="hidden sm:inline">Entry</span>
                                 </Button>
                             </DialogTrigger>
                             <DialogContent>

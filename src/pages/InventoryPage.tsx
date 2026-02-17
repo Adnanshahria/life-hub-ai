@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     Plus, Package, Store, Trash2, Edit2, LayoutGrid, List,
     DollarSign, Tag, Calendar, CheckCircle, AlertTriangle, Search, Filter,
-    CreditCard, Wrench
+    CreditCard, Wrench, ChevronDown
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -210,27 +210,71 @@ export default function InventoryPage() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
+                className="space-y-4 sm:space-y-6"
             >
                 {/* Header & Stats */}
-                <div className="flex flex-col gap-6">
-                    <div className="flex items-center justify-between flex-wrap gap-4">
-                        <div>
+                <div className="flex flex-col gap-3 sm:gap-4">
+                    {/* Single-row controls */}
+                    <div className="flex items-center gap-4">
+                        <div className="hidden md:flex items-center gap-3 shrink-0">
                             <h1 className="text-3xl font-bold">Inventory</h1>
-                            <p className="text-muted-foreground">Manage your assets and belongings</p>
+                            <p className="text-muted-foreground text-sm">Manage your assets and belongings</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}>
-                                {viewMode === "grid" ? <List className="w-4 h-4" /> : <LayoutGrid className="w-4 h-4" />}
-                            </Button>
+
+                        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap flex-1">
+                            {/* View Toggle */}
+                            <div className="flex bg-secondary rounded-lg p-0.5 shrink-0">
+                                <button
+                                    onClick={() => setViewMode("list")}
+                                    className={`p-1.5 rounded transition-colors ${viewMode === "list" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                                    title="List View"
+                                >
+                                    <List className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                    onClick={() => setViewMode("grid")}
+                                    className={`p-1.5 rounded transition-colors ${viewMode === "grid" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                                    title="Grid View"
+                                >
+                                    <LayoutGrid className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
+
+                            {/* Category Filter */}
+                            <div className="relative">
+                                <select
+                                    value={categoryFilter}
+                                    onChange={(e) => setCategoryFilter(e.target.value)}
+                                    className="appearance-none bg-secondary/50 border border-border rounded-lg px-3 pr-8 py-1.5 text-xs sm:text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors"
+                                >
+                                    <option value="all">All Categories</option>
+                                    {CATEGORIES.map(cat => (
+                                        <option key={cat} value={cat}>{cat}</option>
+                                    ))}
+                                </select>
+                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+                            </div>
+
+                            {/* Search */}
+                            <div className="relative flex-1 min-w-[120px] max-w-[240px]">
+                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-8 h-8 text-xs sm:text-sm"
+                                />
+                            </div>
+
+                            {/* Add Item Button */}
                             <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
                                 <DialogTrigger asChild>
-                                    <Button className="gap-2">
-                                        <Plus className="w-4 h-4" />
-                                        Add Item
+                                    <Button size="icon" className="h-8 w-8 sm:w-auto sm:px-3 sm:gap-1.5 shadow-lg shadow-primary/20">
+                                        <Plus className="w-3.5 h-3.5" />
+                                        <span className="hidden sm:inline">Item</span>
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                                <DialogContent className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-xl">
                                     <DialogHeader>
                                         <DialogTitle className="flex justify-between items-center">
                                             Add New Item
@@ -355,71 +399,45 @@ export default function InventoryPage() {
                     </div>
 
                     {/* Stats Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="glass-card p-4 flex items-center gap-4">
-                            <div className="bg-primary/10 p-3 rounded-full text-primary">
-                                <DollarSign className="w-6 h-6" />
+                    <div className="grid grid-cols-4 gap-1.5 sm:gap-3">
+                        <div className="glass-card p-2 sm:p-3 flex items-center gap-2 sm:gap-3">
+                            <div className="bg-primary/10 p-1.5 sm:p-2 rounded-full text-primary">
+                                <DollarSign className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                             </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">Total Value</p>
-                                <h3 className="text-2xl font-bold">৳{totalValue.toLocaleString()}</h3>
-                            </div>
-                        </div>
-                        <div className="glass-card p-4 flex items-center gap-4">
-                            <div className="bg-blue-500/10 p-3 rounded-full text-blue-500">
-                                <Package className="w-6 h-6" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">Total Items</p>
-                                <h3 className="text-2xl font-bold">{filteredItems.length}</h3>
+                            <div className="min-w-0">
+                                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Value</p>
+                                <h3 className="text-sm sm:text-lg font-bold truncate">৳{totalValue.toLocaleString()}</h3>
                             </div>
                         </div>
-                        <div className="glass-card p-4 flex items-center gap-4">
-                            <div className="bg-green-500/10 p-3 rounded-full text-green-500">
-                                <CheckCircle className="w-6 h-6" />
+                        <div className="glass-card p-2 sm:p-3 flex items-center gap-2 sm:gap-3">
+                            <div className="bg-blue-500/10 p-1.5 sm:p-2 rounded-full text-blue-500">
+                                <Package className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                             </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">Active Assets</p>
-                                <h3 className="text-2xl font-bold">{stats.activeItems}</h3>
+                            <div className="min-w-0">
+                                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Items</p>
+                                <h3 className="text-sm sm:text-lg font-bold">{filteredItems.length}</h3>
                             </div>
                         </div>
-                        <div className="glass-card p-4 flex items-center gap-4">
-                            <div className="bg-orange-500/10 p-3 rounded-full text-orange-500">
-                                <Tag className="w-6 h-6" />
+                        <div className="glass-card p-2 sm:p-3 flex items-center gap-2 sm:gap-3">
+                            <div className="bg-green-500/10 p-1.5 sm:p-2 rounded-full text-green-500">
+                                <CheckCircle className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                             </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">Sold / Disposed</p>
-                                <h3 className="text-2xl font-bold">{stats.soldItems}</h3>
+                            <div className="min-w-0">
+                                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Active</p>
+                                <h3 className="text-sm sm:text-lg font-bold">{stats.activeItems}</h3>
+                            </div>
+                        </div>
+                        <div className="glass-card p-2 sm:p-3 flex items-center gap-2 sm:gap-3">
+                            <div className="bg-orange-500/10 p-1.5 sm:p-2 rounded-full text-orange-500">
+                                <Tag className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Sold</p>
+                                <h3 className="text-sm sm:text-lg font-bold">{stats.soldItems}</h3>
                             </div>
                         </div>
                     </div>
 
-                    {/* Filters */}
-                    <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-                        <div className="relative w-full sm:w-72">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search items, stores, serials..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-9"
-                            />
-                        </div>
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <Filter className="w-4 h-4 text-muted-foreground" />
-                            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                                <SelectTrigger className="w-[180px]">
-                                    <SelectValue placeholder="Category" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Categories</SelectItem>
-                                    {CATEGORIES.map(cat => (
-                                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Content */}
@@ -434,7 +452,7 @@ export default function InventoryPage() {
                         </div>
                     ) : viewMode === "grid" ? (
                         // Grid View
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                             <AnimatePresence>
                                 {filteredItems.map((item) => (
                                     <motion.div
@@ -443,52 +461,54 @@ export default function InventoryPage() {
                                         initial={{ opacity: 0, scale: 0.95 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.95 }}
-                                        className={`glass-card p-4 flex flex-col justify-between group relative overflow-hidden ${item.status === 'sold' ? 'opacity-70 bg-secondary/20' : ''}`}
+                                        className={`glass-card p-3 flex flex-col justify-between group relative overflow-hidden ${item.status === 'sold' ? 'opacity-70 bg-secondary/20' : ''}`}
                                     >
                                         {item.status === 'sold' && (
-                                            <div className="absolute top-2 right-2 z-10">
-                                                <Badge variant="secondary" className="bg-orange-500/10 text-orange-600 border-orange-200">Sold</Badge>
+                                            <div className="absolute top-1.5 right-1.5 z-10">
+                                                <Badge variant="secondary" className="bg-orange-500/10 text-orange-600 border-orange-200 text-[10px] px-1.5 py-0">Sold</Badge>
                                             </div>
                                         )}
 
                                         <div>
-                                            <div className="flex justify-between items-start mb-2">
-                                                <Badge variant="outline" className="text-xs">{item.category || "Other"}</Badge>
-                                                {item.quantity > 1 && <Badge variant="secondary" className="text-xs">x{item.quantity}</Badge>}
+                                            <div className="flex justify-between items-start mb-1">
+                                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">{item.category || "Other"}</Badge>
+                                                {item.quantity > 1 && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">x{item.quantity}</Badge>}
                                             </div>
-                                            <h3 className="font-semibold text-lg line-clamp-1 p-1">{item.item_name}</h3>
-                                            <p className="text-sm text-muted-foreground mb-3 flex items-center gap-1">
-                                                {item.store && <><Store className="w-3 h-3" /> {item.store}</>}
-                                            </p>
+                                            <h3 className="font-semibold text-sm sm:text-base line-clamp-1 mt-1">{item.item_name}</h3>
+                                            {item.store && (
+                                                <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1 line-clamp-1">
+                                                    <Store className="w-3 h-3 shrink-0" /> {item.store}
+                                                </p>
+                                            )}
 
-                                            <div className="grid grid-cols-2 gap-2 text-sm my-3">
-                                                <div className="bg-secondary/30 p-2 rounded">
-                                                    <p className="text-xs text-muted-foreground">Cost</p>
-                                                    <p className="font-medium">৳{(item.cost || 0).toLocaleString()}</p>
+                                            <div className="grid grid-cols-2 gap-1.5 text-xs mt-2">
+                                                <div className="bg-secondary/30 p-1.5 rounded">
+                                                    <p className="text-[10px] text-muted-foreground">Cost</p>
+                                                    <p className="font-semibold text-xs">৳{(item.cost || 0).toLocaleString()}</p>
                                                 </div>
-                                                <div className="bg-secondary/30 p-2 rounded">
-                                                    <p className="text-xs text-muted-foreground">Date</p>
-                                                    <p className="font-medium">{item.purchase_date ? new Date(item.purchase_date).toLocaleDateString() : "-"}</p>
+                                                <div className="bg-secondary/30 p-1.5 rounded">
+                                                    <p className="text-[10px] text-muted-foreground">Date</p>
+                                                    <p className="font-semibold text-xs">{item.purchase_date ? new Date(item.purchase_date).toLocaleDateString() : "-"}</p>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="pt-3 border-t flex items-center justify-between gap-2 mt-auto">
-                                            <div className="flex gap-1">
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={() => setEditingItem(item)}>
-                                                    <Edit2 className="w-4 h-4" />
+                                        <div className="pt-2 border-t flex items-center justify-between gap-1 mt-auto">
+                                            <div className="flex gap-0.5">
+                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary" onClick={() => setEditingItem(item)}>
+                                                    <Edit2 className="w-3.5 h-3.5" />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-blue-500" onClick={() => handleCreateMaintenanceTask(item)}>
-                                                    <Wrench className="w-4 h-4" />
+                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-blue-500" onClick={() => handleCreateMaintenanceTask(item)}>
+                                                    <Wrench className="w-3.5 h-3.5" />
                                                 </Button>
                                                 {item.status === 'active' && (
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-green-500" onClick={() => setSaleItem(item)}>
-                                                        <CreditCard className="w-4 h-4" />
+                                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-green-500" onClick={() => setSaleItem(item)}>
+                                                        <CreditCard className="w-3.5 h-3.5" />
                                                     </Button>
                                                 )}
                                             </div>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => deleteItem.mutate(item.id)}>
-                                                <Trash2 className="w-4 h-4" />
+                                            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => deleteItem.mutate(item.id)}>
+                                                <Trash2 className="w-3.5 h-3.5" />
                                             </Button>
                                         </div>
                                     </motion.div>

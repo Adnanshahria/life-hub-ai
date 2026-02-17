@@ -696,14 +696,14 @@ export default function NotesPage() {
 
                 {/* ===== HEADER ===== */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-                    <div>
+                    <div className="hidden md:block">
                         <div className="flex items-center gap-3 mb-1">
                             <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
-                                <StickyNote className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                                <StickyNote className="w-6 h-6 text-primary" />
                             </div>
-                            <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight">Notes</h1>
+                            <h1 className="text-3xl font-bold font-display tracking-tight">Notes</h1>
                         </div>
-                        <p className="text-sm text-muted-foreground ml-12 sm:ml-14">Capture thoughts and checklists seamlessly</p>
+                        <p className="text-sm text-muted-foreground ml-14">Capture thoughts and checklists seamlessly</p>
                     </div>
                     <div className="flex gap-2 w-full sm:w-auto">
                         <div className="relative flex-1 sm:flex-initial">

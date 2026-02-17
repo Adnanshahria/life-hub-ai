@@ -35,7 +35,7 @@ export function StudyAnalytics({ chapters }: StudyAnalyticsProps) {
     }, [chapters]);
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6">
             <div className="glass-card p-4">
                 <h3 className="font-semibold mb-4">Subject Mastery</h3>
                 <div className="h-[200px] w-full">

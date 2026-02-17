@@ -470,88 +470,40 @@ export default function TasksPage() {
                 className="space-y-4 sm:space-y-6"
             >
                 {/* Header */}
-                <div className="flex flex-col gap-3 sm:gap-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
-                                <CheckSquare className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                            </div>
-                            <div>
-                                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Tasks</h1>
-                                <p className="text-xs sm:text-sm text-muted-foreground">Your central productivity hub</p>
-                            </div>
+                <div className="flex items-center gap-4">
+                    <div className="hidden md:flex items-center gap-3 shrink-0">
+                        <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
+                            <CheckSquare className="w-6 h-6 text-primary" />
                         </div>
-
-                        {/* Tabs + View Toggle */}
-                        <div className="flex items-center gap-2">
-                            <div className="flex bg-secondary/50 p-1 rounded-lg overflow-x-auto scrollbar-none">
-                                <button
-                                    onClick={() => setTabView("upcoming")}
-                                    className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md transition-all whitespace-nowrap ${tabView === "upcoming"
-                                        ? "bg-background shadow-sm text-primary font-medium"
-                                        : "text-muted-foreground hover:bg-background/50"
-                                        }`}
-                                >
-                                    <CalendarClock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                    <span className="hidden sm:inline">Upcoming</span>
-                                    <span className="sm:hidden">Soon</span>
-                                    <span className="text-[10px] sm:text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
-                                        {tabCounts.upcoming}
-                                    </span>
-                                </button>
-                                <button
-                                    onClick={() => setTabView("active")}
-                                    className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md transition-all whitespace-nowrap ${tabView === "active"
-                                        ? "bg-background shadow-sm text-primary font-medium"
-                                        : "text-muted-foreground hover:bg-background/50"
-                                        }`}
-                                >
-                                    <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                    <span>Active</span>
-                                    <span className="text-[10px] sm:text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
-                                        {tabCounts.active}
-                                    </span>
-                                </button>
-                                <button
-                                    onClick={() => setTabView("archive")}
-                                    className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md transition-all whitespace-nowrap ${tabView === "archive"
-                                        ? "bg-background shadow-sm text-primary font-medium"
-                                        : "text-muted-foreground hover:bg-background/50"
-                                        }`}
-                                >
-                                    <Archive className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                    <span>Archive</span>
-                                </button>
-                            </div>
-
-                            {/* View Toggle */}
-                            <div className="flex bg-secondary rounded-lg p-1 shrink-0">
-                                <button
-                                    onClick={() => setViewMode("list")}
-                                    className={`p-1.5 sm:p-2 rounded transition-colors ${viewMode === "list" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                                    title="List View"
-                                >
-                                    <List className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                </button>
-                                <button
-                                    onClick={() => setViewMode("grid")}
-                                    className={`p-1.5 sm:p-2 rounded transition-colors ${viewMode === "grid" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                                    title="Grid View"
-                                >
-                                    <LayoutGrid className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                </button>
-                            </div>
+                        <div>
+                            <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
+                            <p className="text-sm text-muted-foreground">Your central productivity hub</p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                    {/* Single-row controls */}
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap flex-1">
+
+                        {/* Tab Dropdown (native select) */}
+                        <div className="relative">
+                            <select
+                                value={tabView}
+                                onChange={(e) => setTabView(e.target.value as typeof tabView)}
+                                className="appearance-none bg-secondary/50 border border-border rounded-lg px-3 pr-8 py-1.5 text-xs sm:text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors"
+                            >
+                                <option value="upcoming">Soon ({tabCounts.upcoming})</option>
+                                <option value="active">Active ({tabCounts.active})</option>
+                                <option value="archive">Archive</option>
+                            </select>
+                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+                        </div>
 
                         {/* Context Filter */}
                         <Popover>
                             <PopoverTrigger asChild>
-                                <Button variant="outline" size="sm" className="gap-2">
-                                    <Filter className="w-4 h-4" />
-                                    Context
+                                <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs sm:text-sm">
+                                    <Filter className="w-3.5 h-3.5" />
+                                    <span className="hidden sm:inline">Context</span>
                                     <ChevronDown className="w-3 h-3" />
                                 </Button>
                             </PopoverTrigger>
@@ -572,9 +524,9 @@ export default function TasksPage() {
                         {/* Sort Dropdown */}
                         <Popover>
                             <PopoverTrigger asChild>
-                                <Button variant="outline" size="sm" className="gap-2">
-                                    <ArrowUpDown className="w-4 h-4" />
-                                    Sort
+                                <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs sm:text-sm">
+                                    <ArrowUpDown className="w-3.5 h-3.5" />
+                                    <span className="hidden sm:inline">Sort</span>
                                     <ChevronDown className="w-3 h-3" />
                                 </Button>
                             </PopoverTrigger>
@@ -596,13 +548,33 @@ export default function TasksPage() {
                             </PopoverContent>
                         </Popover>
 
+                        {/* View Toggle */}
+                        <div className="flex bg-secondary rounded-lg p-0.5 shrink-0">
+                            <button
+                                onClick={() => setViewMode("list")}
+                                className={`p-1.5 rounded transition-colors ${viewMode === "list" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                                title="List View"
+                            >
+                                <List className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                                onClick={() => setViewMode("grid")}
+                                className={`p-1.5 rounded transition-colors ${viewMode === "grid" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                                title="Grid View"
+                            >
+                                <LayoutGrid className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+
+                        {/* Spacer to push + New to the right */}
+                        <div className="flex-1" />
+
                         {/* Add Task */}
                         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                             <DialogTrigger asChild>
-                                <Button className="gap-1.5 sm:gap-2 shadow-lg shadow-primary/20">
-                                    <Plus className="w-4 h-4" />
-                                    <span className="hidden sm:inline">Add Task</span>
-                                    <span className="sm:hidden">New</span>
+                                <Button size="sm" className="gap-1.5 h-8 shadow-lg shadow-primary/20">
+                                    <Plus className="w-3.5 h-3.5" />
+                                    <span className="hidden sm:inline">New</span>
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-xl">

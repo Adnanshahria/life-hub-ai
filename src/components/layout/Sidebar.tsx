@@ -19,7 +19,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: ListTodo, label: "Tasks", path: "/tasks" },
   { icon: Wallet, label: "Finance", path: "/finance" },
   { icon: StickyNote, label: "Notes", path: "/notes" },

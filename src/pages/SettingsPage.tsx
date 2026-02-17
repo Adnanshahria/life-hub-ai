@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Settings, User, Palette, Globe, Bell, DollarSign, LogOut, Save } from "lucide-react";
+import { Settings, User, Palette, Globe, Bell, DollarSign, LogOut, Save, Smartphone } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,12 +18,14 @@ import { toast } from "sonner";
 import { useSettings } from "@/hooks/useSettings";
 import { DEFAULT_USER_ID } from "@/lib/turso";
 import { SEO } from "@/components/seo/SEO";
+import { useNavPreferences, ALL_NAV_ITEMS } from "@/hooks/useNavPreferences";
 
 export default function SettingsPage() {
     const { settings, isLoading, updateSettings } = useSettings();
     const [monthlyBudget, setMonthlyBudget] = useState("");
     const userName = localStorage.getItem("lifeos-user-name") || "Adnan";
     const userEmail = localStorage.getItem("lifeos-user-email") || "adnan@lifeos.app";
+    const { shortcutIds, toggleShortcut, maxShortcuts } = useNavPreferences();
 
     const handleThemeChange = (theme: "light" | "dark") => {
         document.documentElement.classList.remove("light", "dark");
@@ -78,7 +80,7 @@ export default function SettingsPage() {
                 className="max-w-2xl mx-auto space-y-8"
             >
                 {/* Header */}
-                <div>
+                <div className="hidden md:block">
                     <h1 className="text-3xl font-bold flex items-center gap-3">
                         <Settings className="w-8 h-8 text-primary" />
                         Settings
@@ -139,6 +141,68 @@ export default function SettingsPage() {
                                 <SelectItem value="light">Light</SelectItem>
                             </SelectContent>
                         </Select>
+                    </div>
+                </motion.div>
+
+                {/* Navigation Shortcuts Section */}
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.25 }}
+                    className="glass-card p-6 space-y-4"
+                >
+                    <div className="flex items-center gap-3">
+                        <Smartphone className="w-5 h-5 text-primary" />
+                        <h2 className="text-lg font-semibold">Navigation</h2>
+                    </div>
+                    <Separator />
+                    <div>
+                        <Label>Bottom Bar Shortcuts</Label>
+                        <p className="text-sm text-muted-foreground mb-4">
+                            Select {maxShortcuts} pages to show in the mobile navigation bar
+                            <span className={`ml-2 font-medium ${shortcutIds.length === maxShortcuts ? 'text-primary' : 'text-amber-400'}`}>
+                                ({shortcutIds.length}/{maxShortcuts})
+                            </span>
+                        </p>
+                        <div className="grid grid-cols-2 gap-2">
+                            {ALL_NAV_ITEMS.map((item) => {
+                                const isSelected = shortcutIds.includes(item.id);
+                                const canDeselect = shortcutIds.length > 1;
+                                const canSelect = shortcutIds.length < maxShortcuts;
+                                const isDisabled = !isSelected && !canSelect;
+
+                                return (
+                                    <button
+                                        key={item.id}
+                                        onClick={() => {
+                                            if (isSelected && !canDeselect) return;
+                                            if (!isSelected && !canSelect) return;
+                                            toggleShortcut(item.id);
+                                        }}
+                                        disabled={isDisabled}
+                                        className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${isSelected
+                                            ? 'border-primary/50 bg-primary/10 text-foreground shadow-sm'
+                                            : isDisabled
+                                                ? 'border-border/30 bg-secondary/20 text-muted-foreground/50 cursor-not-allowed'
+                                                : 'border-border hover:border-primary/30 hover:bg-secondary/50 text-muted-foreground cursor-pointer'
+                                            }`}
+                                    >
+                                        <div className={`p-1.5 rounded-lg ${isSelected ? 'bg-primary/20 text-primary' : 'bg-secondary/50'
+                                            }`}>
+                                            <item.icon className="w-4 h-4" />
+                                        </div>
+                                        <span className="text-sm font-medium flex-1">{item.label}</span>
+                                        {isSelected && (
+                                            <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </div>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
                 </motion.div>
 

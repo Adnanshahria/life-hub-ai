@@ -21,8 +21,8 @@ export function AppLayout({ children }: AppLayoutProps) {
       <Sidebar />
 
       {/* Main content */}
-      <main className="md:ml-64 min-h-screen pb-24 md:pb-8">
-        <div className="container max-w-6xl mx-auto px-4 py-6">
+      <main className="md:ml-64 min-h-screen pb-20 md:pb-8">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6">
           {children}
         </div>
       </main>

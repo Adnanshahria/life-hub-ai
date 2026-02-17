@@ -112,18 +112,18 @@ export default function HabitsPage() {
     return (
         <AppLayout>
             <SEO title="Habit Tracker" description="Build lasting habits with streak tracking and visual progress." />
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 sm:space-y-6">
 
                 {/* ===== HEADER ===== */}
                 <div className="flex items-start sm:items-center justify-between flex-wrap gap-3">
-                    <div>
+                    <div className="hidden md:block">
                         <div className="flex items-center gap-3 mb-1">
                             <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 border border-emerald-500/20">
                                 <Target className="w-6 h-6 text-emerald-400" />
                             </div>
-                            <h1 className="text-2xl sm:text-3xl font-bold">Habit Tracker</h1>
+                            <h1 className="text-3xl font-bold">Habit Tracker</h1>
                         </div>
-                        <p className="text-muted-foreground text-sm ml-14 hidden sm:block">Build consistency, one day at a time</p>
+                        <p className="text-muted-foreground text-sm ml-14">Build consistency, one day at a time</p>
                     </div>
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
@@ -142,10 +142,10 @@ export default function HabitsPage() {
                 </div>
 
                 {/* ===== STATS + COMPLETION RING ===== */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-4">
                     {/* Completion Ring */}
                     <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                        className="col-span-2 md:col-span-1 glass-card p-4 flex flex-col items-center justify-center bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/10"
+                        className="col-span-2 md:col-span-1 glass-card p-3 sm:p-4 flex flex-col items-center justify-center bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/10"
                     >
                         <CompletionRing completed={totalCompleted} total={habits.length} size={90} />
                         <p className="text-xs text-muted-foreground mt-2">Today's Progress</p>
@@ -159,13 +159,13 @@ export default function HabitsPage() {
                         { icon: TrendingUp, label: "Completion", value: `${completionRate}%`, color: "text-violet-400", bg: "from-violet-500/15 to-violet-500/5" },
                     ].map((stat, i) => (
                         <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-                            className={`glass-card p-4 bg-gradient-to-br ${stat.bg} border border-white/5`}
+                            className={`glass-card p-3 sm:p-4 bg-gradient-to-br ${stat.bg} border border-white/5`}
                         >
-                            <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-lg bg-background/50 ${stat.color}`}><stat.icon className="w-5 h-5" /></div>
+                            <div className="flex items-center gap-2 sm:gap-3">
+                                <div className={`p-1.5 sm:p-2 rounded-lg bg-background/50 ${stat.color}`}><stat.icon className="w-4 h-4 sm:w-5 sm:h-5" /></div>
                                 <div>
-                                    <p className="text-2xl font-bold">{stat.value}</p>
-                                    <p className="text-xs text-muted-foreground">{stat.label}</p>
+                                    <p className="text-lg sm:text-2xl font-bold">{stat.value}</p>
+                                    <p className="text-[10px] sm:text-xs text-muted-foreground">{stat.label}</p>
                                 </div>
                             </div>
                         </motion.div>
@@ -204,7 +204,7 @@ export default function HabitsPage() {
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: index * 0.05 }}
                                     className={cn(
-                                        "glass-card p-5 transition-all group",
+                                        "glass-card p-3 sm:p-5 transition-all group",
                                         completed ? "border-green-500/20 bg-gradient-to-r from-green-500/5 to-transparent" : "hover:border-primary/20"
                                     )}
                                 >
@@ -243,15 +243,15 @@ export default function HabitsPage() {
                                         </div>
 
                                         {/* Weekly Visual */}
-                                        <div className="flex items-center gap-2 self-end md:self-auto">
-                                            <div className="flex gap-1.5">
+                                        <div className="flex items-center gap-2 self-end md:self-auto overflow-x-auto scrollbar-none">
+                                            <div className="flex gap-1 sm:gap-1.5">
                                                 {last7Days.map((date, i) => {
                                                     const isDone = isCompletedOnDate(habit, date);
                                                     const isToday = date.toDateString() === new Date().toDateString();
                                                     return (
                                                         <div key={i} className="flex flex-col items-center gap-1">
                                                             <div className={cn(
-                                                                "w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-medium border transition-all",
+                                                                "w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[10px] font-medium border transition-all",
                                                                 isDone ? "bg-green-500/80 border-green-500 text-white shadow-sm shadow-green-500/20" :
                                                                     isToday ? "border-primary/50 bg-primary/10 text-foreground" :
                                                                         "border-border bg-secondary/30 text-muted-foreground"

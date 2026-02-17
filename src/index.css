@@ -164,7 +164,7 @@
 
   /* Glassmorphism card effect */
   .glass-card {
-    @apply relative backdrop-blur-xl border rounded-xl;
+    @apply relative backdrop-blur-xl border-2 rounded-xl;
     background: hsl(var(--glass-bg));
     border-color: hsl(var(--glass-border));
     box-shadow:
@@ -249,9 +249,39 @@
     @apply bg-primary/10 text-primary;
   }
 
-  /* Mobile bottom nav */
+  /* Mobile floating bottom nav */
   .bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 z-50 glass-card rounded-t-2xl border-b-0 py-2 px-4 md:hidden;
+    @apply fixed bottom-0 left-0 right-0 z-50 md:hidden;
+    padding: 0 14px 14px 14px;
+    pointer-events: none;
+  }
+
+  .floating-nav-container {
+    @apply flex items-center justify-around;
+    background: hsl(var(--card) / 0.95);
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    border: 2px solid hsl(var(--border));
+    border-radius: 50px;
+    padding: 10px 8px;
+    pointer-events: auto;
+    box-shadow:
+      0 -2px 20px -2px rgba(0, 0, 0, 0.08),
+      0 8px 40px -4px rgba(0, 0, 0, 0.2),
+      0 4px 16px -2px rgba(0, 0, 0, 0.12);
+  }
+
+  .floating-nav-item {
+    @apply flex items-center gap-1.5 rounded-full transition-all;
+    padding: 8px 12px;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .floating-nav-item.active {
+    background: hsl(var(--primary) / 0.15);
+    color: hsl(var(--primary));
+    padding: 8px 16px;
+    box-shadow: 0 0 12px hsl(var(--primary) / 0.15);
   }
 
   /* Progress bar */

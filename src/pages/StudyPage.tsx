@@ -221,11 +221,11 @@ export default function StudyPage() {
     return (
         <AppLayout>
             <SEO title="Study Command Center" description="Track your academic progress, schedule study sessions, and use the focus timer." />
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 sm:space-y-6">
 
                 {/* ===== HEADER ===== */}
                 <div className="flex items-center justify-between flex-wrap gap-4">
-                    <div>
+                    <div className="hidden md:block">
                         <div className="flex items-center gap-3 mb-1">
                             <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
                                 <Brain className="w-6 h-6 text-primary" />
@@ -234,7 +234,7 @@ export default function StudyPage() {
                                 Study Command Center
                             </h1>
                         </div>
-                        <p className="text-muted-foreground ml-14">Master your subjects with focus and precision</p>
+                        <p className="text-muted-foreground ml-14 text-sm">Master your subjects with focus and precision</p>
                     </div>
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
@@ -259,7 +259,7 @@ export default function StudyPage() {
                 <StudyAnalytics chapters={chapters} />
 
                 {/* ===== STATS GRID ===== */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
                     {[
                         { icon: BookOpen, label: "Total Chapters", value: totalChapters, color: "text-blue-400", bg: "from-blue-500/15 to-blue-500/5" },
                         { icon: TrendingUp, label: "In Progress", value: inProgressChapters, color: "text-amber-400", bg: "from-amber-500/15 to-amber-500/5" },
@@ -271,15 +271,15 @@ export default function StudyPage() {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.08 }}
-                            className={`glass-card p-4 bg-gradient-to-br ${stat.bg} border border-white/5`}
+                            className={`glass-card p-3 sm:p-4 bg-gradient-to-br ${stat.bg} border border-white/5`}
                         >
-                            <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-lg bg-background/50 ${stat.color}`}>
-                                    <stat.icon className="w-5 h-5" />
+                            <div className="flex items-center gap-2 sm:gap-3">
+                                <div className={`p-1.5 sm:p-2 rounded-lg bg-background/50 ${stat.color}`}>
+                                    <stat.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold">{stat.value}</p>
-                                    <p className="text-xs text-muted-foreground">{stat.label}</p>
+                                    <p className="text-lg sm:text-2xl font-bold">{stat.value}</p>
+                                    <p className="text-[10px] sm:text-xs text-muted-foreground">{stat.label}</p>
                                 </div>
                             </div>
                         </motion.div>
@@ -287,9 +287,9 @@ export default function StudyPage() {
                 </div>
 
                 {/* ===== FOCUS TIMER + OVERALL PROGRESS ===== */}
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-3 sm:gap-4">
                     {/* Focus Timer Card */}
-                    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="glass-card p-6 border border-primary/10">
+                    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="glass-card p-4 sm:p-6 border border-primary/10">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
                                 <Timer className="w-5 h-5 text-primary" />
@@ -333,7 +333,7 @@ export default function StudyPage() {
                     </motion.div>
 
                     {/* Overall Progress Card */}
-                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="glass-card p-6 border border-white/5">
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="glass-card p-4 sm:p-6 border border-white/5">
                         <div className="flex items-center gap-2 mb-4">
                             <BarChart3 className="w-5 h-5 text-primary" />
                             <h3 className="font-semibold">Overall Progress</h3>
@@ -342,7 +342,7 @@ export default function StudyPage() {
                             <div className="relative">
                                 <CircularProgress progress={overallProgress} size={120} strokeWidth={10} color="hsl(var(--primary))" />
                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-3xl font-bold">{overallProgress}%</span>
+                                    <span className="text-2xl sm:text-3xl font-bold">{overallProgress}%</span>
                                     <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Complete</span>
                                 </div>
                             </div>

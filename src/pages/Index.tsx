@@ -246,7 +246,7 @@ Respond in this EXACT JSON format:
       <SEO title="Dashboard" description="Overview of your tasks, finance, habits, and study progress." />
 
       {/* ===== HEADER ===== */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="hidden md:block mb-8">
         <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
           <CalendarDays className="w-4 h-4" />
           <span>{today}</span>
@@ -258,30 +258,30 @@ Respond in this EXACT JSON format:
       </motion.div>
 
       {/* ===== STAT CARDS ===== */}
-      <motion.div variants={stagger} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+      <motion.div variants={stagger} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-3 mb-3 sm:mb-6">
         {statCards.map((stat) => (
           <motion.div key={stat.label} variants={fadeUp}
-            className={`group relative overflow-hidden rounded-2xl p-4 bg-gradient-to-br ${stat.gradient} border ${stat.borderColor} hover:shadow-xl transition-all duration-300 cursor-default`}
+            className={`group relative overflow-hidden rounded-lg sm:rounded-2xl p-2 sm:p-4 bg-gradient-to-br ${stat.gradient} border-2 ${stat.borderColor} hover:shadow-xl transition-all duration-300 cursor-default`}
           >
             {/* Glow orb */}
             <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full opacity-25 blur-2xl transition-opacity duration-500 group-hover:opacity-50"
               style={{ backgroundColor: stat.accent }} />
 
             <div className="relative z-10">
-              <div className="flex items-start justify-between mb-3">
-                <div className="p-2.5 rounded-xl shadow-sm" style={{ backgroundColor: `${stat.accent}25`, boxShadow: `0 2px 8px ${stat.accent}15` }}>
-                  <stat.icon className="w-5 h-5" style={{ color: stat.accent }} />
+              <div className="flex items-start justify-between mb-1.5 sm:mb-3">
+                <div className="p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl shadow-sm" style={{ backgroundColor: `${stat.accent}25`, boxShadow: `0 2px 8px ${stat.accent}15` }}>
+                  <stat.icon className="w-3.5 h-3.5 sm:w-5 sm:h-5" style={{ color: stat.accent }} />
                 </div>
                 {stat.trend && (
-                  <Badge variant="outline" className="text-[10px] h-5 font-semibold" style={{ borderColor: `${stat.accent}40`, color: stat.accent }}>
-                    {stat.trend.up ? <ArrowUpRight className="w-3 h-3 mr-0.5" /> : <ArrowDownRight className="w-3 h-3 mr-0.5" />}
+                  <Badge variant="outline" className="text-[8px] sm:text-[10px] h-4 sm:h-5 font-semibold" style={{ borderColor: `${stat.accent}40`, color: stat.accent }}>
+                    {stat.trend.up ? <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5" /> : <ArrowDownRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5" />}
                     {stat.trend.value}%
                   </Badge>
                 )}
               </div>
-              <h3 className="text-xl md:text-2xl font-bold tracking-tight">{stat.value}</h3>
-              <p className="text-xs mt-0.5 font-semibold" style={{ color: stat.accent }}>{stat.label}</p>
-              <p className="text-[10px] text-muted-foreground/60 mt-0.5">{stat.sub}</p>
+              <h3 className="text-base sm:text-xl md:text-2xl font-bold tracking-tight">{stat.value}</h3>
+              <p className="text-[9px] sm:text-xs mt-0.5 font-semibold" style={{ color: stat.accent }}>{stat.label}</p>
+              <p className="text-[9px] sm:text-[10px] text-muted-foreground/60 mt-0.5 hidden sm:block">{stat.sub}</p>
             </div>
           </motion.div>
         ))}
@@ -289,12 +289,12 @@ Respond in this EXACT JSON format:
 
       {/* ===== BENTO GRID ===== */}
       <motion.div variants={stagger} initial="hidden" animate="show"
-        className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6"
+        className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 mb-4 sm:mb-6"
       >
 
         {/* ── AI Summary (span 8) ── */}
         <motion.div variants={fadeUp} className="lg:col-span-8">
-          <div className="rounded-2xl border border-sky-200/50 dark:border-sky-500/20 bg-gradient-to-br from-sky-50/50 via-card/80 to-indigo-50/30 dark:from-sky-950/20 dark:via-card/80 dark:to-indigo-950/10 backdrop-blur-sm p-5 relative overflow-hidden h-full">
+          <div className="rounded-xl sm:rounded-2xl border-2 border-sky-200/50 dark:border-sky-500/20 bg-gradient-to-br from-sky-50/50 via-card/80 to-indigo-50/30 dark:from-sky-950/20 dark:via-card/80 dark:to-indigo-950/10 backdrop-blur-sm p-4 sm:p-5 relative overflow-hidden h-full">
             {/* Background accents */}
             <div className="absolute -top-20 -right-20 w-48 h-48 rounded-full blur-[80px] opacity-20"
               style={{ background: "linear-gradient(135deg, #38bdf8, #6366f1)" }} />
@@ -391,53 +391,95 @@ Respond in this EXACT JSON format:
 
         {/* ── Monthly Spending (span 4) ── */}
         <motion.div variants={fadeUp} className="lg:col-span-4">
-          <div className="rounded-2xl border border-border bg-card/50 backdrop-blur-sm p-5 h-full">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-violet-500/10">
-                  <BarChart3 className="w-4 h-4 text-violet-400" />
-                </div>
-                <h3 className="font-semibold text-sm">Spending</h3>
-              </div>
-              <div className="text-right">
-                <span className="text-lg font-bold">৳{thisMonthTotal.toLocaleString()}</span>
-                {expenseTrend !== 0 && (
-                  <div className={`text-[10px] font-medium ${expenseTrend > 0 ? "text-red-400" : "text-green-400"}`}>
-                    {expenseTrend > 0 ? "↑" : "↓"} {Math.abs(expenseTrend)}% vs last month
+          <div className="rounded-xl sm:rounded-2xl border-2 border-violet-200/50 dark:border-violet-500/20 bg-gradient-to-br from-violet-50/40 via-card/80 to-fuchsia-50/20 dark:from-violet-950/20 dark:via-card/80 dark:to-fuchsia-950/10 backdrop-blur-sm p-4 sm:p-5 h-full relative overflow-hidden">
+            {/* Glow orb */}
+            <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-violet-500 opacity-[0.06] blur-3xl" />
+
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-xl bg-violet-500/15 shadow-sm shadow-violet-500/10">
+                    <BarChart3 className="w-4 h-4 text-violet-500" />
                   </div>
+                  <div>
+                    <h3 className="font-semibold text-sm">Monthly Spending</h3>
+                    <p className="text-[10px] text-muted-foreground">This month's overview</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Hero amount */}
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl font-bold text-violet-600 dark:text-violet-400">৳{thisMonthTotal.toLocaleString()}</span>
+                {expenseTrend !== 0 && (
+                  <Badge className={`text-[9px] rounded-full px-2 h-5 font-semibold ${expenseTrend > 0
+                    ? "bg-red-500/10 text-red-500 border-red-300/30 dark:border-red-500/20 hover:bg-red-500/15"
+                    : "bg-green-500/10 text-green-500 border-green-300/30 dark:border-green-500/20 hover:bg-green-500/15"
+                    }`}>
+                    {expenseTrend > 0 ? "↑" : "↓"} {Math.abs(expenseTrend)}%
+                  </Badge>
                 )}
               </div>
-            </div>
+              <p className="text-[10px] text-muted-foreground/60 mb-4">vs ৳{lastMonthTotal.toLocaleString()} last month</p>
 
-            {expenseChartData.length > 0 ? (
-              <div className="h-40 -mx-2">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={expenseChartData} cx="50%" cy="50%" innerRadius={45} outerRadius={65}
-                      paddingAngle={4} dataKey="value" stroke="none">
-                      {expenseChartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "0.75rem", fontSize: "12px" }}
-                      formatter={(value: number) => [`৳${value.toLocaleString()}`, ""]}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <div className="h-40 flex items-center justify-center">
-                <p className="text-xs text-muted-foreground">No expenses this month</p>
-              </div>
-            )}
-
-            <div className="space-y-2 mt-3">
-              {expenseChartData.slice(0, 4).map(cat => (
-                <div key={cat.name} className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
-                  <span className="text-xs text-muted-foreground flex-1">{cat.name}</span>
-                  <span className="text-xs font-semibold">৳{cat.value.toLocaleString()}</span>
+              {expenseChartData.length > 0 ? (
+                <div className="relative h-44 -mx-2 mb-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={expenseChartData} cx="50%" cy="50%" innerRadius={50} outerRadius={72}
+                        paddingAngle={3} dataKey="value" stroke="none" cornerRadius={4}>
+                        {expenseChartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "0.75rem", fontSize: "12px", boxShadow: "0 8px 30px rgba(0,0,0,0.12)" }}
+                        formatter={(value: number) => [`৳${value.toLocaleString()}`, ""]}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  {/* Center label */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-[10px] text-muted-foreground/60">Total</span>
+                    <span className="text-sm font-bold text-violet-600 dark:text-violet-400">৳{thisMonthTotal.toLocaleString()}</span>
+                  </div>
                 </div>
-              ))}
+              ) : (
+                <div className="h-44 flex flex-col items-center justify-center mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-violet-500/10 flex items-center justify-center mb-2">
+                    <BarChart3 className="w-6 h-6 text-violet-400/40" />
+                  </div>
+                  <p className="text-xs text-muted-foreground">No expenses this month</p>
+                </div>
+              )}
+
+              {/* Category breakdown with bars */}
+              <div className="space-y-2.5">
+                {expenseChartData.slice(0, 4).map((cat, i) => {
+                  const pct = thisMonthTotal > 0 ? Math.round((cat.value / thisMonthTotal) * 100) : 0;
+                  return (
+                    <div key={cat.name}>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                          <span className="text-xs font-medium">{cat.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-muted-foreground">{pct}%</span>
+                          <span className="text-xs font-bold">৳{cat.value.toLocaleString()}</span>
+                        </div>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-violet-100/40 dark:bg-violet-900/20 overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${pct}%` }}
+                          transition={{ duration: 0.8, delay: 0.2 + i * 0.1 }}
+                          className="h-full rounded-full"
+                          style={{ backgroundColor: cat.color }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </motion.div>
@@ -452,7 +494,7 @@ Respond in this EXACT JSON format:
           <h3 className="font-semibold text-sm">Activity Overview</h3>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
           {[
             {
               label: "Tasks Done", value: completedTasks.length, total: allTasks.length,
@@ -486,29 +528,29 @@ Respond in this EXACT JSON format:
             const pct = item.total ? Math.round((item.value / item.total) * 100) : 100;
             return (
               <motion.div key={item.label} variants={fadeUp}
-                className={`group relative overflow-hidden rounded-2xl p-4 bg-gradient-to-br ${item.gradient} border ${item.border} backdrop-blur-sm transition-all duration-300 hover:shadow-lg cursor-default`}
+                className={`group relative overflow-hidden rounded-lg sm:rounded-2xl p-2 sm:p-4 bg-gradient-to-br ${item.gradient} border-2 ${item.border} backdrop-blur-sm transition-all duration-300 hover:shadow-lg cursor-default`}
               >
                 {/* Glow orb */}
                 <div className="absolute -bottom-6 -right-6 w-24 h-24 rounded-full opacity-15 blur-2xl group-hover:opacity-30 transition-opacity duration-500"
                   style={{ backgroundColor: item.color }} />
 
                 <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className={`p-2 rounded-xl ${item.bg}`}>
-                      <item.icon className="w-4 h-4" style={{ color: item.color }} />
+                  <div className="flex items-center justify-between mb-1.5 sm:mb-3">
+                    <div className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl ${item.bg}`}>
+                      <item.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: item.color }} />
                     </div>
-                    <RadialProgress progress={pct} color={item.color} size={44} strokeWidth={4}>
-                      <span className="text-[9px] font-bold" style={{ color: item.color }}>{pct}%</span>
+                    <RadialProgress progress={pct} color={item.color} size={36} strokeWidth={3}>
+                      <span className="text-[8px] sm:text-[9px] font-bold" style={{ color: item.color }}>{pct}%</span>
                     </RadialProgress>
                   </div>
 
-                  <h4 className="text-2xl font-bold tracking-tight" style={{ color: item.color }}>
+                  <h4 className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: item.color }}>
                     {item.value}{item.suffix || ""}
                   </h4>
-                  <p className="text-[11px] text-muted-foreground font-medium mt-0.5">{item.label}</p>
+                  <p className="text-[10px] sm:text-[11px] text-muted-foreground font-medium mt-0.5">{item.label}</p>
                   {item.total !== null && (
-                    <div className="mt-2">
-                      <div className="h-1.5 rounded-full bg-muted/20 overflow-hidden">
+                    <div className="mt-1.5 sm:mt-2">
+                      <div className="h-1 sm:h-1.5 rounded-full bg-muted/20 overflow-hidden">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${pct}%` }}
@@ -517,7 +559,7 @@ Respond in this EXACT JSON format:
                           style={{ backgroundColor: item.color }}
                         />
                       </div>
-                      <p className="text-[9px] text-muted-foreground/50 mt-1">{item.value} of {item.total}</p>
+                      <p className="text-[8px] sm:text-[9px] text-muted-foreground/50 mt-0.5 sm:mt-1">{item.value} of {item.total}</p>
                     </div>
                   )}
                 </div>
@@ -529,12 +571,12 @@ Respond in this EXACT JSON format:
 
       {/* ===== BOTTOM 3-COL GRID ===== */}
       <motion.div variants={stagger} initial="hidden" animate="show"
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6"
       >
 
         {/* ── Recent Tasks ── */}
         <motion.div variants={fadeUp}>
-          <div className="rounded-2xl border border-blue-200/50 dark:border-blue-500/20 bg-gradient-to-br from-blue-50/40 via-card/80 to-sky-50/20 dark:from-blue-950/15 dark:via-card/80 dark:to-sky-950/10 backdrop-blur-sm p-5 h-full relative overflow-hidden">
+          <div className="rounded-xl sm:rounded-2xl border-2 border-blue-200/50 dark:border-blue-500/20 bg-gradient-to-br from-blue-50/40 via-card/80 to-sky-50/20 dark:from-blue-950/15 dark:via-card/80 dark:to-sky-950/10 backdrop-blur-sm p-4 sm:p-5 h-full relative overflow-hidden">
             {/* Glow */}
             <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-blue-500 opacity-[0.06] blur-3xl" />
 
@@ -579,9 +621,9 @@ Respond in this EXACT JSON format:
                       className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-blue-500/5 dark:hover:bg-blue-500/10 transition-all group cursor-default"
                     >
                       <div className={`w-2.5 h-2.5 rounded-full shrink-0 ring-2 ${task.priority === "urgent" ? "bg-red-500 ring-red-500/30" :
-                          task.priority === "high" ? "bg-red-400 ring-red-400/20" :
-                            task.priority === "medium" ? "bg-amber-400 ring-amber-400/20" :
-                              "bg-blue-300 ring-blue-300/20"
+                        task.priority === "high" ? "bg-red-400 ring-red-400/20" :
+                          task.priority === "medium" ? "bg-amber-400 ring-amber-400/20" :
+                            "bg-blue-300 ring-blue-300/20"
                         }`} />
                       <span className="text-sm truncate flex-1 font-medium">{task.title}</span>
                       {task.due_date && (
@@ -599,7 +641,7 @@ Respond in this EXACT JSON format:
 
         {/* ── Habits ── */}
         <motion.div variants={fadeUp}>
-          <div className="rounded-2xl border border-orange-200/50 dark:border-orange-500/20 bg-gradient-to-br from-orange-50/40 via-card/80 to-amber-50/20 dark:from-orange-950/15 dark:via-card/80 dark:to-amber-950/10 backdrop-blur-sm p-5 h-full relative overflow-hidden">
+          <div className="rounded-xl sm:rounded-2xl border-2 border-orange-200/50 dark:border-orange-500/20 bg-gradient-to-br from-orange-50/40 via-card/80 to-amber-50/20 dark:from-orange-950/15 dark:via-card/80 dark:to-amber-950/10 backdrop-blur-sm p-4 sm:p-5 h-full relative overflow-hidden">
             {/* Glow */}
             <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-orange-500 opacity-[0.06] blur-3xl" />
 
@@ -644,8 +686,8 @@ Respond in this EXACT JSON format:
                         className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-orange-500/5 dark:hover:bg-orange-500/10 transition-all cursor-default"
                       >
                         <div className={`w-5 h-5 rounded-lg flex items-center justify-center shrink-0 transition-all ${done
-                            ? "bg-gradient-to-br from-green-400 to-emerald-500 shadow-md shadow-green-500/25"
-                            : "bg-muted/30 border-2 border-muted-foreground/15"
+                          ? "bg-gradient-to-br from-green-400 to-emerald-500 shadow-md shadow-green-500/25"
+                          : "bg-muted/30 border-2 border-muted-foreground/15"
                           }`}>
                           {done && <CheckCircle2 className="w-3 h-3 text-white" />}
                         </div>
@@ -670,7 +712,7 @@ Respond in this EXACT JSON format:
         {/* ── Study + Transactions ── */}
         <motion.div variants={fadeUp} className="space-y-4">
           {/* Study Progress */}
-          <div className="rounded-2xl border border-violet-200/50 dark:border-violet-500/20 bg-gradient-to-br from-violet-50/30 via-card/80 to-purple-50/20 dark:from-violet-950/15 dark:via-card/80 dark:to-purple-950/10 backdrop-blur-sm p-5 relative overflow-hidden">
+          <div className="rounded-xl sm:rounded-2xl border-2 border-violet-200/50 dark:border-violet-500/20 bg-gradient-to-br from-violet-50/30 via-card/80 to-purple-50/20 dark:from-violet-950/15 dark:via-card/80 dark:to-purple-950/10 backdrop-blur-sm p-4 sm:p-5 relative overflow-hidden">
             <div className="absolute -bottom-8 -right-8 w-28 h-28 rounded-full bg-violet-500 opacity-[0.05] blur-3xl" />
 
             <div className="relative z-10">
@@ -715,7 +757,7 @@ Respond in this EXACT JSON format:
           </div>
 
           {/* Recent Transactions */}
-          <div className="rounded-2xl border border-cyan-200/50 dark:border-cyan-500/20 bg-gradient-to-br from-cyan-50/30 via-card/80 to-teal-50/20 dark:from-cyan-950/15 dark:via-card/80 dark:to-teal-950/10 backdrop-blur-sm p-5 relative overflow-hidden">
+          <div className="rounded-xl sm:rounded-2xl border-2 border-cyan-200/50 dark:border-cyan-500/20 bg-gradient-to-br from-cyan-50/30 via-card/80 to-teal-50/20 dark:from-cyan-950/15 dark:via-card/80 dark:to-teal-950/10 backdrop-blur-sm p-4 sm:p-5 relative overflow-hidden">
             <div className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-cyan-500 opacity-[0.05] blur-3xl" />
 
             <div className="relative z-10">
@@ -737,8 +779,8 @@ Respond in this EXACT JSON format:
                       className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-cyan-500/5 dark:hover:bg-cyan-500/8 transition-all"
                     >
                       <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${tx.type === "income"
-                          ? "bg-gradient-to-br from-green-400/20 to-emerald-500/10 shadow-green-500/10"
-                          : "bg-gradient-to-br from-red-400/20 to-rose-500/10 shadow-red-500/10"
+                        ? "bg-gradient-to-br from-green-400/20 to-emerald-500/10 shadow-green-500/10"
+                        : "bg-gradient-to-br from-red-400/20 to-rose-500/10 shadow-red-500/10"
                         }`}>
                         {tx.type === "income" ? (
                           <ArrowUpRight className="w-4 h-4 text-green-500" />
