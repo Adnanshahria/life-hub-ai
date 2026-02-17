@@ -52,6 +52,7 @@ export default defineConfig(({ mode }) => ({
         enabled: true, // Enable PWA in development for testing
       },
       workbox: {
+        maximumFileSizeToCacheInBytes: 10000000,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         navigateFallback: "index.html", // SPA fallback for offline navigation
         navigateFallbackDenylist: [/^\/api/], // Don't fallback API routes
