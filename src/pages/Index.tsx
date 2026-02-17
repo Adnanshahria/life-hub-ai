@@ -242,11 +242,11 @@ Respond in this EXACT JSON format:
   ];
 
   return (
-    <AppLayout>
+    <AppLayout className="!pt-6 sm:!pt-8 md:pt-6">
       <SEO title="Dashboard" description="Overview of your tasks, finance, habits, and study progress." />
 
       {/* ===== HEADER ===== */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="hidden md:block mb-8">
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="block mb-6 md:mb-8">
         <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
           <CalendarDays className="w-4 h-4" />
           <span>{today}</span>

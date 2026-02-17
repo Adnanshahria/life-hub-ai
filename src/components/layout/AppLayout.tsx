@@ -6,9 +6,10 @@ import { GlobalSearch } from "../ui/GlobalSearch";
 
 interface AppLayoutProps {
   children: ReactNode;
+  className?: string;
 }
 
-export function AppLayout({ children }: AppLayoutProps) {
+export function AppLayout({ children, className }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Ambient background gradient */}
@@ -22,7 +23,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       {/* Main content */}
       <main className="md:ml-64 min-h-screen pb-20 md:pb-8">
-        <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 pt-20 sm:pt-24 md:pt-6 pb-8">
+        <div className={`max-w-6xl mx-auto px-3 sm:px-4 md:px-6 pt-20 sm:pt-24 md:pt-6 pb-8 ${className}`}>
           {children}
         </div>
       </main>
