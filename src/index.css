@@ -281,9 +281,10 @@
     @apply bg-primary/10 text-primary;
   }
 
-  /* Floating per-page top toolbar — mirrors bottom nav style */
   .top-toolbar {
-    @apply sticky top-6 z-40 flex items-center justify-center gap-1.5 sm:gap-3 flex-wrap mx-auto w-fit max-w-[95vw] transition-all duration-300;
+    @apply fixed top-6 z-40 flex items-center justify-center gap-1.5 sm:gap-3 flex-wrap w-fit max-w-[95vw] transition-all duration-300;
+    left: 50%;
+    transform: translateX(-50%);
     background: hsl(var(--card) / 0.95);
     backdrop-filter: blur(24px) saturate(1.8);
     -webkit-backdrop-filter: blur(24px) saturate(1.8);
@@ -295,73 +296,79 @@
       0 10px 40px -10px rgba(0, 0, 0, 0.2),
       0 0 20px -5px rgba(0, 0, 0, 0.1);
   }
-}
 
-/* Mobile floating bottom nav */
-.bottom-nav {
-  @apply fixed bottom-0 left-0 right-0 z-50 md:hidden;
-  padding: 0 14px 14px 14px;
-  pointer-events: none;
-}
+  @media (min-width: 768px) {
+    .top-toolbar {
+      left: calc(50% + 8rem);
+    }
+  }
 
-.floating-nav-container {
-  @apply flex items-center justify-around;
-  background: hsl(var(--card) / 0.95);
-  backdrop-filter: blur(24px) saturate(1.8);
-  -webkit-backdrop-filter: blur(24px) saturate(1.8);
-  border: 2px solid hsl(var(--border));
-  border-radius: 50px;
-  padding: 10px 8px;
-  pointer-events: auto;
-  box-shadow:
-    0 -2px 20px -2px rgba(0, 0, 0, 0.08),
-    0 8px 40px -4px rgba(0, 0, 0, 0.2),
-    0 4px 16px -2px rgba(0, 0, 0, 0.12);
-}
 
-.floating-nav-item {
-  @apply flex items-center gap-1.5 rounded-full transition-all;
-  padding: 8px 12px;
-  color: hsl(var(--muted-foreground));
-}
+  /* Mobile floating bottom nav */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 z-50 md:hidden;
+    padding: 0 14px 14px 14px;
+    pointer-events: none;
+  }
 
-.floating-nav-item.active {
-  background: hsl(var(--primary) / 0.15);
-  color: hsl(var(--primary));
-  padding: 8px 16px;
-  box-shadow: 0 0 12px hsl(var(--primary) / 0.15);
-}
+  .floating-nav-container {
+    @apply flex items-center justify-around;
+    background: hsl(var(--card) / 0.95);
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    border: 2px solid hsl(var(--border));
+    border-radius: 50px;
+    padding: 10px 8px;
+    pointer-events: auto;
+    box-shadow:
+      0 -2px 20px -2px rgba(0, 0, 0, 0.08),
+      0 8px 40px -4px rgba(0, 0, 0, 0.2),
+      0 4px 16px -2px rgba(0, 0, 0, 0.12);
+  }
 
-/* Progress bar */
-.progress-bar {
-  @apply relative h-2 w-full overflow-hidden rounded-full bg-secondary;
-}
+  .floating-nav-item {
+    @apply flex items-center gap-1.5 rounded-full transition-all;
+    padding: 8px 12px;
+    color: hsl(var(--muted-foreground));
+  }
 
-.progress-bar-fill {
-  @apply h-full rounded-full bg-gradient-primary transition-all duration-500 ease-out;
-}
+  .floating-nav-item.active {
+    background: hsl(var(--primary) / 0.15);
+    color: hsl(var(--primary));
+    padding: 8px 16px;
+    box-shadow: 0 0 12px hsl(var(--primary) / 0.15);
+  }
 
-/* Chart container */
-.chart-container {
-  @apply glass-card p-5;
-}
+  /* Progress bar */
+  .progress-bar {
+    @apply relative h-2 w-full overflow-hidden rounded-full bg-secondary;
+  }
 
-/* Scrollbar styling */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
+  .progress-bar-fill {
+    @apply h-full rounded-full bg-gradient-primary transition-all duration-500 ease-out;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  @apply bg-transparent;
-}
+  /* Chart container */
+  .chart-container {
+    @apply glass-card p-5;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-border rounded-full;
-}
+  /* Scrollbar styling */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  @apply bg-muted-foreground/40;
-}
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/40;
+  }
 }
 
 @layer utilities {
