@@ -5,8 +5,9 @@ import {
     Pin, PinOff, CheckSquare, Eye, EyeOff, Bold, Italic, Heading,
     ChevronRight, ChevronDown, Calendar, AlertCircle, Sparkles, Filter,
     Check, List, ListChecks, Copy, Edit3, Loader2, Send, X,
-    Archive, ArchiveRestore, Palette, MoreHorizontal, Undo2, ArrowUpDown, Maximize2
+    Archive, ArchiveRestore, Palette, MoreHorizontal, Undo2, ArrowUpDown, Maximize2, Image as ImageIcon
 } from "lucide-react";
+import { uploadImage } from "../services/imageUpload";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -184,6 +185,20 @@ function renderInlineFormatting(text: string): React.ReactNode {
             parts.push(<span key={key++} className={cn("font-medium", colorClass)}>{colorMatch[3]}</span>);
             remaining = colorMatch[4]; continue;
         }
+        const imgMatch = remaining.match(/^(.*?)!\[(.*?)\]\((.*?)\)(.*)/s);
+        if (imgMatch) {
+            if (imgMatch[1]) parts.push(<span key={key++}>{imgMatch[1]}</span>);
+            parts.push(
+                <img
+                    key={key++}
+                    src={imgMatch[3]}
+                    alt={imgMatch[2]}
+                    className="max-w-full h-auto rounded-lg my-2 border border-border/50 shadow-sm"
+                    loading="lazy"
+                />
+            );
+            remaining = imgMatch[4]; continue;
+        }
         parts.push(<span key={key++}>{remaining}</span>);
         break;
     }
@@ -288,6 +303,16 @@ function renderFormattingInline(text: string, keyOffset: number = 0): React.Reac
             parts.push(<HiddenSyntax key={`ifmt-${key++}`}>{`</c>`}</HiddenSyntax>);
             remaining = colorMatch[4]; continue;
         }
+        const imgMatch = remaining.match(/^(.*?)!\[(.*?)\]\((.*?)\)(.*)/s);
+        if (imgMatch) {
+            if (imgMatch[1]) parts.push(<span key={`ifmt-${key++}`} className="text-foreground">{imgMatch[1]}</span>);
+            parts.push(<HiddenSyntax key={`ifmt-${key++}`}>![</HiddenSyntax>);
+            parts.push(<span key={`ifmt-${key++}`} className="text-primary">{imgMatch[2]}</span>);
+            parts.push(<HiddenSyntax key={`ifmt-${key++}`}>](</HiddenSyntax>);
+            parts.push(<span key={`ifmt-${key++}`} className="text-muted-foreground/50 underline decoration-dotted text-xs">{imgMatch[3]}</span>);
+            parts.push(<HiddenSyntax key={`ifmt-${key++}`}>{")"}</HiddenSyntax>);
+            remaining = imgMatch[4]; continue;
+        }
         parts.push(<span key={`ifmt-${key++}`} className="text-foreground">{remaining}</span>);
         break;
     }
@@ -295,14 +320,36 @@ function renderFormattingInline(text: string, keyOffset: number = 0): React.Reac
 }
 
 // ===== HYBRID EDITOR =====
-function NoteEditor({ value, onChange, textareaRef, placeholder, className }: {
+function NoteEditor({ value, onChange, textareaRef, placeholder, className, onImageUpload }: {
     value: string;
     onChange: (val: string) => void;
     textareaRef: React.RefObject<HTMLTextAreaElement>;
     placeholder?: string;
     className?: string;
+    onImageUpload?: (file: File) => Promise<string | null>;
 }) {
     const overlayRef = useRef<HTMLDivElement>(null);
+    const [isBoosting, setIsBoosting] = useState(false);
+
+    const handleDrop = async (e: React.DragEvent) => {
+        if (!onImageUpload) return;
+        e.preventDefault();
+        const files = Array.from(e.dataTransfer.files);
+        const image = files.find(f => f.type.startsWith("image/"));
+        if (!image) return;
+
+        setIsBoosting(true);
+        const url = await onImageUpload(image);
+        setIsBoosting(false);
+
+        if (url && textareaRef.current) {
+            const ta = textareaRef.current;
+            const start = ta.selectionStart || value.length;
+            const textToInsert = `![${image.name}](${url})`;
+            const newValue = value.slice(0, start) + textToInsert + value.slice(start);
+            onChange(newValue);
+        }
+    };
 
     const handleScroll = () => {
         if (textareaRef.current && overlayRef.current) {
@@ -342,11 +389,14 @@ function NoteEditor({ value, onChange, textareaRef, placeholder, className }: {
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 onScroll={handleScroll}
+                onDrop={handleDrop}
+                onDragOver={(e) => e.preventDefault()}
                 placeholder={placeholder}
                 spellCheck={false}
                 className={cn(
                     "w-full bg-transparent relative z-10 border-none focus-visible:ring-0 focus:outline-none shadow-none resize-none min-h-[200px] sm:min-h-[300px] text-transparent caret-primary selection:bg-primary/20",
-                    typographyStyles, paddingStyles
+                    typographyStyles, paddingStyles,
+                    isBoosting && "opacity-50"
                 )}
             />
             {value.length > 0 && (
@@ -359,19 +409,22 @@ function NoteEditor({ value, onChange, textareaRef, placeholder, className }: {
 }
 
 // ===== TOOLBAR WITH AI =====
-function NoteToolbar({ textareaRef, onContentChange, noteTitle, allNotes }: {
+function NoteToolbar({ textareaRef, onContentChange, noteTitle, allNotes, onImageUpload }: {
     textareaRef: React.RefObject<HTMLTextAreaElement>;
     onContentChange: (content: string) => void;
     noteTitle?: string;
     allNotes?: Note[];
+    onImageUpload?: (file: File) => Promise<string | null>;
 }) {
     const [copied, setCopied] = useState(false);
     const [aiOpen, setAiOpen] = useState(false);
     const [aiPrompt, setAiPrompt] = useState("");
     const [aiLoading, setAiLoading] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const [aiError, setAiError] = useState<string | null>(null);
     const [showPalette, setShowPalette] = useState(false); // For text color picker
     const aiInputRef = useRef<HTMLInputElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const cursorRef = useRef({ start: 0, end: 0 });
 
     const saveCursor = () => {
@@ -436,12 +489,30 @@ function NoteToolbar({ textareaRef, onContentChange, noteTitle, allNotes }: {
         }
     };
 
+    const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files?.[0] || !onImageUpload) return;
+        const file = e.target.files[0];
+        setUploading(true);
+        saveCursor(); // Save position before upload
+        try {
+            const url = await onImageUpload(file);
+            if (url) {
+                // Restore cursor logic partially via insert
+                insert(`![${file.name}](${url})`);
+            }
+        } finally {
+            setUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+        }
+    };
+
     const tools = [
         { icon: Bold, label: "Bold", action: () => insert("**", "**") },
         { icon: Italic, label: "Italic", action: () => insert("*", "*") },
         { icon: Heading, label: "Heading", action: () => addNewLine("## ") },
         { icon: List, label: "Bullet List", action: () => addNewLine("- ") },
         { icon: ListChecks, label: "Checklist", action: () => addNewLine("- [ ] ") },
+        { icon: uploading ? Loader2 : ImageIcon, label: "Image", action: () => fileInputRef.current?.click() },
         { icon: copied ? Check : Copy, label: "Copy", action: handleCopy },
     ];
 
@@ -527,6 +598,7 @@ function NoteToolbar({ textareaRef, onContentChange, noteTitle, allNotes }: {
                     <Sparkles className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">AI</span>
                 </Button>
+                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageSelect} />
             </div>
             <AnimatePresence>
                 {aiOpen && (
@@ -613,11 +685,11 @@ function NoteCard({ note, serialNumber, onSelect, onExpand, onToggleCheckbox, on
     const stats = getChecklistStats(note.content || "");
     const colorClasses = NOTE_COLORS[note.color] || NOTE_COLORS.default;
 
-    // Plain text preview (first ~3 lines, no markdown)
+    // Plain text preview (first 1 line, no markdown)
     const previewText = useMemo(() => {
         if (!note.content) return "";
         const lines = note.content.split("\n").filter(l => l.trim());
-        return lines.slice(0, 3).map(l =>
+        return lines.slice(0, 1).map(l =>
             l.replace(/^#+\s*/, "").replace(/\*\*(.*?)\*\*/g, "$1").replace(/\*(.*?)\*/g, "$1").replace(/`(.*?)`/g, "$1").replace(/^[-*]\s*\[[ xX]\]\s*/, "☐ ").replace(/^[-*]\s+/, "• ")
         ).join("\n");
     }, [note.content]);
@@ -665,7 +737,7 @@ function NoteCard({ note, serialNumber, onSelect, onExpand, onToggleCheckbox, on
 
                 {/* Preview Text */}
                 {note.content && (
-                    <p className="text-sm text-muted-foreground mt-1.5 line-clamp-3 whitespace-pre-line leading-relaxed">{previewText}</p>
+                    <p className="text-sm text-muted-foreground mt-1.5 line-clamp-1 whitespace-pre-line leading-relaxed">{previewText}</p>
                 )}
 
                 {/* Checklist Progress - always visible */}
@@ -856,6 +928,16 @@ export default function NotesPage() {
         setSelectedNote(null);
     };
 
+    const handleUploadImage = async (file: File) => {
+        try {
+            return await uploadImage(file);
+        } catch (error) {
+            console.error("Upload failed", error);
+            alert("Failed to upload image. Please check API key.");
+            return null;
+        }
+    };
+
     const handleCheckboxToggle = async (note: Note, index: number) => {
         const newContent = toggleChecklistItem(note.content || "", index);
         const updated = { ...note, content: newContent };
@@ -931,8 +1013,9 @@ export default function NotesPage() {
                                         value={newNote.content}
                                         onChange={(val) => setNewNote({ ...newNote, content: val })}
                                         placeholder={"Take a note...\n\n- [ ] Checklist item"}
+                                        onImageUpload={handleUploadImage}
                                     />
-                                    <NoteToolbar textareaRef={newTextareaRef} onContentChange={(c) => setNewNote({ ...newNote, content: c })} noteTitle={newNote.title} allNotes={notes} />
+                                    <NoteToolbar textareaRef={newTextareaRef} onContentChange={(c) => setNewNote({ ...newNote, content: c })} noteTitle={newNote.title} allNotes={notes} onImageUpload={handleUploadImage} />
                                     <div className="space-y-2">
                                         <Input placeholder="Tags (comma separated)" value={newNote.tags} onChange={(e) => setNewNote({ ...newNote, tags: e.target.value })} />
                                         <div>
@@ -1096,8 +1179,9 @@ export default function NotesPage() {
                                     textareaRef={editTextareaRef}
                                     value={selectedNote.content || ""}
                                     onChange={(val) => setSelectedNote({ ...selectedNote, content: val })}
+                                    onImageUpload={handleUploadImage}
                                 />
-                                <NoteToolbar textareaRef={editTextareaRef} onContentChange={(c) => setSelectedNote({ ...selectedNote, content: c })} noteTitle={selectedNote.title} allNotes={notes} />
+                                <NoteToolbar textareaRef={editTextareaRef} onContentChange={(c) => setSelectedNote({ ...selectedNote, content: c })} noteTitle={selectedNote.title} allNotes={notes} onImageUpload={handleUploadImage} />
                                 <div className="flex flex-col sm:flex-row gap-2">
                                     <div className="relative flex-1">
                                         <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
