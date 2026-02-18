@@ -170,18 +170,27 @@ export function TimePicker({ value, onChange, placeholder = "Select time", class
                             ))}
                         </div>
 
-                        {/* Clear Button */}
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="w-full mt-2 text-xs text-muted-foreground"
-                            onClick={() => {
-                                onChange("");
-                                setIsOpen(false);
-                            }}
-                        >
-                            Clear
-                        </Button>
+                        {/* Clear & Save Buttons */}
+                        <div className="flex gap-2 mt-2">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="flex-1 text-xs text-muted-foreground"
+                                onClick={() => {
+                                    onChange("");
+                                    setIsOpen(false);
+                                }}
+                            >
+                                Clear
+                            </Button>
+                            <Button
+                                size="sm"
+                                className="flex-1 text-xs"
+                                onClick={() => setIsOpen(false)}
+                            >
+                                Save
+                            </Button>
+                        </div>
                     </div>
                 )}
             </div>

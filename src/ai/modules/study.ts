@@ -10,6 +10,7 @@ export const STUDY_ACTIONS = [
     "DELETE_STUDY_SUBJECT",
     "DELETE_STUDY_CHAPTER",
     "DELETE_STUDY_PART",
+    "ADD_STUDY_SUBCHAPTER",
 ];
 
 export const STUDY_PROMPT = `STUDY RULES:
@@ -27,7 +28,10 @@ Study Examples:
 - "add chapter waves to physics" → ADD_STUDY_CHAPTER with subject_name "Physics", chapter_name "Waves"
 - "add part interference to waves chapter, 45 minutes" → ADD_STUDY_PART with chapter_name "Waves", part_name "Interference", estimated_minutes 45
 - "mark interference as done" → UPDATE_STUDY_PART_STATUS with part_name "Interference"
-- "delete physics subject" → DELETE_STUDY_SUBJECT with subject_name "Physics"`;
+- "delete physics subject" → DELETE_STUDY_SUBJECT with subject_name "Physics"
+- "add quiz sub-chapter to waves chapter" → ADD_STUDY_SUBCHAPTER with chapter_name "Waves", preset_name "Quiz"
+- "add review to waves under interference part" → ADD_STUDY_SUBCHAPTER with chapter_name "Waves", preset_name "Review", target_part_name "Interference"
+- "add questions to waves under all parts" → ADD_STUDY_SUBCHAPTER with chapter_name "Waves", preset_name "Questions", target_part_name "all"`;
 
 export async function executeStudyAction(
     action: string,
@@ -98,6 +102,37 @@ export async function executeStudyAction(
             const part = hooks.parts?.find(p => p.name.toLowerCase().includes(name));
             if (part && hooks.deletePart) {
                 await hooks.deletePart.mutateAsync(part.id);
+            }
+            break;
+        }
+
+        case "ADD_STUDY_SUBCHAPTER": {
+            const cName = String(data.chapter_name || data.chapter || "").toLowerCase();
+            const targetChapter = hooks.chapters?.find(c => c.name.toLowerCase().includes(cName));
+
+            if (targetChapter && hooks.addPresetsToChapter && hooks.commonPresets) {
+                const pName = String(data.preset_name || data.sub_chapter_name || data.name || "").toLowerCase();
+                // Find presets matching the name
+                const matchedPresets = hooks.commonPresets.filter(p => !p.parent_id && p.name.toLowerCase().includes(pName));
+
+                if (matchedPresets.length > 0) {
+                    // Optional: Target Part
+                    let targetPartId: string | undefined = undefined;
+                    const tPartName = String(data.target_part_name || data.parent_part_name || "").toLowerCase();
+
+                    if (tPartName === "all" || tPartName === "all parts") {
+                        targetPartId = "all-parts";
+                    } else if (tPartName) {
+                        const tPart = hooks.parts?.find(p => p.chapter_id === targetChapter.id && p.name.toLowerCase().includes(tPartName));
+                        if (tPart) targetPartId = tPart.id;
+                    }
+
+                    await hooks.addPresetsToChapter.mutateAsync({
+                        chapterId: targetChapter.id,
+                        presetIds: matchedPresets.map(p => p.id),
+                        targetPartId: targetPartId
+                    });
+                }
             }
             break;
         }

@@ -106,9 +106,12 @@ export interface StudyHooks {
     addPart?: { mutateAsync: (data: { chapterId: string; name: string; estimatedMinutes?: number }) => Promise<unknown> };
     togglePartStatus?: { mutateAsync: (data: { id: string; currentStatus: string }) => Promise<void> };
     deletePart?: { mutateAsync: (id: string) => Promise<void> };
+    addPresetsToChapter?: { mutateAsync: (data: { chapterId: string; presetIds: string[]; targetPartId?: string }) => Promise<void> };
+    applyPresetsToAllChapters?: { mutateAsync: (subjectId: string) => Promise<void> };
     subjects?: Array<{ id: string; name: string; color_index: number }>;
     chapters?: Array<{ id: string; subject_id: string; name: string }>;
     parts?: Array<{ id: string; chapter_id: string; name: string; status: string; estimated_minutes: number }>;
+    commonPresets?: Array<{ id: string; subject_id: string; name: string; estimated_minutes: number; parent_id?: string; preset_type?: "chapter" | "part" }>;
 }
 
 export interface InventoryHooks {

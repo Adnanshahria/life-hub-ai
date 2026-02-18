@@ -96,7 +96,7 @@ export function AIChatInterface() {
     const { addNote, updateNote, deleteNote, togglePin, updateColor, archiveNote, trashNote, notes } = useNotes();
     const { addHabit, completeHabit, deleteHabit, deleteAllHabits, habits } = useHabits();
     const { addItem, deleteItem, updateItem, items } = useInventory();
-    const { subjects, chapters, parts, addSubject, addChapter, addPart, togglePartStatus, deleteSubject, deleteChapter, deletePart } = useStudy();
+    const { subjects, chapters, parts, addSubject, addChapter, addPart, togglePartStatus, deleteSubject, deleteChapter, deletePart, commonPresets, addPresetsToChapter } = useStudy();
 
     // Load history from localStorage
     useEffect(() => {
@@ -406,6 +406,37 @@ export function AIChatInterface() {
                     if (dp) await deletePart.mutateAsync(dp.id);
                     break;
                 }
+                case "ADD_STUDY_SUBCHAPTER": {
+                    // Data: chapter_name, preset_name (or sub_chapter_name), target_part_name (optional)
+                    const cName = String(data.chapter_name || data.chapter || "").toLowerCase();
+                    const targetChapter = chapters?.find(c => c.name.toLowerCase().includes(cName));
+
+                    if (targetChapter) {
+                        const pName = String(data.preset_name || data.sub_chapter_name || data.name || "").toLowerCase();
+                        // Find presets matching the name
+                        const matchedPresets = commonPresets?.filter(p => !p.parent_id && p.name.toLowerCase().includes(pName));
+
+                        if (matchedPresets && matchedPresets.length > 0) {
+                            // Optional: Target Part
+                            let targetPartId: string | undefined = undefined;
+                            const tPartName = String(data.target_part_name || data.parent_part_name || "").toLowerCase();
+
+                            if (tPartName === "all" || tPartName === "all parts") {
+                                targetPartId = "all-parts";
+                            } else if (tPartName) {
+                                const tPart = parts?.find(p => p.chapter_id === targetChapter.id && p.name.toLowerCase().includes(tPartName));
+                                if (tPart) targetPartId = tPart.id;
+                            }
+
+                            await addPresetsToChapter.mutateAsync({
+                                chapterId: targetChapter.id,
+                                presetIds: matchedPresets.map(p => p.id),
+                                targetPartId: targetPartId
+                            });
+                        }
+                    }
+                    break;
+                }
 
                 // BUDGET
                 case "ADD_BUDGET":
@@ -604,6 +635,7 @@ ${subjects?.map(s => {
                 const done = sParts.filter(p => p.status === 'completed').length;
                 return `${s.name}: ${sChapters.length} ch, ${done}/${sParts.length} parts done`;
             }).join('\n') || '(no study data)'}
+Available Presets (Sub-Chapters): ${commonPresets?.filter(p => !p.parent_id).map(p => p.name).join(', ') || 'None'}
 
 â•â•â• NOTES (${notesData.length} total) â•â•â•
 ${notesData.map(n => `- "${n.title}" [${n.tags || 'no tags'}]${n.checklist ? ` â˜‘ï¸${n.checklist}` : ''} â†’ ${n.preview.replace(/\n/g, ' ').substring(0, 80)}...`).join('\n') || '(no notes)'}

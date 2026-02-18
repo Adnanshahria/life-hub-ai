@@ -1,11 +1,12 @@
 import { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { SEO } from "@/components/seo/SEO";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import {
     Plus, Check, Clock, AlertTriangle, Trash2, Pin, PinOff, Edit,
     BookOpen, Wallet, Heart, Folder, Calendar, Timer, DollarSign,
-    ChevronDown, Filter, LayoutGrid, List, ArrowUpDown, Archive, Zap, CalendarClock, Package, Boxes, CheckSquare, GraduationCap
+    ChevronDown, Filter, LayoutGrid, List, ArrowUpDown, Archive, Zap, CalendarClock, Package, Boxes, CheckSquare, GraduationCap, MoreVertical
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,9 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
+import { TimePicker } from "@/components/ui/time-picker";
 import { useTasks, Task } from "@/hooks/useTasks";
 import { useStudy } from "@/hooks/useStudy";
 import { useBudget } from "@/hooks/useBudget";
@@ -461,7 +465,7 @@ export default function TasksPage() {
     };
 
     return (
-        <AppLayout>
+        <AppLayout className="!pt-0">
             <SEO title="Tasks" description="Manage your tasks, projects, and to-dos." />
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -570,252 +574,231 @@ export default function TasksPage() {
                         <Button
                             variant="outline"
                             size="sm"
-                            className="gap-1.5 h-8 text-xs sm:text-sm border-dashed"
+                            className="gap-2 h-9 text-xs sm:text-sm border-dashed px-3"
                             onClick={() => setImportStudyOpen(true)}
                         >
-                            <GraduationCap className="w-3.5 h-3.5" />
+                            <GraduationCap className="w-4 h-4" />
                             <span className="hidden sm:inline">Import Study</span>
                         </Button>
 
                         {/* Add Task */}
                         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                             <DialogTrigger asChild>
-                                <Button size="sm" className="gap-1.5 h-8 shadow-lg shadow-primary/20">
+                                {/* Desktop Button */}
+                                <Button size="sm" className="hidden sm:flex gap-1.5 h-8 shadow-lg shadow-primary/20">
                                     <Plus className="w-3.5 h-3.5" />
-                                    <span className="hidden sm:inline">New</span>
+                                    <span>New</span>
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-xl">
-                                <DialogHeader>
-                                    <DialogTitle>Create New Task</DialogTitle>
-                                    <DialogDescription>Add a new task to your list. Fill in the details below.</DialogDescription>
-                                </DialogHeader>
-                                <div className="space-y-4 pt-4">
-                                    <Input
-                                        placeholder="Task title..."
-                                        value={newTask.title}
-                                        onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                                    />
+                            {/* Mobile Floating Button - Portal out to body to avoid transform clipping */}
+                            {createPortal(
+                                <div className="fixed bottom-20 right-20 z-50 sm:hidden">
+                                    <DialogTrigger asChild>
+                                        <Button
+                                            size="icon"
+                                            className="w-12 h-12 rounded-full shadow-lg shadow-primary/25 glow-primary bg-primary hover:bg-primary/90 text-primary-foreground"
+                                        >
+                                            <Plus className="w-6 h-6" />
+                                        </Button>
+                                    </DialogTrigger>
+                                </div>,
+                                document.body
+                            )}
+                            <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl sm:rounded-2xl p-0 gap-0 border-0 shadow-2xl">
+                                <div className="p-6 bg-gradient-to-b from-primary/5 via-background to-background">
+                                    <DialogHeader className="mb-6 text-center">
+                                        <DialogTitle className="text-xl font-bold tracking-tight">Create New Task</DialogTitle>
+                                        <DialogDescription>Add a new task to your list. Fill in the details below.</DialogDescription>
+                                    </DialogHeader>
 
-                                    <Textarea
-                                        placeholder="Description (optional)..."
-                                        value={newTask.description}
-                                        onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                                        className="min-h-[80px]"
-                                    />
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-1">
-                                            <label className="text-xs text-muted-foreground">Priority</label>
-                                            <div className="relative">
-                                                <select
-                                                    className="h-9 w-full appearance-none rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                                    value={newTask.priority}
-                                                    onChange={(e) => setNewTask({ ...newTask, priority: e.target.value as Task["priority"] })}
-                                                >
-                                                    <option value="low">🟢 Low</option>
-                                                    <option value="medium">🟡 Medium</option>
-                                                    <option value="high">🟠 High</option>
-                                                    <option value="urgent">🔴 Urgent</option>
-                                                </select>
-                                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50 pointer-events-none" />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-xs text-muted-foreground">Due Date</label>
+                                    <div className="space-y-5">
+                                        {/* Title & Description */}
+                                        <div className="space-y-3">
                                             <Input
-                                                type="date"
-                                                value={newTask.due_date.split('T')[0]}
-                                                onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })}
-                                                className="h-9"
+                                                placeholder="Task title..."
+                                                value={newTask.title}
+                                                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                                                className="h-12 text-base font-semibold rounded-xl border-input bg-background/60 shadow-sm placeholder:font-normal"
+                                            />
+
+                                            <Textarea
+                                                placeholder="Add a description..."
+                                                value={newTask.description}
+                                                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                                                className="min-h-[70px] rounded-xl bg-secondary/20 border-border/30 resize-none text-sm"
+                                                rows={2}
                                             />
                                         </div>
-                                    </div>
 
-                                    {/* Context Selector */}
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium flex items-center gap-2">
-                                            <Folder className="w-4 h-4" />
-                                            Link to Module
-                                        </label>
-                                        <div className="relative">
-                                            <select
-                                                className="h-9 w-full appearance-none rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                                value={newTask.context_type}
-                                                onChange={(e) => setNewTask({ ...newTask, context_type: e.target.value as Task["context_type"], context_id: "" })}
-                                            >
-                                                <option value="general">📁 General</option>
-                                                <option value="study">📚 Study</option>
-                                                <option value="finance">💰 Finance</option>
-                                                <option value="habit">💪 Habit</option>
-                                                <option value="inventory">📦 Inventory</option>
-                                            </select>
-                                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50 pointer-events-none" />
+                                        {/* Priority & Date Grid */}
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="space-y-1.5">
+                                                <label className="text-xs font-medium text-muted-foreground ml-1">Priority</label>
+                                                <Select value={newTask.priority} onValueChange={(val) => setNewTask({ ...newTask, priority: val as Task["priority"] })}>
+                                                    <SelectTrigger className="h-11 rounded-xl">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="low">🟢 Low</SelectItem>
+                                                        <SelectItem value="medium">🟡 Medium</SelectItem>
+                                                        <SelectItem value="high">🟠 High</SelectItem>
+                                                        <SelectItem value="urgent">🔴 Urgent</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-xs font-medium text-muted-foreground ml-1">Due Date</label>
+                                                <DatePicker
+                                                    value={newTask.due_date.split('T')[0]}
+                                                    onChange={(date) => setNewTask({ ...newTask, due_date: date })}
+                                                    placeholder="Pick a date"
+                                                    className="h-11 rounded-xl"
+                                                />
+                                            </div>
                                         </div>
 
-                                        {/* Dynamic Context ID Selector */}
-                                        {newTask.context_type === "study" && (
-                                            <div className="relative">
-                                                <select
-                                                    className="h-9 w-full appearance-none rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                                    value={newTask.context_id || ""}
-                                                    onChange={(e) => setNewTask({ ...newTask, context_id: e.target.value })}
-                                                >
-                                                    <option value="" disabled>Select chapter...</option>
-                                                    {Object.entries(chaptersBySubject).map(([subject, chs]) => (
-                                                        <optgroup key={subject} label={subject}>
-                                                            {chs.map(ch => (
-                                                                <option key={ch.id} value={ch.id}>
-                                                                    {ch.name}
-                                                                </option>
-                                                            ))}
-                                                        </optgroup>
-                                                    ))}
-                                                </select>
-                                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50 pointer-events-none" />
-                                            </div>
-                                        )}
-
-                                        {newTask.context_type === "habit" && (
-                                            <div className="relative">
-                                                <select
-                                                    className="h-9 w-full appearance-none rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                                    value={newTask.context_id || ""}
-                                                    onChange={(e) => setNewTask({ ...newTask, context_id: e.target.value })}
-                                                >
-                                                    <option value="" disabled>Select habit...</option>
-                                                    {habits.map(habit => (
-                                                        <option key={habit.id} value={habit.id}>
-                                                            {habit.habit_name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50 pointer-events-none" />
-                                            </div>
-                                        )}
-
-                                        {newTask.context_type === "inventory" && (
-                                            <div className="relative">
-                                                <select
-                                                    className="h-9 w-full appearance-none rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                                    value={newTask.context_id || ""}
-                                                    onChange={(e) => setNewTask({ ...newTask, context_id: e.target.value })}
-                                                >
-                                                    <option value="" disabled>Select item...</option>
-                                                    {inventoryItems.map(item => (
-                                                        <option key={item.id} value={item.id}>
-                                                            {item.item_name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50 pointer-events-none" />
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Finance Fields */}
-                                    {(newTask.context_type === "finance" || newTask.context_type === "general") && (
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium flex items-center gap-2">
-                                                <DollarSign className="w-4 h-4" />
-                                                Budget & Cost
+                                        {/* Module / Context */}
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-medium text-muted-foreground ml-1 flex items-center gap-1.5">
+                                                <Folder className="w-3.5 h-3.5" /> Link to Module
                                             </label>
+                                            <div className="flex gap-2">
+                                                <Select value={newTask.context_type} onValueChange={(val) => setNewTask({ ...newTask, context_type: val as Task["context_type"], context_id: "" })}>
+                                                    <SelectTrigger className="h-11 w-1/3 shrink-0 rounded-xl">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="general">General</SelectItem>
+                                                        <SelectItem value="study">Study</SelectItem>
+                                                        <SelectItem value="finance">Finance</SelectItem>
+                                                        <SelectItem value="habit">Habit</SelectItem>
+                                                        <SelectItem value="inventory">Inventory</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
 
-                                            {/* Income/Expense Toggle - Only show when Finance is selected */}
-                                            {newTask.context_type === "finance" && (
-                                                <Tabs
-                                                    value={newTask.finance_type}
-                                                    onValueChange={(v) => setNewTask({ ...newTask, finance_type: v as "income" | "expense" })}
-                                                    className="w-full"
-                                                >
-                                                    <TabsList className="w-full">
-                                                        <TabsTrigger
-                                                            value="expense"
-                                                            className="flex-1 data-[state=active]:bg-red-500 data-[state=active]:text-white"
+                                                <div className="flex-1">
+                                                    {newTask.context_type === "general" ? (
+                                                        <div className="h-11 flex items-center px-4 rounded-xl border border-dashed border-muted-foreground/20 text-muted-foreground text-sm bg-secondary/10 w-full">
+                                                            No specific module linked
+                                                        </div>
+                                                    ) : (
+                                                        <Select value={newTask.context_id || ""} onValueChange={(val) => setNewTask({ ...newTask, context_id: val })}>
+                                                            <SelectTrigger className="h-11 w-full rounded-xl">
+                                                                <SelectValue placeholder="Select item..." />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {newTask.context_type === "study" && Object.entries(chaptersBySubject).map(([subject, chs]) => (
+                                                                    <SelectGroup key={subject}>
+                                                                        <SelectLabel>{subject}</SelectLabel>
+                                                                        {chs.map(ch => <SelectItem key={ch.id} value={ch.id}>{ch.name}</SelectItem>)}
+                                                                    </SelectGroup>
+                                                                ))}
+                                                                {newTask.context_type === "habit" && habits.map(h => (
+                                                                    <SelectItem key={h.id} value={h.id}>{h.habit_name}</SelectItem>
+                                                                ))}
+                                                                {newTask.context_type === "inventory" && inventoryItems.map(i => (
+                                                                    <SelectItem key={i.id} value={i.id}>{i.item_name}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Finance Section */}
+                                        {newTask.context_type === "finance" && (
+                                            <div className="p-4 rounded-xl bg-secondary/20 border border-border/50 space-y-3">
+                                                <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                                                    <DollarSign className="w-3.5 h-3.5" /> Budget & Cost
+                                                </label>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div className="col-span-2 flex gap-2 mb-1">
+                                                        <button
+                                                            onClick={() => setNewTask({ ...newTask, finance_type: "expense" })}
+                                                            className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${newTask.finance_type === "expense" ? "bg-red-500 text-white shadow-md shadow-red-500/20" : "bg-secondary text-muted-foreground hover:bg-secondary/80"}`}
                                                         >
                                                             💸 Expense
-                                                        </TabsTrigger>
-                                                        <TabsTrigger
-                                                            value="income"
-                                                            className="flex-1 data-[state=active]:bg-green-500 data-[state=active]:text-white"
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setNewTask({ ...newTask, finance_type: "income" })}
+                                                            className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${newTask.finance_type === "income" ? "bg-green-500 text-white shadow-md shadow-green-500/20" : "bg-secondary text-muted-foreground hover:bg-secondary/80"}`}
                                                         >
                                                             💰 Income
-                                                        </TabsTrigger>
-                                                    </TabsList>
-                                                </Tabs>
-                                            )}
-
-                                            <div className="grid grid-cols-2 gap-4">
-                                                {/* Budget selector - only for Expenses, not Income */}
-                                                {(newTask.context_type !== "finance" || newTask.finance_type === "expense") && (
-                                                    <div className="relative">
-                                                        <select
-                                                            className="h-9 w-full appearance-none rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                                            value={newTask.budget_id}
-                                                            onChange={(e) => setNewTask({ ...newTask, budget_id: e.target.value })}
-                                                        >
-                                                            <option value="" disabled>Select budget...</option>
-                                                            {budgets.filter(b => b.type === "budget").map(budget => (
-                                                                <option key={budget.id} value={budget.id}>
-                                                                    {budget.name}
-                                                                </option>
-                                                            ))}
-                                                        </select>
-                                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50 pointer-events-none" />
+                                                        </button>
                                                     </div>
-                                                )}
-                                                <Input
-                                                    type="number"
-                                                    placeholder={newTask.finance_type === "income" ? "Expected income (৳)" : "Expected cost (৳)"}
-                                                    value={newTask.expected_cost}
-                                                    onChange={(e) => setNewTask({ ...newTask, expected_cost: e.target.value })}
-                                                    className={newTask.context_type === "finance" && newTask.finance_type === "income" ? "col-span-2" : ""}
-                                                />
-                                            </div>
 
-                                            {/* Info when Finance is selected */}
-                                            {newTask.context_type === "finance" && newTask.expected_cost && (
-                                                <p className="text-xs text-muted-foreground">
-                                                    ℹ️ When this task is marked done, ৳{newTask.expected_cost} will be recorded as {newTask.finance_type}
-                                                </p>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {/* Time Blocking */}
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium flex items-center gap-2">
-                                            <Calendar className="w-4 h-4" />
-                                            Time Block
-                                        </label>
-                                        <div className="grid grid-cols-3 gap-4">
-                                            <div className="flex gap-2">
-                                                <Input
-                                                    type="time"
-                                                    value={newTask.start_time}
-                                                    onChange={(e) => handleStartTimeChange(e.target.value)}
-                                                    className="flex-1"
-                                                />
-                                                <Input
-                                                    type="time"
-                                                    value={newTask.end_time}
-                                                    onChange={(e) => handleEndTimeChange(e.target.value)}
-                                                    className="flex-1"
-                                                />
+                                                    {newTask.finance_type === "expense" && (
+                                                        <div className="col-span-1">
+                                                            <Select value={newTask.budget_id} onValueChange={(val) => setNewTask({ ...newTask, budget_id: val })}>
+                                                                <SelectTrigger className="h-10 rounded-lg text-xs">
+                                                                    <SelectValue placeholder="Select budget..." />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    {budgets.filter(b => b.type === "budget").map(b => (
+                                                                        <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+                                                    )}
+                                                    <div className={`relative ${newTask.finance_type === "income" ? "col-span-2" : "col-span-1"}`}>
+                                                        <Input
+                                                            type="number"
+                                                            placeholder={newTask.finance_type === "income" ? "Expected income" : "Expected cost"}
+                                                            value={newTask.expected_cost}
+                                                            onChange={(e) => setNewTask({ ...newTask, expected_cost: e.target.value })}
+                                                            className="h-10 rounded-lg bg-background/50 pl-7 text-xs"
+                                                        />
+                                                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">৳</span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="relative">
-                                                <Input
-                                                    type="number"
-                                                    placeholder="Duration"
-                                                    value={newTask.estimated_duration}
-                                                    onChange={(e) => handleDurationChange(e.target.value)}
-                                                />
-                                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">min</span>
+                                        )}
+
+                                        {/* Time Section - Single Row */}
+                                        <div className="p-4 rounded-xl bg-secondary/20 border border-border/50 space-y-3">
+                                            <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                                                <Clock className="w-3.5 h-3.5" /> Time Block
+                                            </label>
+                                            <div className="flex gap-2 items-end">
+                                                <div className="flex-1 space-y-1">
+                                                    <span className="text-[10px] text-muted-foreground ml-0.5">Start</span>
+                                                    <TimePicker
+                                                        value={newTask.start_time}
+                                                        onChange={(val) => handleStartTimeChange(val)}
+                                                        placeholder="Start"
+                                                    />
+                                                </div>
+                                                <div className="flex-1 space-y-1">
+                                                    <span className="text-[10px] text-muted-foreground ml-0.5">End</span>
+                                                    <TimePicker
+                                                        value={newTask.end_time}
+                                                        onChange={(val) => handleEndTimeChange(val)}
+                                                        placeholder="End"
+                                                    />
+                                                </div>
+                                                <div className="flex-1 space-y-1 relative">
+                                                    <span className="text-[10px] text-muted-foreground ml-0.5">Duration</span>
+                                                    <Input
+                                                        type="number"
+                                                        placeholder="—"
+                                                        value={newTask.estimated_duration}
+                                                        onChange={(e) => handleDurationChange(e.target.value)}
+                                                        className="h-8 rounded-lg bg-background/50 text-xs pr-8"
+                                                    />
+                                                    <span className="absolute right-2 bottom-[5px] text-[10px] text-muted-foreground">min</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-
-                                    <Button onClick={handleAddTask} className="w-full" disabled={addTask.isPending}>
+                                </div>
+                                <div className="p-4 bg-secondary/30 border-t border-border/50">
+                                    <Button
+                                        onClick={handleAddTask}
+                                        className="w-full h-11 text-base font-semibold shadow-lg shadow-primary/25 rounded-xl bg-gradient-to-r from-primary to-primary/90 hover:to-primary"
+                                        disabled={addTask.isPending}
+                                    >
                                         {addTask.isPending ? "Creating..." : "Create Task"}
                                     </Button>
                                 </div>
@@ -1118,39 +1101,55 @@ export default function TasksPage() {
                                             </Badge>
 
                                             {/* Actions */}
-                                            <div className="flex items-center gap-0.5 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => handlePinToggle(task)}
-                                                    className="text-muted-foreground hover:text-primary"
-                                                >
-                                                    {task.is_pinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => handleStartEdit(task)}
-                                                    className="text-muted-foreground hover:text-blue-400"
-                                                >
-                                                    <Edit className="w-4 h-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => completeTask.mutate(task.id)}
-                                                    className="text-green-400 hover:text-green-300 hover:bg-green-500/20"
-                                                >
-                                                    <Check className="w-4 h-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => deleteTask.mutate(task.id)}
-                                                    className="text-muted-foreground hover:text-destructive"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
+                                            {/* Actions Menu */}
+                                            <div className="shrink-0">
+                                                <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
+                                                            <MoreVertical className="w-4 h-4" />
+                                                        </Button>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent className="w-auto p-1 bg-white/90 backdrop-blur-xl dark:bg-card/90" align="end">
+                                                        <div className="flex items-center gap-1">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                onClick={() => handlePinToggle(task)}
+                                                                className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                                                                title={task.is_pinned ? "Unpin" : "Pin"}
+                                                            >
+                                                                {task.is_pinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                onClick={() => handleStartEdit(task)}
+                                                                className="h-8 w-8 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10"
+                                                                title="Edit"
+                                                            >
+                                                                <Edit className="w-4 h-4" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                onClick={() => completeTask.mutate(task.id)}
+                                                                className="h-8 w-8 text-muted-foreground hover:text-green-500 hover:bg-green-500/10"
+                                                                title="Complete"
+                                                            >
+                                                                <Check className="w-4 h-4" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                onClick={() => deleteTask.mutate(task.id)}
+                                                                className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+                                                                title="Delete"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </Button>
+                                                        </div>
+                                                    </PopoverContent>
+                                                </Popover>
                                             </div>
                                         </div>
                                     </motion.div>

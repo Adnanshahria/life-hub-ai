@@ -69,7 +69,7 @@ const Index = () => {
   const { totalSavings, budgetRemaining, primaryBudget, savingsGoals } = useBudget();
   const { tasks } = useTasks();
   const { habits } = useHabits();
-  const { chapters, subjectProgress } = useStudy();
+  const { chapters, subjects, subjectProgress, chapterProgress } = useStudy();
   const { notes } = useNotes();
 
   useEffect(() => { document.documentElement.classList.add(theme); }, []);
@@ -99,8 +99,9 @@ const Index = () => {
 
   // ===== STUDY ANALYTICS =====
   const allChapters = chapters || [];
-  const completedChapters = allChapters.filter(c => c.status === "completed").length;
-  const studyProgress = allChapters.length > 0 ? Math.round(allChapters.reduce((s, c) => s + c.progress_percentage, 0) / allChapters.length) : 0;
+  const completedChapters = allChapters.filter(c => (chapterProgress[c.id] || 0) === 100).length;
+  const studyProgress = allChapters.length > 0 ? Math.round(allChapters.reduce((s, c) => s + (chapterProgress[c.id] || 0), 0) / allChapters.length) : 0;
+  const subjectProgressList = (subjects || []).map(s => ({ subject: s.name, progress: subjectProgress[s.id] || 0 })).sort((a, b) => b.progress - a.progress);
 
   // ===== FINANCE ANALYTICS =====
   const thisMonthExpenses = (regularEntries || []).filter(e => {
@@ -176,7 +177,7 @@ Total Savings: ৳${totalSavings}
 Top Expense Categories: ${expenseChartData.slice(0, 3).map(c => `${c.name}=৳${c.value}`).join(', ') || 'None'}
 
 === STUDY (${studyProgress}% overall) ===
-${(subjectProgress || []).slice(0, 5).map(s => `${s.subject}: ${s.progress}%`).join(', ') || 'No study data'}
+${subjectProgressList.slice(0, 5).map(s => `${s.subject}: ${s.progress}%`).join(', ') || 'No study data'}
 
 === NOTES (${(notes || []).length} total) ===
 ${(notes || []).slice(0, 5).map(n => `"${n.title}"`).join(', ') || 'No notes'}
@@ -731,9 +732,9 @@ Respond in this EXACT JSON format:
                 </div>
               </div>
 
-              {(subjectProgress || []).length > 0 ? (
+              {subjectProgressList.length > 0 ? (
                 <div className="space-y-3">
-                  {subjectProgress.slice(0, 3).map((sp, i) => (
+                  {subjectProgressList.slice(0, 3).map((sp, i) => (
                     <div key={sp.subject}>
                       <div className="flex justify-between text-xs mb-1.5">
                         <span className="font-semibold">{sp.subject}</span>

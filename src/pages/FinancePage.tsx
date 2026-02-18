@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { SEO } from "@/components/seo/SEO";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Wallet, TrendingUp, TrendingDown, Trash2, ChevronLeft, ChevronRight, Clock, X, Calendar as CalendarIcon, Pencil, PiggyBank, Target, Download, Star, ListFilter, PieChart as PieChartIcon, BarChart3 as BarChartIcon, History, CalendarX, Archive, Zap } from "lucide-react";
+import { Plus, Wallet, TrendingUp, TrendingDown, Trash2, ChevronLeft, ChevronRight, Clock, X, Calendar as CalendarIcon, Pencil, PiggyBank, Target, Download, Star, ListFilter, PieChart as PieChartIcon, BarChart3 as BarChartIcon, History, CalendarX, Archive, Zap, MoreVertical } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1251,38 +1251,54 @@ export default function FinancePage() {
                                                     </div>
 
                                                     {/* Compact Actions */}
-                                                    <div className={`flex items-center gap-0.5 transition-opacity duration-200 ${item.is_special ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-6 w-6 text-indigo-900/40 hover:text-indigo-600"
-                                                            onClick={() => setEditingGoal({ id: item.id, name: item.name, target_amount: String(item.target_amount), type: item.type })}
-                                                        >
-                                                            <Pencil className="w-3 h-3" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-6 w-6 text-indigo-900/40 hover:text-yellow-500"
-                                                            onClick={() => updateBudget.mutate({ id: item.id, is_special: !item.is_special })}
-                                                        >
-                                                            <Star className={`w-3 h-3 ${item.is_special ? "fill-yellow-500 text-yellow-500" : ""}`} />
-                                                        </Button>
-                                                        {!isBudget && (
-                                                            <Popover>
-                                                                <PopoverTrigger asChild>
-                                                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-indigo-900/40 hover:text-green-500">
-                                                                        <Plus className="w-3 h-3" />
+                                                    {/* Compact Actions Menu */}
+                                                    <Popover>
+                                                        <PopoverTrigger asChild>
+                                                            <Button variant="ghost" size="icon" className="h-6 w-6 text-indigo-900/40 hover:text-indigo-600">
+                                                                <MoreVertical className="w-3.5 h-3.5" />
+                                                            </Button>
+                                                        </PopoverTrigger>
+                                                        <PopoverContent className="w-auto p-2 bg-white/90 backdrop-blur-xl border-indigo-100 dark:border-indigo-900/50" align="end">
+                                                            <div className="flex flex-col gap-2">
+                                                                <div className="flex items-center gap-1">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-7 w-7 text-indigo-900/60 hover:text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/50"
+                                                                        onClick={() => setEditingGoal({ id: item.id, name: item.name, target_amount: String(item.target_amount), type: item.type })}
+                                                                        title="Edit Goal"
+                                                                    >
+                                                                        <Pencil className="w-3.5 h-3.5" />
                                                                     </Button>
-                                                                </PopoverTrigger>
-                                                                <PopoverContent className="w-40 p-2 bg-white/90 backdrop-blur-xl border-indigo-100 dark:border-indigo-900/50" align="end">
-                                                                    <div className="flex gap-1">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-7 w-7 text-indigo-900/60 hover:text-yellow-500 hover:bg-yellow-100 dark:hover:bg-yellow-900/20"
+                                                                        onClick={() => updateBudget.mutate({ id: item.id, is_special: !item.is_special })}
+                                                                        title={item.is_special ? "Unmark Special" : "Mark as Special"}
+                                                                    >
+                                                                        <Star className={`w-3.5 h-3.5 ${item.is_special ? "fill-yellow-500 text-yellow-500" : ""}`} />
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-7 w-7 text-indigo-900/60 hover:text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20"
+                                                                        onClick={() => deleteBudget.mutate(item.id)}
+                                                                        title="Delete Goal"
+                                                                    >
+                                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                                    </Button>
+                                                                </div>
+
+                                                                {/* Add Funds for Savings */}
+                                                                {!isBudget && (
+                                                                    <div className="flex gap-1 pt-1 border-t border-indigo-100 dark:border-indigo-800/50">
                                                                         <Input
                                                                             type="number"
                                                                             placeholder="+"
                                                                             value={savingsAmount}
                                                                             onChange={(e) => setSavingsAmount(e.target.value)}
-                                                                            className="h-7 text-xs bg-transparent border-indigo-200 px-1"
+                                                                            className="h-7 w-20 text-xs bg-transparent border-indigo-200 px-1"
                                                                         />
                                                                         <Button
                                                                             size="sm"
@@ -1297,13 +1313,10 @@ export default function FinancePage() {
                                                                             Add
                                                                         </Button>
                                                                     </div>
-                                                                </PopoverContent>
-                                                            </Popover>
-                                                        )}
-                                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-indigo-900/40 hover:text-red-500" onClick={() => deleteBudget.mutate(item.id)}>
-                                                            <Trash2 className="w-3 h-3" />
-                                                        </Button>
-                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </PopoverContent>
+                                                    </Popover>
                                                 </div>
                                             );
                                         })
