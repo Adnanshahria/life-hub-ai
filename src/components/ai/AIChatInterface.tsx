@@ -144,9 +144,9 @@ export function AIChatInterface() {
         window.dispatchEvent(new CustomEvent("openGlobalSearch"));
     };
 
-    // Focus input on open
+    // Focus input on open - only on desktop to avoid triggering mobile keyboard
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && window.innerWidth >= 768) {
             setTimeout(() => inputRef.current?.focus(), 100);
         }
     }, [isOpen]);
@@ -739,9 +739,9 @@ ${items?.map(i => `- ${i.item_name} (x${i.quantity}) [${i.category || 'uncategor
                             initial={{ opacity: 0, y: 100, scale: 0.9 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 100, scale: 0.9 }}
-                            className="fixed inset-0 md:inset-auto md:bottom-6 md:right-6 z-50 flex items-center justify-center md:block"
+                            className="fixed inset-0 md:inset-auto md:bottom-6 md:right-6 z-50 md:block"
                         >
-                            <div className="w-[90%] md:w-[400px] h-[80%] md:h-[600px] md:max-h-[80vh] flex flex-col glass-card rounded-2xl overflow-hidden shadow-2xl border border-primary/20">
+                            <div className="w-full md:w-[400px] h-[100dvh] md:h-[600px] md:max-h-[80vh] flex flex-col glass-card md:rounded-2xl overflow-hidden shadow-2xl border border-primary/20">
                                 {/* Header */}
                                 <div className="p-4 border-b border-border bg-background/50 backdrop-blur-md flex items-center justify-between">
                                     <div className="flex items-center gap-2">

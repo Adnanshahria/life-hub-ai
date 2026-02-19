@@ -23,7 +23,7 @@ export function DashboardLayout() {
 
             {/* Main content */}
             <main className="md:ml-64 min-h-screen pb-20 md:pb-8">
-                <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 pt-20 sm:pt-24 md:pt-6 pb-8">
+                <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 pt-4 sm:pt-6 md:pt-6 pb-8">
                     <AnimatePresence mode="wait">
                         <AnimatedPage key={location.pathname}>
                             <Outlet />

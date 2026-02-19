@@ -508,7 +508,7 @@ export default function FinancePage() {
                         {/* Date Controls */}
                         {viewMode === "daily" && (
                             <>
-                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => changeDate(-1)}>
+                                <Button variant="outline" size="icon" className="hidden md:inline-flex h-8 w-8" onClick={() => changeDate(-1)}>
                                     <ChevronLeft className="w-3.5 h-3.5" />
                                 </Button>
                                 <Popover>
@@ -527,7 +527,7 @@ export default function FinancePage() {
                                         />
                                     </PopoverContent>
                                 </Popover>
-                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => changeDate(1)}>
+                                <Button variant="outline" size="icon" className="hidden md:inline-flex h-8 w-8" onClick={() => changeDate(1)}>
                                     <ChevronRight className="w-3.5 h-3.5" />
                                 </Button>
                                 <Button variant="ghost" size="sm" className="hidden sm:inline-flex h-8 text-xs" onClick={() => setSelectedDate(getLocalDateStr(new Date()))}>
@@ -537,7 +537,7 @@ export default function FinancePage() {
                         )}
                         {viewMode === "weekly" && (
                             <>
-                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => changeDate(-7)}>
+                                <Button variant="outline" size="icon" className="hidden md:inline-flex h-8 w-8" onClick={() => changeDate(-7)}>
                                     <ChevronLeft className="w-3.5 h-3.5" />
                                 </Button>
                                 <div className="px-3 py-1.5 bg-secondary rounded-lg text-xs sm:text-sm font-medium">
@@ -548,7 +548,7 @@ export default function FinancePage() {
                                         return `${format(start, "MMM d")} - ${format(end, "MMM d")}`;
                                     })()}
                                 </div>
-                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => changeDate(7)}>
+                                <Button variant="outline" size="icon" className="hidden md:inline-flex h-8 w-8" onClick={() => changeDate(7)}>
                                     <ChevronRight className="w-3.5 h-3.5" />
                                 </Button>
                                 <Button variant="ghost" size="sm" className="hidden sm:inline-flex h-8 text-xs" onClick={() => setSelectedDate(getLocalDateStr(new Date()))}>
@@ -558,7 +558,7 @@ export default function FinancePage() {
                         )}
                         {viewMode === "monthly" && (
                             <>
-                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => {
+                                <Button variant="outline" size="icon" className="hidden md:inline-flex h-8 w-8" onClick={() => {
                                     const d = new Date(selectedDate + "T12:00:00");
                                     d.setMonth(d.getMonth() - 1);
                                     setSelectedDate(getLocalDateStr(d));
@@ -581,7 +581,7 @@ export default function FinancePage() {
                                         />
                                     </PopoverContent>
                                 </Popover>
-                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => {
+                                <Button variant="outline" size="icon" className="hidden md:inline-flex h-8 w-8" onClick={() => {
                                     const d = new Date(selectedDate + "T12:00:00");
                                     d.setMonth(d.getMonth() + 1);
                                     setSelectedDate(getLocalDateStr(d));
@@ -595,7 +595,7 @@ export default function FinancePage() {
                         )}
                         {viewMode === "yearly" && (
                             <>
-                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => {
+                                <Button variant="outline" size="icon" className="hidden md:inline-flex h-8 w-8" onClick={() => {
                                     const d = new Date(selectedDate + "T12:00:00");
                                     d.setFullYear(d.getFullYear() - 1);
                                     setSelectedDate(getLocalDateStr(d));
@@ -612,7 +612,7 @@ export default function FinancePage() {
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => {
+                                <Button variant="outline" size="icon" className="hidden md:inline-flex h-8 w-8" onClick={() => {
                                     const d = new Date(selectedDate + "T12:00:00");
                                     d.setFullYear(d.getFullYear() + 1);
                                     setSelectedDate(getLocalDateStr(d));
@@ -663,12 +663,24 @@ export default function FinancePage() {
                             </div>
                         )}
 
+                        {/* Mobile Floating Add Entry Button */}
+                        <div className="fixed bottom-20 right-4 z-50 md:hidden">
+                            <Button
+                                size="icon"
+                                className="w-12 h-12 rounded-full shadow-lg shadow-primary/25 glow-primary bg-primary hover:bg-primary/90 text-primary-foreground"
+                                onClick={() => setIsDialogOpen(true)}
+                            >
+                                <Plus className="w-6 h-6" />
+                            </Button>
+                        </div>
+
                         {/* Add Entry Button */}
                         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                             <DialogTrigger asChild>
-                                <Button size="icon" className="h-8 w-8 sm:w-auto sm:px-3 sm:gap-1.5 shadow-lg shadow-primary/20">
+                                {/* Desktop Button - hidden on mobile */}
+                                <Button size="sm" className="hidden md:flex gap-1.5 h-8 shadow-lg shadow-primary/20">
                                     <Plus className="w-3.5 h-3.5" />
-                                    <span className="hidden sm:inline">Entry</span>
+                                    <span>Entry</span>
                                 </Button>
                             </DialogTrigger>
                             <DialogContent>
@@ -971,30 +983,31 @@ export default function FinancePage() {
                         <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-indigo-500/20 blur-3xl" />
 
                         <div className="relative z-10">
-                            {/* Header Row */}
-                            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                                <div>
+                            {/* Header */}
+                            <div className="mb-4">
+                                <div className="flex items-center justify-between gap-2 mb-1">
                                     <h4 className="font-semibold text-lg text-indigo-950 dark:text-indigo-100 tracking-tight flex items-center gap-2">
                                         Goals
                                         <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 text-[10px] font-bold uppercase tracking-wider">
                                             {filteredGoals.length} {goalsFilter === "active" ? "Active" : goalsFilter === "upcoming" ? "Upcoming" : "Archived"}
                                         </span>
                                     </h4>
-                                    <p className="text-xs text-indigo-600/70 dark:text-indigo-300/70 font-medium mt-0.5">
+                                    <p className="text-xs text-indigo-600/70 dark:text-indigo-300/70 font-medium whitespace-nowrap">
                                         {budgetGoals.length} budget, {savingsGoals.length} savings
                                     </p>
                                 </div>
 
+                                {/* Controls Row - always single row */}
                                 <div className="flex items-center gap-2">
                                     {/* Filter Dropdown */}
                                     <Select value={goalsFilter} onValueChange={(v) => setGoalsFilter(v as "active" | "upcoming" | "archive")}>
-                                        <SelectTrigger className="h-8 w-[80px] text-xs bg-indigo-500/10 border-indigo-500/20 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-200 transition-all focus:ring-indigo-500/30">
+                                        <SelectTrigger className="h-8 w-auto min-w-0 text-xs bg-indigo-500/10 border-indigo-500/20 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-200 transition-all focus:ring-indigo-500/30">
                                             <div className="flex items-center gap-1.5">
                                                 {goalsFilter === "active" ? <Zap className="w-3.5 h-3.5" /> : goalsFilter === "upcoming" ? <Clock className="w-3.5 h-3.5" /> : <Archive className="w-3.5 h-3.5" />}
                                                 <span className="capitalize">{goalsFilter === "active" ? "Active" : goalsFilter === "upcoming" ? "Soon" : "Past"}</span>
                                             </div>
                                         </SelectTrigger>
-                                        <SelectContent align="end">
+                                        <SelectContent align="start">
                                             <SelectItem value="active">⚡ Active</SelectItem>
                                             <SelectItem value="upcoming">🕐 Upcoming</SelectItem>
                                             <SelectItem value="archive">📦 Archive</SelectItem>
@@ -1003,13 +1016,13 @@ export default function FinancePage() {
 
                                     {/* Sort Dropdown */}
                                     <Select value={goalsSortBy} onValueChange={(v) => setGoalsSortBy(v as "date" | "amount")}>
-                                        <SelectTrigger className="h-8 w-[80px] text-xs bg-indigo-500/10 border-indigo-500/20 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-200 transition-all focus:ring-indigo-500/30">
+                                        <SelectTrigger className="h-8 w-auto min-w-0 text-xs bg-indigo-500/10 border-indigo-500/20 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-200 transition-all focus:ring-indigo-500/30">
                                             <div className="flex items-center gap-1.5">
                                                 <ListFilter className="w-3.5 h-3.5" />
                                                 <span>Sort</span>
                                             </div>
                                         </SelectTrigger>
-                                        <SelectContent align="end">
+                                        <SelectContent align="start">
                                             <SelectItem value="date">Date</SelectItem>
                                             <SelectItem value="amount">Amount</SelectItem>
                                         </SelectContent>
@@ -1019,7 +1032,6 @@ export default function FinancePage() {
                                         <DialogTrigger asChild>
                                             <Button size="sm" className="h-8 gap-1.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white border-0 shadow-lg shadow-indigo-500/20">
                                                 <Plus className="w-3.5 h-3.5" />
-                                                <span className="hidden xs:inline">Add Goal</span>
                                             </Button>
                                         </DialogTrigger>
                                         <DialogContent>

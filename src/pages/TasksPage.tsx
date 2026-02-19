@@ -92,7 +92,7 @@ const defaultNewTask: NewTaskState = {
 
 export default function TasksPage() {
     const { tasks, isLoading, addTask, updateTask, deleteTask, completeTask } = useTasks();
-    const { subjects, chapters, chaptersBySubject: studyChaptersBySubject, partsByChapter } = useStudy();
+    const { subjects, chapters, parts, chaptersBySubject: studyChaptersBySubject, partsByChapter } = useStudy();
     const { budgets } = useBudget();
     const { habits } = useHabits();
     const { items: inventoryItems } = useInventory();
@@ -110,10 +110,47 @@ export default function TasksPage() {
     const [showTimeAdjustPopup, setShowTimeAdjustPopup] = useState(false);
     const [pendingDuration, setPendingDuration] = useState<string>("");
 
+    // Force list view on mobile (grid toggle is hidden on mobile)
+    useEffect(() => {
+        if (window.innerWidth < 768) setViewMode("list");
+    }, []);
+
     // Import Study State
     const [importStudyOpen, setImportStudyOpen] = useState(false);
     const [importSubjectId, setImportSubjectId] = useState("");
     const [importChapterId, setImportChapterId] = useState("");
+
+    // Study import in form
+    const [studySubjectId, setStudySubjectId] = useState("");
+    const [studyChapterId, setStudyChapterId] = useState("");
+    const [selectedStudyParts, setSelectedStudyParts] = useState<string[]>([]);
+
+    // Get chapters for selected subject
+    const studyChaptersForSubject = useMemo(() => {
+        if (!studySubjectId) return [];
+        return chapters.filter(c => c.subject_id === studySubjectId);
+    }, [studySubjectId, chapters]);
+
+    // Get parts for selected chapter, organized as a tree
+    const studyPartsForChapter = useMemo(() => {
+        if (!studyChapterId) return [];
+        return (partsByChapter[studyChapterId] || []).filter(p => !p.parent_id);
+    }, [studyChapterId, partsByChapter]);
+
+    // Get children of a part
+    const getChildParts = (parentId: string) => {
+        return parts.filter(p => p.parent_id === parentId);
+    };
+
+    // Toggle a part in the selected list
+    const toggleStudyPart = (partId: string) => {
+        setSelectedStudyParts(prev =>
+            prev.includes(partId) ? prev.filter(id => id !== partId) : [...prev, partId]
+        );
+    };
+
+    // Get a part by ID
+    const getPartById = (id: string) => parts.find(p => p.id === id);
 
     // Group chapters by subject for the selector
     const chaptersBySubject = useMemo(() => {
@@ -552,8 +589,8 @@ export default function TasksPage() {
                             </PopoverContent>
                         </Popover>
 
-                        {/* View Toggle */}
-                        <div className="flex bg-secondary rounded-lg p-0.5 shrink-0">
+                        {/* View Toggle - Desktop only */}
+                        <div className="hidden md:flex bg-secondary rounded-lg p-0.5 shrink-0">
                             <button
                                 onClick={() => setViewMode("list")}
                                 className={`p-1.5 rounded transition-colors ${viewMode === "list" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
@@ -663,7 +700,10 @@ export default function TasksPage() {
                                                 <Folder className="w-3.5 h-3.5" /> Link to Module
                                             </label>
                                             <div className="flex gap-2">
-                                                <Select value={newTask.context_type} onValueChange={(val) => setNewTask({ ...newTask, context_type: val as Task["context_type"], context_id: "" })}>
+                                                <Select value={newTask.context_type} onValueChange={(val) => {
+                                                    setNewTask({ ...newTask, context_type: val as Task["context_type"], context_id: "" });
+                                                    if (val !== "study") { setStudySubjectId(""); setStudyChapterId(""); setSelectedStudyParts([]); }
+                                                }}>
                                                     <SelectTrigger className="h-11 w-1/3 shrink-0 rounded-xl">
                                                         <SelectValue />
                                                     </SelectTrigger>
@@ -681,18 +721,23 @@ export default function TasksPage() {
                                                         <div className="h-11 flex items-center px-4 rounded-xl border border-dashed border-muted-foreground/20 text-muted-foreground text-sm bg-secondary/10 w-full">
                                                             No specific module linked
                                                         </div>
+                                                    ) : newTask.context_type === "study" ? (
+                                                        <Select value={studySubjectId} onValueChange={(val) => { setStudySubjectId(val); setStudyChapterId(""); setSelectedStudyParts([]); setNewTask({ ...newTask, context_id: "" }); }}>
+                                                            <SelectTrigger className="h-11 w-full rounded-xl">
+                                                                <SelectValue placeholder="Select subject..." />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {subjects.map(s => (
+                                                                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
                                                     ) : (
                                                         <Select value={newTask.context_id || ""} onValueChange={(val) => setNewTask({ ...newTask, context_id: val })}>
                                                             <SelectTrigger className="h-11 w-full rounded-xl">
                                                                 <SelectValue placeholder="Select item..." />
                                                             </SelectTrigger>
                                                             <SelectContent>
-                                                                {newTask.context_type === "study" && Object.entries(chaptersBySubject).map(([subject, chs]) => (
-                                                                    <SelectGroup key={subject}>
-                                                                        <SelectLabel>{subject}</SelectLabel>
-                                                                        {chs.map(ch => <SelectItem key={ch.id} value={ch.id}>{ch.name}</SelectItem>)}
-                                                                    </SelectGroup>
-                                                                ))}
                                                                 {newTask.context_type === "habit" && habits.map(h => (
                                                                     <SelectItem key={h.id} value={h.id}>{h.habit_name}</SelectItem>
                                                                 ))}
@@ -704,6 +749,94 @@ export default function TasksPage() {
                                                     )}
                                                 </div>
                                             </div>
+
+                                            {/* Study: Chapter selector + Part tree */}
+                                            {newTask.context_type === "study" && studySubjectId && (
+                                                <div className="mt-2 space-y-2">
+                                                    <Select value={studyChapterId} onValueChange={(val) => { setStudyChapterId(val); setNewTask({ ...newTask, context_id: val }); setSelectedStudyParts([]); }}>
+                                                        <SelectTrigger className="h-10 rounded-xl">
+                                                            <SelectValue placeholder="Select chapter..." />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {studyChaptersForSubject.map(ch => (
+                                                                <SelectItem key={ch.id} value={ch.id}>{ch.name}</SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+
+                                                    {/* Parts Tree */}
+                                                    {studyChapterId && studyPartsForChapter.length > 0 && (
+                                                        <div className="rounded-xl border border-border/50 bg-secondary/10 p-3 space-y-1 max-h-48 overflow-y-auto">
+                                                            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Import Parts as Sub-tasks</p>
+                                                            {(() => {
+                                                                const renderPartTree = (partList: typeof parts, depth: number = 0) => {
+                                                                    return partList.map(part => {
+                                                                        const children = getChildParts(part.id);
+                                                                        const isSelected = selectedStudyParts.includes(part.id);
+                                                                        const statusIcon = part.status === "completed" ? "✅" : part.status === "in-progress" ? "🔶" : "⬜";
+                                                                        return (
+                                                                            <div key={part.id}>
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => toggleStudyPart(part.id)}
+                                                                                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs transition-all hover:bg-primary/5 ${isSelected ? "bg-primary/10 text-primary font-medium" : "text-foreground"
+                                                                                        }`}
+                                                                                    style={{ paddingLeft: `${8 + depth * 16}px` }}
+                                                                                >
+                                                                                    <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all ${isSelected ? "bg-primary border-primary" : "border-muted-foreground/30"
+                                                                                        }`}>
+                                                                                        {isSelected && <Check className="w-3 h-3 text-primary-foreground" />}
+                                                                                    </div>
+                                                                                    <span className="text-xs">{statusIcon}</span>
+                                                                                    <span className="truncate flex-1 text-left">{part.name}</span>
+                                                                                    {part.estimated_minutes > 0 && (
+                                                                                        <span className="text-[10px] text-muted-foreground shrink-0">{part.estimated_minutes}m</span>
+                                                                                    )}
+                                                                                </button>
+                                                                                {children.length > 0 && renderPartTree(children, depth + 1)}
+                                                                            </div>
+                                                                        );
+                                                                    });
+                                                                };
+                                                                return renderPartTree(studyPartsForChapter);
+                                                            })()}
+                                                        </div>
+                                                    )}
+
+                                                    {studyChapterId && studyPartsForChapter.length === 0 && (
+                                                        <p className="text-xs text-muted-foreground italic px-1">No parts in this chapter.</p>
+                                                    )}
+
+                                                    {/* Selected Parts Visual */}
+                                                    {selectedStudyParts.length > 0 && (
+                                                        <div className="space-y-1.5">
+                                                            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Imported ({selectedStudyParts.length})</p>
+                                                            <div className="flex flex-wrap gap-1.5">
+                                                                {selectedStudyParts.map(id => {
+                                                                    const part = getPartById(id);
+                                                                    if (!part) return null;
+                                                                    return (
+                                                                        <span
+                                                                            key={id}
+                                                                            className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full text-[11px] font-medium bg-primary/15 text-primary border border-primary/20"
+                                                                        >
+                                                                            <BookOpen className="w-3 h-3" />
+                                                                            {part.name}
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => toggleStudyPart(id)}
+                                                                                className="ml-0.5 hover:bg-primary/20 rounded-full p-0.5 transition-colors"
+                                                                            >
+                                                                                <Plus className="w-3 h-3 rotate-45" />
+                                                                            </button>
+                                                                        </span>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Finance Section */}
@@ -807,159 +940,228 @@ export default function TasksPage() {
 
                         {/* Edit Task Dialog */}
                         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                            <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-xl">
-                                <DialogHeader>
-                                    <DialogTitle>Edit Task</DialogTitle>
-                                    <DialogDescription>Modify the details of your existing task.</DialogDescription>
-                                </DialogHeader>
+                            <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl sm:rounded-2xl p-0 gap-0 border-0 shadow-2xl">
                                 {editingTask && (
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="text-sm font-medium">Title</label>
-                                            <Input
-                                                value={editingTask.title}
-                                                onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-sm font-medium">Description</label>
-                                            <Textarea
-                                                value={editingTask.description || ""}
-                                                onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })}
-                                                rows={3}
-                                            />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-1">
-                                                <label className="text-xs text-muted-foreground">Priority</label>
-                                                <div className="relative">
-                                                    <select
-                                                        className="h-9 w-full appearance-none rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                                        value={editingTask.priority}
-                                                        onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value as Task["priority"] })}
-                                                    >
-                                                        <option value="low">🟢 Low</option>
-                                                        <option value="medium">🟡 Medium</option>
-                                                        <option value="high">🟠 High</option>
-                                                        <option value="urgent">🔴 Urgent</option>
-                                                    </select>
-                                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50 pointer-events-none" />
-                                                </div>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <label className="text-xs text-muted-foreground">Status</label>
-                                                <div className="relative">
-                                                    <select
-                                                        className="h-9 w-full appearance-none rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                                        value={editingTask.status}
-                                                        onChange={(e) => setEditingTask({ ...editingTask, status: e.target.value as Task["status"] })}
-                                                    >
-                                                        <option value="todo">To Do</option>
-                                                        <option value="in-progress">In Progress</option>
-                                                        <option value="done">Done</option>
-                                                    </select>
-                                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50 pointer-events-none" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium">Link to Module</label>
-                                            <div className="relative">
-                                                <select
-                                                    className="h-9 w-full appearance-none rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                                    value={editingTask.context_type || "general"}
-                                                    onChange={(e) => setEditingTask({ ...editingTask, context_type: e.target.value as Task["context_type"], context_id: "" })}
-                                                >
-                                                    <option value="general">📁 General</option>
-                                                    <option value="study">📚 Study</option>
-                                                    <option value="finance">💰 Finance</option>
-                                                    <option value="habit">💪 Habit</option>
-                                                    <option value="inventory">📦 Inventory</option>
-                                                </select>
-                                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50 pointer-events-none" />
-                                            </div>
+                                    <>
+                                        <div className="p-6 bg-gradient-to-b from-primary/5 via-background to-background">
+                                            <DialogHeader className="mb-6 text-center">
+                                                <DialogTitle className="text-xl font-bold tracking-tight">Edit Task</DialogTitle>
+                                                <DialogDescription>Modify the details of your existing task.</DialogDescription>
+                                            </DialogHeader>
 
-                                            {editingTask.context_type === "study" && (
-                                                <div className="relative">
-                                                    <select
-                                                        className="h-9 w-full appearance-none rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-2"
-                                                        value={editingTask.context_id || ""}
-                                                        onChange={(e) => setEditingTask({ ...editingTask, context_id: e.target.value })}
-                                                    >
-                                                        <option value="" disabled>Select chapter...</option>
-                                                        {Object.entries(chaptersBySubject).map(([subject, chs]) => (
-                                                            <optgroup key={subject} label={subject}>
-                                                                {chs.map(ch => <option key={ch.id} value={ch.id}>{ch.name}</option>)}
-                                                            </optgroup>
-                                                        ))}
-                                                    </select>
-                                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50 pointer-events-none" />
-                                                </div>
-                                            )}
+                                            <div className="space-y-5">
+                                                {/* Title & Description */}
+                                                <div className="space-y-3">
+                                                    <Input
+                                                        placeholder="Task title..."
+                                                        value={editingTask.title}
+                                                        onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
+                                                        className="h-12 text-base font-semibold rounded-xl border-input bg-background/60 shadow-sm placeholder:font-normal"
+                                                    />
 
-                                            {editingTask.context_type === "inventory" && (
-                                                <div className="relative">
-                                                    <select
-                                                        className="h-9 w-full appearance-none rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-2"
-                                                        value={editingTask.context_id || ""}
-                                                        onChange={(e) => setEditingTask({ ...editingTask, context_id: e.target.value })}
-                                                    >
-                                                        <option value="" disabled>Select item...</option>
-                                                        {inventoryItems.map(item => (
-                                                            <option key={item.id} value={item.id}>{item.item_name}</option>
-                                                        ))}
-                                                    </select>
-                                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50 pointer-events-none" />
+                                                    <Textarea
+                                                        placeholder="Add a description..."
+                                                        value={editingTask.description || ""}
+                                                        onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })}
+                                                        className="min-h-[70px] rounded-xl bg-secondary/20 border-border/30 resize-none text-sm"
+                                                        rows={2}
+                                                    />
                                                 </div>
-                                            )}
 
-                                            {editingTask.context_type === "finance" && (
-                                                <div className="mt-4 grid grid-cols-2 gap-4">
-                                                    <div>
-                                                        <label className="text-sm font-medium">Expected Cost (৳)</label>
-                                                        <Input
-                                                            type="number"
-                                                            value={editingTask.expected_cost || ""}
-                                                            onChange={(e) => setEditingTask({ ...editingTask, expected_cost: Number(e.target.value) || undefined })}
+                                                {/* Priority, Status & Date Grid */}
+                                                <div className="grid grid-cols-3 gap-3">
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-xs font-medium text-muted-foreground ml-1">Priority</label>
+                                                        <Select value={editingTask.priority} onValueChange={(val) => setEditingTask({ ...editingTask, priority: val as Task["priority"] })}>
+                                                            <SelectTrigger className="h-11 rounded-xl">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="low">🟢 Low</SelectItem>
+                                                                <SelectItem value="medium">🟡 Medium</SelectItem>
+                                                                <SelectItem value="high">🟠 High</SelectItem>
+                                                                <SelectItem value="urgent">🔴 Urgent</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-xs font-medium text-muted-foreground ml-1">Status</label>
+                                                        <Select value={editingTask.status} onValueChange={(val) => setEditingTask({ ...editingTask, status: val as Task["status"] })}>
+                                                            <SelectTrigger className="h-11 rounded-xl">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="todo">📋 To Do</SelectItem>
+                                                                <SelectItem value="in-progress">🔄 In Progress</SelectItem>
+                                                                <SelectItem value="done">✅ Done</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-xs font-medium text-muted-foreground ml-1">Due Date</label>
+                                                        <DatePicker
+                                                            value={editingTask.due_date ? editingTask.due_date.split('T')[0] : ""}
+                                                            onChange={(date) => setEditingTask({ ...editingTask, due_date: date })}
+                                                            placeholder="Pick a date"
+                                                            className="h-11 rounded-xl"
                                                         />
                                                     </div>
-                                                    <div>
-                                                        <label className="text-sm font-medium">Type</label>
-                                                        <div className="relative">
-                                                            <select
-                                                                className="h-9 w-full appearance-none rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                                                value={editingTask.finance_type || "expense"}
-                                                                onChange={(e) => setEditingTask({ ...editingTask, finance_type: e.target.value as "income" | "expense" })}
-                                                            >
-                                                                <option value="expense">Expense</option>
-                                                                <option value="income">Income</option>
-                                                            </select>
-                                                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50 pointer-events-none" />
+                                                </div>
+
+                                                {/* Module / Context */}
+                                                <div className="space-y-1.5">
+                                                    <label className="text-xs font-medium text-muted-foreground ml-1 flex items-center gap-1.5">
+                                                        <Folder className="w-3.5 h-3.5" /> Link to Module
+                                                    </label>
+                                                    <div className="flex gap-2">
+                                                        <Select value={editingTask.context_type || "general"} onValueChange={(val) => setEditingTask({ ...editingTask, context_type: val as Task["context_type"], context_id: "" })}>
+                                                            <SelectTrigger className="h-11 w-1/3 shrink-0 rounded-xl">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="general">General</SelectItem>
+                                                                <SelectItem value="study">Study</SelectItem>
+                                                                <SelectItem value="finance">Finance</SelectItem>
+                                                                <SelectItem value="habit">Habit</SelectItem>
+                                                                <SelectItem value="inventory">Inventory</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+
+                                                        <div className="flex-1">
+                                                            {(!editingTask.context_type || editingTask.context_type === "general") ? (
+                                                                <div className="h-11 flex items-center px-4 rounded-xl border border-dashed border-muted-foreground/20 text-muted-foreground text-sm bg-secondary/10 w-full">
+                                                                    No specific module linked
+                                                                </div>
+                                                            ) : editingTask.context_type === "study" ? (
+                                                                <Select value={editingTask.context_id || ""} onValueChange={(val) => setEditingTask({ ...editingTask, context_id: val })}>
+                                                                    <SelectTrigger className="h-11 w-full rounded-xl">
+                                                                        <SelectValue placeholder="Select chapter..." />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        {Object.entries(chaptersBySubject).map(([subject, chs]) => (
+                                                                            <SelectGroup key={subject}>
+                                                                                <SelectLabel>{subject}</SelectLabel>
+                                                                                {chs.map(ch => <SelectItem key={ch.id} value={ch.id}>{ch.name}</SelectItem>)}
+                                                                            </SelectGroup>
+                                                                        ))}
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            ) : (
+                                                                <Select value={editingTask.context_id || ""} onValueChange={(val) => setEditingTask({ ...editingTask, context_id: val })}>
+                                                                    <SelectTrigger className="h-11 w-full rounded-xl">
+                                                                        <SelectValue placeholder="Select item..." />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        {editingTask.context_type === "habit" && habits.map(h => (
+                                                                            <SelectItem key={h.id} value={h.id}>{h.habit_name}</SelectItem>
+                                                                        ))}
+                                                                        {editingTask.context_type === "inventory" && inventoryItems.map(i => (
+                                                                            <SelectItem key={i.id} value={i.id}>{i.item_name}</SelectItem>
+                                                                        ))}
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
-                                            )}
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="text-sm font-medium">Due Date</label>
-                                                <Input
-                                                    type="date"
-                                                    value={editingTask.due_date ? editingTask.due_date.split('T')[0] : ""}
-                                                    onChange={(e) => setEditingTask({ ...editingTask, due_date: e.target.value })}
-                                                    className="h-9"
-                                                />
+
+                                                {/* Finance Section */}
+                                                {editingTask.context_type === "finance" && (
+                                                    <div className="p-4 rounded-xl bg-secondary/20 border border-border/50 space-y-3">
+                                                        <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                                                            <DollarSign className="w-3.5 h-3.5" /> Budget & Cost
+                                                        </label>
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <div className="col-span-2 flex gap-2 mb-1">
+                                                                <button
+                                                                    onClick={() => setEditingTask({ ...editingTask, finance_type: "expense" })}
+                                                                    className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${(editingTask.finance_type || "expense") === "expense" ? "bg-red-500 text-white shadow-md shadow-red-500/20" : "bg-secondary text-muted-foreground hover:bg-secondary/80"}`}
+                                                                >
+                                                                    💸 Expense
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => setEditingTask({ ...editingTask, finance_type: "income" })}
+                                                                    className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${editingTask.finance_type === "income" ? "bg-green-500 text-white shadow-md shadow-green-500/20" : "bg-secondary text-muted-foreground hover:bg-secondary/80"}`}
+                                                                >
+                                                                    💰 Income
+                                                                </button>
+                                                            </div>
+
+                                                            {(editingTask.finance_type || "expense") === "expense" && (
+                                                                <div className="col-span-1">
+                                                                    <Select value={editingTask.budget_id || ""} onValueChange={(val) => setEditingTask({ ...editingTask, budget_id: val })}>
+                                                                        <SelectTrigger className="h-10 rounded-lg text-xs">
+                                                                            <SelectValue placeholder="Select budget..." />
+                                                                        </SelectTrigger>
+                                                                        <SelectContent>
+                                                                            {budgets.filter(b => b.type === "budget").map(b => (
+                                                                                <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                                                                            ))}
+                                                                        </SelectContent>
+                                                                    </Select>
+                                                                </div>
+                                                            )}
+                                                            <div className={`relative ${editingTask.finance_type === "income" ? "col-span-2" : "col-span-1"}`}>
+                                                                <Input
+                                                                    type="number"
+                                                                    placeholder={editingTask.finance_type === "income" ? "Expected income" : "Expected cost"}
+                                                                    value={editingTask.expected_cost || ""}
+                                                                    onChange={(e) => setEditingTask({ ...editingTask, expected_cost: Number(e.target.value) || undefined })}
+                                                                    className="h-10 rounded-lg bg-background/50 pl-7 text-xs"
+                                                                />
+                                                                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">৳</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Time Section - Single Row */}
+                                                <div className="p-4 rounded-xl bg-secondary/20 border border-border/50 space-y-3">
+                                                    <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                                                        <Clock className="w-3.5 h-3.5" /> Time Block
+                                                    </label>
+                                                    <div className="flex gap-2 items-end">
+                                                        <div className="flex-1 space-y-1">
+                                                            <span className="text-[10px] text-muted-foreground ml-0.5">Start</span>
+                                                            <TimePicker
+                                                                value={editingTask.start_time || ""}
+                                                                onChange={(val) => setEditingTask({ ...editingTask, start_time: val || undefined })}
+                                                                placeholder="Start"
+                                                            />
+                                                        </div>
+                                                        <div className="flex-1 space-y-1">
+                                                            <span className="text-[10px] text-muted-foreground ml-0.5">End</span>
+                                                            <TimePicker
+                                                                value={editingTask.end_time || ""}
+                                                                onChange={(val) => setEditingTask({ ...editingTask, end_time: val || undefined })}
+                                                                placeholder="End"
+                                                            />
+                                                        </div>
+                                                        <div className="flex-1 space-y-1 relative">
+                                                            <span className="text-[10px] text-muted-foreground ml-0.5">Duration</span>
+                                                            <Input
+                                                                type="number"
+                                                                placeholder="—"
+                                                                value={editingTask.estimated_duration || ""}
+                                                                onChange={(e) => setEditingTask({ ...editingTask, estimated_duration: Number(e.target.value) || undefined })}
+                                                                className="h-8 rounded-lg bg-background/50 text-xs pr-8"
+                                                            />
+                                                            <span className="absolute right-2 bottom-[5px] text-[10px] text-muted-foreground">min</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="flex justify-end gap-2 pt-4">
-                                            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                                                Cancel
-                                            </Button>
-                                            <Button onClick={handleSaveEdit}>
-                                                Save Changes
+                                        <div className="p-4 bg-secondary/30 border-t border-border/50">
+                                            <Button
+                                                onClick={handleSaveEdit}
+                                                className="w-full h-11 text-base font-semibold shadow-lg shadow-primary/25 rounded-xl bg-gradient-to-r from-primary to-primary/90 hover:to-primary"
+                                                disabled={updateTask.isPending}
+                                            >
+                                                {updateTask.isPending ? "Saving..." : "Save Changes"}
                                             </Button>
                                         </div>
-                                    </div>
+                                    </>
                                 )}
                             </DialogContent>
                         </Dialog>
