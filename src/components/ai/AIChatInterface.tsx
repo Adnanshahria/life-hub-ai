@@ -86,8 +86,10 @@ export function AIChatInterface() {
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [viewportHeight, setViewportHeight] = useState<number | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
     // Hooks for executing actions
     const { addTask, updateTask, deleteTask, completeTask, tasks } = useTasks();
@@ -147,8 +149,24 @@ export function AIChatInterface() {
     // Focus input on open - only on desktop to avoid triggering mobile keyboard
     useEffect(() => {
         if (isOpen && window.innerWidth >= 768) {
-            setTimeout(() => inputRef.current?.focus(), 100);
+            setTimeout(() => inputRef.current?.focus(), 200);
         }
+        // On mobile, explicitly blur to prevent keyboard
+        if (isOpen && window.innerWidth < 768) {
+            setTimeout(() => inputRef.current?.blur(), 50);
+        }
+    }, [isOpen]);
+
+    // Track visual viewport height for mobile keyboard awareness
+    useEffect(() => {
+        if (typeof window === 'undefined' || !window.visualViewport) return;
+        const vv = window.visualViewport;
+        const handleResize = () => {
+            setViewportHeight(vv.height);
+        };
+        handleResize();
+        vv.addEventListener('resize', handleResize);
+        return () => vv.removeEventListener('resize', handleResize);
     }, [isOpen]);
 
     const executeIntent = async (intent: AIIntent) => {
@@ -740,8 +758,9 @@ ${items?.map(i => `- ${i.item_name} (x${i.quantity}) [${i.category || 'uncategor
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 100, scale: 0.9 }}
                             className="fixed inset-0 md:inset-auto md:bottom-6 md:right-6 z-50 md:block"
+                            style={isMobile && viewportHeight ? { height: viewportHeight, top: 'auto', bottom: 0 } : undefined}
                         >
-                            <div className="w-full md:w-[400px] h-[100dvh] md:h-[600px] md:max-h-[80vh] flex flex-col glass-card md:rounded-2xl overflow-hidden shadow-2xl border border-primary/20">
+                            <div className="w-full md:w-[400px] h-full md:h-[600px] md:max-h-[80vh] flex flex-col glass-card md:rounded-2xl overflow-hidden shadow-2xl border border-primary/20">
                                 {/* Header */}
                                 <div className="p-4 border-b border-border bg-background/50 backdrop-blur-md flex items-center justify-between">
                                     <div className="flex items-center gap-2">
@@ -829,7 +848,7 @@ ${items?.map(i => `- ${i.item_name} (x${i.quantity}) [${i.category || 'uncategor
                                 </div>
 
                                 {/* Input Area */}
-                                <form onSubmit={handleSend} className="p-4 bg-background/50 border-t border-border backdrop-blur-md">
+                                <form onSubmit={handleSend} className="p-3 md:p-4 bg-background/80 border-t border-border backdrop-blur-md" style={{ paddingBottom: isMobile ? 'max(0.75rem, env(safe-area-inset-bottom))' : undefined }}>
                                     <div className="relative flex items-center">
                                         <input
                                             ref={inputRef}
@@ -837,8 +856,11 @@ ${items?.map(i => `- ${i.item_name} (x${i.quantity}) [${i.category || 'uncategor
                                             value={input}
                                             onChange={(e) => setInput(e.target.value)}
                                             placeholder="Type a message..."
-                                            className="w-full bg-secondary/50 border border-border rounded-full py-3 pl-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                                            className="w-full bg-secondary/50 border border-border rounded-full py-2.5 md:py-3 pl-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                                             disabled={isLoading}
+                                            autoFocus={false}
+                                            autoComplete="off"
+                                            enterKeyHint="send"
                                         />
                                         <button
                                             type="submit"
