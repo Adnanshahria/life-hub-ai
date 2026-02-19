@@ -490,7 +490,7 @@ export default function FinancePage() {
 
                     {/* Compact Toolbar - Glassmorphic Design */}
                     <motion.div
-                        className="top-toolbar sm:w-auto flex items-center gap-2 rounded-2xl border border-border/40 bg-background/40 backdrop-blur-xl p-1.5 shadow-sm"
+                        className="top-toolbar sm:w-auto flex items-center gap-2 rounded-2xl border border-violet-500 bg-background/40 backdrop-blur-xl p-1.5 shadow-sm"
                         layout
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     >
@@ -574,7 +574,7 @@ export default function FinancePage() {
                                     </Button>
                                     <Popover>
                                         <PopoverTrigger asChild>
-                                            <Button variant="ghost" size="sm" className="h-7 px-3 text-xs sm:text-sm font-medium rounded-lg hover:bg-primary/10 hover:text-primary transition-colors">
+                                            <Button variant="ghost" size="sm" className="h-7 px-3 text-xs sm:text-sm font-medium rounded-lg hover:bg-primary/10 hover:text-primary transition-colors border border-indigo-500/30">
                                                 <CalendarIcon className="w-3.5 h-3.5 mr-1.5 opacity-70" />
                                                 {format(new Date(selectedDate + "T12:00:00"), "MMM d, yyyy")}
                                             </Button>

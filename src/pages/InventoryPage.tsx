@@ -226,9 +226,9 @@ export default function InventoryPage() {
                             <p className="text-sm text-muted-foreground ml-14">Manage your assets and belongings</p>
                         </div>
 
-                        <div className="top-toolbar sm:w-auto">
+                        <div className="top-toolbar sm:w-auto flex flex-wrap items-center gap-2 rounded-2xl border border-violet-500 bg-background/40 backdrop-blur-xl p-1.5 shadow-sm">
                             {/* View Toggle */}
-                            <div className="flex bg-secondary rounded-lg p-0.5 shrink-0">
+                            <div className="flex bg-secondary rounded-lg p-0.5 shrink-0 border border-indigo-500/30">
                                 <button
                                     onClick={() => setViewMode("list")}
                                     className={`p-1.5 rounded transition-colors ${viewMode === "list" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
@@ -247,7 +247,7 @@ export default function InventoryPage() {
 
                             {/* Category Filter */}
                             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                                <SelectTrigger className="w-auto min-w-[120px]">
+                                <SelectTrigger className="w-auto min-w-[120px] h-8 text-xs bg-transparent border border-indigo-500/30 ring-0 focus:ring-0">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -265,7 +265,7 @@ export default function InventoryPage() {
                                     placeholder="Search..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-8 h-8 text-xs sm:text-sm"
+                                    className="pl-8 h-8 text-xs sm:text-sm bg-transparent border border-indigo-500/30 ring-0 focus-visible:ring-0"
                                 />
                             </div>
 

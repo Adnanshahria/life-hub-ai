@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     Plus, GraduationCap, Trash2, Search, BookOpen, TrendingUp,
     Award, Brain, ChevronRight, Pencil, Check, X,
-    Clock, Calendar, BookMarked, Layers, FolderPlus, FilePlus, Settings
+    Clock, Calendar, BookMarked, Layers, FolderPlus, FilePlus, Settings, MoreHorizontal
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { DatePicker } from "@/components/ui/date-picker";
 import { SEO } from "@/components/seo/SEO";
 import { StudyAnalytics } from "@/components/study/StudyAnalytics";
@@ -267,10 +274,10 @@ export default function StudyPage() {
                         <p className="text-sm text-muted-foreground ml-14">Organize subjects, chapters & parts</p>
                     </div>
 
-                    <div className="top-toolbar sm:w-auto flex items-center gap-2 rounded-2xl border border-border/40 bg-background/40 backdrop-blur-xl p-1.5 shadow-sm">
+                    <div className="top-toolbar sm:w-auto flex items-center gap-2 rounded-2xl border border-violet-500 bg-background/40 backdrop-blur-xl p-1.5 shadow-sm">
                         {/* Subject filter dropdown */}
                         <Select value={filterSubject} onValueChange={setFilterSubject}>
-                            <SelectTrigger className="h-7 w-auto min-w-[120px] px-2.5 text-xs sm:text-sm bg-transparent border-0 hover:bg-primary/10 hover:text-primary transition-colors focus:ring-0">
+                            <SelectTrigger className="h-7 w-auto min-w-[120px] px-2.5 text-xs sm:text-sm bg-transparent hover:bg-primary/10 hover:text-primary transition-colors focus:ring-0 border border-indigo-500/30">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -288,7 +295,7 @@ export default function StudyPage() {
                                 placeholder="Search..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-8 h-7 text-xs sm:text-sm bg-transparent border-0 ring-0 focus-visible:ring-0 focus-visible:bg-primary/5 transition-colors placeholder:text-muted-foreground/50"
+                                className="pl-8 h-7 text-xs sm:text-sm bg-transparent ring-0 focus-visible:ring-0 focus-visible:bg-primary/5 transition-colors placeholder:text-muted-foreground/50 border border-indigo-500/30"
                             />
                         </div>
 
@@ -466,48 +473,29 @@ export default function StudyPage() {
                                                     {progress}%
                                                 </div>
 
-                                                <div className="flex items-center gap-1">
-                                                    {/* Add chapter */}
-                                                    <Button
-                                                        size="icon" variant="ghost"
-                                                        className="h-7 w-7 text-muted-foreground hover:text-primary"
-                                                        title="Add chapter"
-                                                        onClick={() => openAddChapter(subject.id)}
-                                                    >
-                                                        <FolderPlus className="w-3.5 h-3.5" />
-                                                    </Button>
-
-                                                    {/* Manage Presets */}
-                                                    <Button
-                                                        size="icon" variant="ghost"
-                                                        className="h-7 w-7 text-muted-foreground hover:text-primary"
-                                                        title="Manage Common Presets"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setSelectedPresetSubjectId(subject.id);
-                                                            setManagePresetsOpen(true);
-                                                        }}
-                                                    >
-                                                        <Settings className="w-3.5 h-3.5" />
-                                                    </Button>
-
-                                                    {/* Edit subject */}
-                                                    <Button
-                                                        size="icon" variant="ghost"
-                                                        className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                                                        onClick={() => openEditSubject(subject)}
-                                                    >
-                                                        <Pencil className="w-3 h-3" />
-                                                    </Button>
-
-                                                    {/* Delete subject */}
-                                                    <Button
-                                                        size="icon" variant="ghost"
-                                                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                                                        onClick={() => study.deleteSubject.mutate(subject.id)}
-                                                    >
-                                                        <Trash2 className="w-3.5 h-3.5" />
-                                                    </Button>
+                                                <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                                                                <MoreHorizontal className="w-4 h-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" className="w-56">
+                                                            <DropdownMenuItem onClick={() => openAddChapter(subject.id)}>
+                                                                <FolderPlus className="mr-2 h-4 w-4" /> Add Chapter
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => { setSelectedPresetSubjectId(subject.id); setManagePresetsOpen(true); }}>
+                                                                <Settings className="mr-2 h-4 w-4" /> Manage Presets
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => openEditSubject(subject)}>
+                                                                <Pencil className="mr-2 h-4 w-4" /> Rename Subject
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => study.deleteSubject.mutate(subject.id)}>
+                                                                <Trash2 className="mr-2 h-4 w-4" /> Delete Subject
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
                                                 </div>
                                             </div>
                                         </div>
@@ -606,30 +594,25 @@ export default function StudyPage() {
 
                                                                                 {/* Actions */}
                                                                                 <div className="flex items-center ml-1">
-                                                                                    <Button
-                                                                                        size="icon" variant="ghost"
-                                                                                        className="h-6 w-6 text-muted-foreground hover:text-primary"
-                                                                                        title="Add part"
-                                                                                        onClick={() => openAddPart(chapter.id)}
-                                                                                    >
-                                                                                        <FilePlus className="w-3 h-3" />
-                                                                                    </Button>
-
-                                                                                    <Button
-                                                                                        size="icon" variant="ghost"
-                                                                                        className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                                                                                        onClick={() => openEditChapter(chapter)}
-                                                                                    >
-                                                                                        <Pencil className="w-2.5 h-2.5" />
-                                                                                    </Button>
-
-                                                                                    <Button
-                                                                                        size="icon" variant="ghost"
-                                                                                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                                                                                        onClick={() => study.deleteChapter.mutate(chapter.id)}
-                                                                                    >
-                                                                                        <Trash2 className="w-3 h-3" />
-                                                                                    </Button>
+                                                                                    <DropdownMenu>
+                                                                                        <DropdownMenuTrigger asChild>
+                                                                                            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
+                                                                                                <MoreHorizontal className="w-3.5 h-3.5" />
+                                                                                            </Button>
+                                                                                        </DropdownMenuTrigger>
+                                                                                        <DropdownMenuContent align="end" className="w-48">
+                                                                                            <DropdownMenuItem onClick={() => openAddPart(chapter.id)}>
+                                                                                                <FilePlus className="mr-2 h-4 w-4" /> Add Part
+                                                                                            </DropdownMenuItem>
+                                                                                            <DropdownMenuItem onClick={() => openEditChapter(chapter)}>
+                                                                                                <Pencil className="mr-2 h-4 w-4" /> Rename Chapter
+                                                                                            </DropdownMenuItem>
+                                                                                            <DropdownMenuSeparator />
+                                                                                            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => study.deleteChapter.mutate(chapter.id)}>
+                                                                                                <Trash2 className="mr-2 h-4 w-4" /> Delete Chapter
+                                                                                            </DropdownMenuItem>
+                                                                                        </DropdownMenuContent>
+                                                                                    </DropdownMenu>
                                                                                 </div>
                                                                             </div>
                                                                         </div>
@@ -1250,15 +1233,25 @@ function PartRow({
 
                 {/* Actions (visible on hover) */}
                 <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                    <Button size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground hover:text-primary" onClick={() => onAddSubpart(part.id)} title="Add sub-part">
-                        <Plus className="w-3 h-3" />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground hover:text-foreground" onClick={() => onStartEdit(part)}>
-                        <Pencil className="w-2.5 h-2.5" />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => onDelete(part)}>
-                        <Trash2 className="w-3 h-3" />
-                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground">
+                                <MoreHorizontal className="w-3.5 h-3.5" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => onAddSubpart(part.id)}>
+                                <Plus className="mr-2 h-4 w-4" /> Add Sub-part
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onStartEdit(part)}>
+                                <Pencil className="mr-2 h-4 w-4" /> Edit Part
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => onDelete(part)}>
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete Part
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
 

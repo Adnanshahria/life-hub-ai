@@ -968,7 +968,7 @@ export default function NotesPage() {
                         </div>
                         <p className="text-sm text-muted-foreground ml-14">Capture thoughts, checklists, and ideas</p>
                     </div>
-                    <div className="top-toolbar w-full sm:w-auto flex items-center gap-2 rounded-2xl border border-border/40 bg-background/40 backdrop-blur-xl p-1.5 shadow-sm">
+                    <div className="top-toolbar w-full sm:w-auto flex items-center gap-2 rounded-2xl border border-violet-500 bg-background/40 backdrop-blur-xl p-1.5 shadow-sm">
                         {/* View Mode Dropdown */}
                         {/* Filter Menu */}
                         <Popover>
@@ -1022,7 +1022,7 @@ export default function NotesPage() {
                         {/* Search */}
                         <div className="relative flex-1 sm:flex-initial">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                            <Input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 w-full sm:w-48 md:w-64 bg-secondary/20 border border-border/40 ring-0 focus-visible:ring-1 focus-visible:ring-primary/20 transition-all placeholder:text-muted-foreground/50 text-xs sm:text-sm h-8 rounded-xl" />
+                            <Input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 w-full sm:w-48 md:w-64 bg-secondary/20 border border-indigo-500/30 ring-0 focus-visible:ring-1 focus-visible:ring-primary/20 transition-all placeholder:text-muted-foreground/50 text-xs sm:text-sm h-8 rounded-xl" />
                         </div>
                         {/* New Note */}
                         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

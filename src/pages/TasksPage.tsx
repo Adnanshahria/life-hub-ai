@@ -522,7 +522,7 @@ export default function TasksPage() {
                     </div>
 
                     {/* Single-row controls - Top Toolbar */}
-                    <div className="top-toolbar sm:w-auto flex items-center gap-2 rounded-2xl border border-border/40 bg-background/40 backdrop-blur-xl p-1.5 shadow-sm">
+                    <div className="top-toolbar sm:w-auto flex items-center gap-2 rounded-2xl border border-violet-500 bg-background/40 backdrop-blur-xl p-1.5 shadow-sm">
 
                         {/* Filter Menu */}
                         <Popover>

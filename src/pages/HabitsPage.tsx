@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     Plus, Flame, Check, Trash2, Target, TrendingUp, Zap,
     Lightbulb, Search, Brain, Sparkles, Edit2,
-    ChevronLeft, ChevronRight, Calendar as CalendarIcon, ArrowUpDown, SlidersHorizontal, Filter
+    ChevronLeft, ChevronRight, Calendar as CalendarIcon, ArrowUpDown, SlidersHorizontal, Filter, MoreHorizontal
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -13,6 +13,13 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { SEO } from "@/components/seo/SEO";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
     Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -293,7 +300,7 @@ export default function HabitsPage() {
                         <p className="text-sm text-muted-foreground ml-14">Build lasting habits with streaks</p>
                     </div>
 
-                    <div className="top-toolbar sm:w-auto flex items-center gap-2 flex-nowrap overflow-x-auto no-scrollbar rounded-2xl border border-border/40 bg-background/40 backdrop-blur-xl p-1.5 shadow-sm">
+                    <div className="top-toolbar sm:w-auto flex items-center gap-2 flex-nowrap overflow-x-auto no-scrollbar rounded-2xl border border-violet-500 bg-background/40 backdrop-blur-xl p-1.5 shadow-sm">
                         {/* Filter Menu */}
                         <Popover>
                             <PopoverTrigger asChild>
@@ -384,7 +391,7 @@ export default function HabitsPage() {
                         <div className="h-4 w-px bg-border/40 mx-1" />
 
                         {/* Date Controls - Compact */}
-                        <div className="flex items-center gap-1 bg-secondary/20 p-0.5 rounded-xl border border-border/40">
+                        <div className="flex items-center gap-1 bg-secondary/20 p-0.5 rounded-xl border border-indigo-500/30">
                             <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-background/80 hover:shadow-sm" onClick={() => changeDate(-1)}>
                                 <ChevronLeft className="w-3.5 h-3.5" />
                             </Button>
@@ -904,31 +911,25 @@ export default function HabitsPage() {
 
                                         {/* Actions */}
                                         <div className="flex items-center gap-0.5 shrink-0">
-                                            <Button
-                                                variant="ghost" size="icon"
-                                                className="h-7 w-7 text-muted-foreground hover:text-yellow-400"
-                                                onClick={() => handleGetTips(habit)}
-                                                disabled={loadingTips}
-                                                title="AI Tips"
-                                            >
-                                                <Lightbulb className="w-3.5 h-3.5" />
-                                            </Button>
-                                            <Button
-                                                variant="ghost" size="icon"
-                                                className="h-7 w-7 text-muted-foreground hover:text-primary"
-                                                onClick={() => setEditingHabit({ ...habit })}
-                                                title="Edit"
-                                            >
-                                                <Edit2 className="w-3.5 h-3.5" />
-                                            </Button>
-                                            <Button
-                                                variant="ghost" size="icon"
-                                                className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                                                onClick={() => deleteHabit.mutate(habit.id)}
-                                                title="Delete"
-                                            >
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                            </Button>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                                                        <MoreHorizontal className="w-4 h-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => handleGetTips(habit)} disabled={loadingTips}>
+                                                        <Lightbulb className="mr-2 h-4 w-4 text-yellow-500" /> AI Tips
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => setEditingHabit({ ...habit })}>
+                                                        <Edit2 className="mr-2 h-4 w-4" /> Edit Habit
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => deleteHabit.mutate(habit.id)}>
+                                                        <Trash2 className="mr-2 h-4 w-4" /> Delete Habit
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </div>
                                     </div>
                                 </motion.div>
