@@ -487,7 +487,11 @@ export default function FinancePage() {
                     </div>
 
                     {/* Single-row controls - Top Toolbar */}
-                    <div className="top-toolbar sm:w-auto">
+                    <motion.div
+                        className="top-toolbar sm:w-auto"
+                        layout
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    >
 
                         {/* Default / Special dropdown */}
                         <Select value={financeViewMode} onValueChange={(v) => setFinanceViewMode(v as typeof financeViewMode)}>
@@ -855,7 +859,7 @@ export default function FinancePage() {
                                 </div>
                             </DialogContent>
                         </Dialog>
-                    </div>
+                    </motion.div>
                 </div>
 
                 {/* Spacer for fixed toolbar on mobile - adjusted to avoid overspacing */}
