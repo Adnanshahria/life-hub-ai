@@ -505,6 +505,9 @@ export default function HabitsPage() {
                     </div>
                 </div>
 
+                {/* Spacer for fixed toolbar on mobile */}
+                <div className="h-8 md:hidden" aria-hidden="true" />
+
                 {/* ===== STATS GRID ===== */}
                 <div className="grid grid-cols-4 gap-1.5 sm:gap-3">
                     {[

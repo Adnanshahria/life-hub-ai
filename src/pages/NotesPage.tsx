@@ -1032,7 +1032,8 @@ export default function NotesPage() {
                     </div>
                 </div>
 
-
+                {/* Spacer for fixed toolbar on mobile */}
+                <div className="h-8 md:hidden" aria-hidden="true" />
 
                 {/* ===== TAG FILTER ===== */}
                 {viewMode === "notes" && allTags.length > 0 && (

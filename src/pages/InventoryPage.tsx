@@ -401,6 +401,9 @@ export default function InventoryPage() {
                         </div>
                     </div>
 
+                    {/* Spacer for fixed toolbar on mobile */}
+                    <div className="h-8 md:hidden" aria-hidden="true" />
+
                     {/* Stats Cards */}
                     <div className="grid grid-cols-4 gap-1.5 sm:gap-3">
                         <div className="relative overflow-hidden rounded-2xl p-2 sm:p-3 flex items-center gap-2 sm:gap-3 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20">
