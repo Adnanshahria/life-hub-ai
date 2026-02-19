@@ -337,7 +337,7 @@
 
   /* Mobile floating bottom nav */
   .bottom-nav {
-    @apply fixed bottom-6 left-0 right-0 z-50 md:hidden flex justify-center pointer-events-none;
+    @apply fixed bottom-4 left-0 right-0 z-50 md:hidden flex justify-center pointer-events-none;
     padding: 0 16px;
   }
 
@@ -348,16 +348,16 @@
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border-radius: 9999px;
-    padding: 6px;
+    padding: 4px;
     max-width: fit-content;
   }
 
   .floating-nav-item {
     @apply relative flex items-center justify-center gap-2 rounded-full cursor-pointer select-none transition-colors duration-300;
-    padding: 10px 16px;
+    padding: 8px 12px;
     color: hsl(var(--muted-foreground));
     /* Minimum touch target */
-    min-height: 44px;
+    min-height: 38px;
   }
 
   .floating-nav-item.active {
@@ -395,6 +395,15 @@
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     @apply bg-indigo-500/40;
+  }
+
+  /* Fixed mobile viewport layout */
+  @media (max-width: 767px) {
+    .mobile-fixed-layout {
+      height: 100dvh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
   }
 }
 

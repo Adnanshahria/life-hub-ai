@@ -96,7 +96,7 @@ export function BottomNav() {
                         transition={{ type: "spring", stiffness: 500, damping: 30 }}
                       />
                     )}
-                    <item.icon className="w-[18px] h-[18px]" />
+                    <item.icon className="w-4 h-4" />
                     <AnimatePresence mode="wait">
                       {isActive && (
                         <motion.span
@@ -105,7 +105,7 @@ export function BottomNav() {
                           animate={{ width: "auto", opacity: 1 }}
                           exit={{ width: 0, opacity: 0 }}
                           transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                          className="text-xs font-semibold overflow-hidden whitespace-nowrap"
+                          className="text-[10px] font-semibold overflow-hidden whitespace-nowrap"
                         >
                           {item.label}
                         </motion.span>
@@ -130,7 +130,7 @@ export function BottomNav() {
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
                 )}
-                <MoreHorizontal className="w-[18px] h-[18px]" />
+                <MoreHorizontal className="w-4 h-4" />
               </motion.div>
             </button>
           </div>
@@ -147,7 +147,7 @@ export function BottomNav() {
                 layout
                 transition={{ type: "spring", stiffness: 500, damping: 30 }}
               >
-                <Search className="w-[18px] h-[18px]" />
+                <Search className="w-4 h-4" />
               </motion.div>
             </button>
 
@@ -166,7 +166,7 @@ export function BottomNav() {
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
                 )}
-                <Sparkles className="w-[18px] h-[18px]" />
+                <Sparkles className="w-4 h-4" />
               </motion.div>
             </button>
 
@@ -187,9 +187,9 @@ export function BottomNav() {
                     transition={{ duration: 0.2 }}
                   >
                     {theme === "dark" ? (
-                      <Moon className="w-[18px] h-[18px]" />
+                      <Moon className="w-4 h-4" />
                     ) : (
-                      <Sun className="w-[18px] h-[18px]" />
+                      <Sun className="w-4 h-4" />
                     )}
                   </motion.div>
                 </AnimatePresence>
