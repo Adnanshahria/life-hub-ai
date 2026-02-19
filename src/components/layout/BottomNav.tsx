@@ -4,7 +4,9 @@ import {
   Moon,
   Sun,
   MoreHorizontal,
-  X
+  X,
+  Search,
+  Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/hooks/useTheme";
@@ -16,7 +18,7 @@ export function BottomNav() {
   const { theme, toggleTheme } = useTheme();
   const [showMore, setShowMore] = useState(false);
   const { mainNavItems, moreNavItems } = useNavPreferences();
-  const { isChatOpen } = useAI();
+  const { isChatOpen, setChatOpen } = useAI();
 
   // Check if any "more" item is active
   const isMoreActive = moreNavItems.some(item => location.pathname === item.path);
@@ -66,25 +68,7 @@ export function BottomNav() {
                   );
                 })}
               </div>
-              {/* Theme Toggle */}
-              <div className="mt-4 pt-3 border-t border-border/50">
-                <button
-                  onClick={toggleTheme}
-                  className="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
-                >
-                  {theme === "dark" ? (
-                    <>
-                      <Sun className="w-4 h-4 text-yellow-400" />
-                      <span className="text-sm font-medium">Light Mode</span>
-                    </>
-                  ) : (
-                    <>
-                      <Moon className="w-4 h-4 text-blue-400" />
-                      <span className="text-sm font-medium">Dark Mode</span>
-                    </>
-                  )}
-                </button>
-              </div>
+
             </motion.div>
           </>
         )}
@@ -145,18 +129,65 @@ export function BottomNav() {
                 />
               )}
               <MoreHorizontal className="w-[18px] h-[18px]" />
-              <AnimatePresence mode="wait">
-                {(showMore || isMoreActive) && (
-                  <motion.span
-                    initial={{ width: 0, opacity: 0 }}
-                    animate={{ width: "auto", opacity: 1 }}
-                    exit={{ width: 0, opacity: 0 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    className="text-xs font-semibold overflow-hidden whitespace-nowrap"
-                  >
-                    More
-                  </motion.span>
-                )}
+            </motion.div>
+          </button>
+
+          {/* Separator */}
+          <div className="w-[1px] h-6 bg-border mx-1" />
+
+          {/* Search Button */}
+          <button onClick={() => window.dispatchEvent(new CustomEvent("openGlobalSearch"))} className="relative">
+            <motion.div
+              className="floating-nav-item"
+              whileTap={{ scale: 0.92 }}
+              layout
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            >
+              <Search className="w-[18px] h-[18px]" />
+            </motion.div>
+          </button>
+
+          {/* AI Button */}
+          <button onClick={() => setChatOpen(!isChatOpen)} className="relative">
+            <motion.div
+              className={`floating-nav-item ${isChatOpen ? "active" : ""}`}
+              whileTap={{ scale: 0.92 }}
+              layout
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            >
+              {isChatOpen && (
+                <motion.div
+                  layoutId="nav-item-bg"
+                  className="absolute inset-0 bg-primary/10 rounded-full -z-10 border border-violet-500/50 shadow-[0_0_10px_rgba(139,92,246,0.2)]"
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                />
+              )}
+              <Sparkles className="w-[18px] h-[18px]" />
+            </motion.div>
+          </button>
+
+          {/* Theme Toggle Button */}
+          <button onClick={toggleTheme} className="relative">
+            <motion.div
+              className="floating-nav-item"
+              whileTap={{ scale: 0.92 }}
+              layout
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={theme}
+                  initial={{ rotate: -90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: 90, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {theme === "dark" ? (
+                    <Moon className="w-[18px] h-[18px]" />
+                  ) : (
+                    <Sun className="w-[18px] h-[18px]" />
+                  )}
+                </motion.div>
               </AnimatePresence>
             </motion.div>
           </button>

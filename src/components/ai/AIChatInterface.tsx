@@ -697,7 +697,7 @@ ${items?.map(i => `- ${i.item_name} (x${i.quantity}) [${i.category || 'uncategor
                 <motion.button
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="fixed bottom-36 md:bottom-24 right-4 md:right-6 z-50 w-12 h-12 md:w-14 md:h-14 rounded-full bg-secondary shadow-lg flex items-center justify-center hover:scale-105 transition-transform border border-border"
+                    className="hidden md:flex fixed bottom-36 md:bottom-24 right-4 md:right-6 z-50 w-12 h-12 md:w-14 md:h-14 rounded-full bg-secondary shadow-lg items-center justify-center hover:scale-105 transition-transform border border-border"
                     onClick={handleSearchClick}
                 >
                     <Search className="w-6 h-6 text-foreground" />
@@ -732,7 +732,7 @@ ${items?.map(i => `- ${i.item_name} (x${i.quantity}) [${i.category || 'uncategor
                 <motion.button
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-primary shadow-lg flex items-center justify-center glow-primary hover:scale-105 transition-transform"
+                    className="hidden md:flex fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-primary shadow-lg items-center justify-center glow-primary hover:scale-105 transition-transform"
                     onClick={() => setIsOpen(true)}
                 >
                     <Sparkles className="w-6 h-6 text-white" />
