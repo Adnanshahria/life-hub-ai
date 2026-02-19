@@ -77,120 +77,125 @@ export function BottomNav() {
       {/* Floating Bottom Navigation - hidden when AI chat is open */}
       <nav className="bottom-nav" style={isChatOpen ? { display: 'none' } : undefined}>
         <div className="floating-nav-container">
-          {mainNavItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <Link key={item.path} to={item.path} className="relative">
-                <motion.div
-                  className={`floating-nav-item ${isActive ? "active" : ""}`}
-                  whileTap={{ scale: 0.92 }}
-                  layout
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="nav-item-bg"
-                      className="absolute inset-0 bg-primary/10 rounded-full -z-10 border border-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.2)] dark:border-yellow-400/50 dark:shadow-[0_0_10px_rgba(250,204,21,0.2)]"
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    />
-                  )}
-                  <item.icon className="w-[18px] h-[18px]" />
-                  <AnimatePresence mode="wait">
+          {/* Primary Nav Items Container */}
+          <div className="flex items-center gap-1 bg-secondary/80 dark:bg-secondary/50 rounded-full px-2 py-1 border border-border/50 dark:border-white/5 backdrop-blur-sm shadow-sm">
+            {mainNavItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link key={item.path} to={item.path} className="relative">
+                  <motion.div
+                    className={`floating-nav-item ${isActive ? "active" : ""}`}
+                    whileTap={{ scale: 0.92 }}
+                    layout
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  >
                     {isActive && (
-                      <motion.span
-                        key={item.label}
-                        initial={{ width: 0, opacity: 0 }}
-                        animate={{ width: "auto", opacity: 1 }}
-                        exit={{ width: 0, opacity: 0 }}
+                      <motion.div
+                        layoutId="nav-item-bg"
+                        className="absolute inset-0 bg-primary/10 rounded-full -z-10 border border-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.2)] dark:border-yellow-400/50 dark:shadow-[0_0_10px_rgba(250,204,21,0.2)]"
                         transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                        className="text-xs font-semibold overflow-hidden whitespace-nowrap"
-                      >
-                        {item.label}
-                      </motion.span>
+                      />
                     )}
-                  </AnimatePresence>
-                </motion.div>
-              </Link>
-            );
-          })}
-          {/* More Button */}
-          <button onClick={() => setShowMore(!showMore)} className="relative">
-            <motion.div
-              className={`floating-nav-item ${showMore || isMoreActive ? "active" : ""}`}
-              whileTap={{ scale: 0.92 }}
-              layout
-              transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            >
-              {(showMore || isMoreActive) && (
-                <motion.div
-                  layoutId="nav-item-bg"
-                  className="absolute inset-0 bg-primary/10 rounded-full -z-10 border border-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.2)] dark:border-yellow-400/50 dark:shadow-[0_0_10px_rgba(250,204,21,0.2)]"
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                />
-              )}
-              <MoreHorizontal className="w-[18px] h-[18px]" />
-            </motion.div>
-          </button>
+                    <item.icon className="w-[18px] h-[18px]" />
+                    <AnimatePresence mode="wait">
+                      {isActive && (
+                        <motion.span
+                          key={item.label}
+                          initial={{ width: 0, opacity: 0 }}
+                          animate={{ width: "auto", opacity: 1 }}
+                          exit={{ width: 0, opacity: 0 }}
+                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                          className="text-xs font-semibold overflow-hidden whitespace-nowrap"
+                        >
+                          {item.label}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                </Link>
+              );
+            })}
+            {/* More Button */}
+            <button onClick={() => setShowMore(!showMore)} className="relative">
+              <motion.div
+                className={`floating-nav-item ${showMore || isMoreActive ? "active" : ""}`}
+                whileTap={{ scale: 0.92 }}
+                layout
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              >
+                {(showMore || isMoreActive) && (
+                  <motion.div
+                    layoutId="nav-item-bg"
+                    className="absolute inset-0 bg-primary/10 rounded-full -z-10 border border-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.2)] dark:border-yellow-400/50 dark:shadow-[0_0_10px_rgba(250,204,21,0.2)]"
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
+                <MoreHorizontal className="w-[18px] h-[18px]" />
+              </motion.div>
+            </button>
+          </div>
 
           {/* Separator */}
-          <div className="w-[1px] h-6 bg-border mx-1" />
+          <div className="w-[1px] h-8 bg-border/20 mx-1" />
 
-          {/* Search Button */}
-          <button onClick={() => window.dispatchEvent(new CustomEvent("openGlobalSearch"))} className="relative">
-            <motion.div
-              className="floating-nav-item"
-              whileTap={{ scale: 0.92 }}
-              layout
-              transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            >
-              <Search className="w-[18px] h-[18px]" />
-            </motion.div>
-          </button>
+          {/* Utility Buttons Logic */}
+          <div className="flex items-center gap-1 bg-secondary/80 dark:bg-secondary/50 rounded-full px-2 py-1 border border-border/50 dark:border-white/5 backdrop-blur-sm shadow-sm">
+            <button onClick={() => window.dispatchEvent(new CustomEvent("openGlobalSearch"))} className="relative">
+              <motion.div
+                className="floating-nav-item"
+                whileTap={{ scale: 0.92 }}
+                layout
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              >
+                <Search className="w-[18px] h-[18px]" />
+              </motion.div>
+            </button>
 
-          {/* AI Button */}
-          <button onClick={() => setChatOpen(!isChatOpen)} className="relative">
-            <motion.div
-              className={`floating-nav-item ${isChatOpen ? "active" : ""}`}
-              whileTap={{ scale: 0.92 }}
-              layout
-              transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            >
-              {isChatOpen && (
-                <motion.div
-                  layoutId="nav-item-bg"
-                  className="absolute inset-0 bg-primary/10 rounded-full -z-10 border border-violet-500/50 shadow-[0_0_10px_rgba(139,92,246,0.2)]"
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                />
-              )}
-              <Sparkles className="w-[18px] h-[18px]" />
-            </motion.div>
-          </button>
+            {/* AI Button */}
+            <button onClick={() => setChatOpen(!isChatOpen)} className="relative">
+              <motion.div
+                className={`floating-nav-item ${isChatOpen ? "active" : ""}`}
+                whileTap={{ scale: 0.92 }}
+                layout
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              >
+                {isChatOpen && (
+                  <motion.div
+                    layoutId="nav-item-bg"
+                    className="absolute inset-0 bg-primary/10 rounded-full -z-10 border border-violet-500/50 shadow-[0_0_10px_rgba(139,92,246,0.2)]"
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
+                <Sparkles className="w-[18px] h-[18px]" />
+              </motion.div>
+            </button>
 
-          {/* Theme Toggle Button */}
-          <button onClick={toggleTheme} className="relative">
-            <motion.div
-              className="floating-nav-item"
-              whileTap={{ scale: 0.92 }}
-              layout
-              transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            >
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={theme}
-                  initial={{ rotate: -90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: 90, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {theme === "dark" ? (
-                    <Moon className="w-[18px] h-[18px]" />
-                  ) : (
-                    <Sun className="w-[18px] h-[18px]" />
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            </motion.div>
-          </button>
+            {/* Theme Toggle Button */}
+            <button onClick={toggleTheme} className="relative">
+              <motion.div
+                className="floating-nav-item"
+                whileTap={{ scale: 0.92 }}
+                layout
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={theme}
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {theme === "dark" ? (
+                      <Moon className="w-[18px] h-[18px]" />
+                    ) : (
+                      <Sun className="w-[18px] h-[18px]" />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </motion.div>
+            </button>
+          </div>
         </div>
       </nav>
     </>

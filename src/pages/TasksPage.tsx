@@ -587,20 +587,7 @@ export default function TasksPage() {
                         <span>New</span>
                     </Button>
                 </DialogTrigger>
-                {/* Mobile Floating Button - Portal out to body to avoid transform clipping */}
-                {createPortal(
-                    <div className="fixed bottom-20 right-20 z-50 sm:hidden">
-                        <DialogTrigger asChild>
-                            <Button
-                                size="icon"
-                                className="w-12 h-12 rounded-full shadow-lg shadow-primary/25 glow-primary bg-primary hover:bg-primary/90 text-primary-foreground"
-                            >
-                                <Plus className="w-6 h-6" />
-                            </Button>
-                        </DialogTrigger>
-                    </div>,
-                    document.body
-                )}
+                {/* Mobile Floating Button Removed */}
                 <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl sm:rounded-2xl p-0 gap-0 border-0 shadow-2xl">
                     <div className="p-6 bg-gradient-to-b from-primary/5 via-background to-background">
                         <DialogHeader className="mb-6 text-center">
