@@ -5,7 +5,7 @@ import {
     Pin, PinOff, CheckSquare, Eye, EyeOff, Bold, Italic, Heading,
     ChevronRight, ChevronDown, Calendar, AlertCircle, Sparkles, Filter,
     Check, List, ListChecks, Copy, Edit3, Loader2, Send, X,
-    Archive, ArchiveRestore, Palette, MoreHorizontal, Undo2, ArrowUpDown, Maximize2, Image as ImageIcon
+    Archive, ArchiveRestore, Palette, MoreHorizontal, Undo2, ArrowUpDown, Maximize2, Image as ImageIcon, SlidersHorizontal
 } from "lucide-react";
 import { uploadImage } from "../services/imageUpload";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -16,6 +16,7 @@ import { SEO } from "@/components/seo/SEO";
 import {
     Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNotes, Note, NoteColor, NOTE_COLORS } from "@/hooks/useNotes";
 import { cn } from "@/lib/utils";
@@ -967,40 +968,66 @@ export default function NotesPage() {
                         </div>
                         <p className="text-sm text-muted-foreground ml-14">Capture thoughts, checklists, and ideas</p>
                     </div>
-                    <div className="top-toolbar w-full sm:w-auto">
+                    <div className="top-toolbar w-full sm:w-auto flex items-center gap-2 rounded-2xl border border-border/40 bg-background/40 backdrop-blur-xl p-1.5 shadow-sm">
                         {/* View Mode Dropdown */}
-                        <Select value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
-                            <SelectTrigger className="h-8 w-auto min-w-[100px] px-2.5 text-xs sm:text-sm shrink-0">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="notes">📝 Notes{totalNotes > 0 ? ` (${totalNotes})` : ""}</SelectItem>
-                                <SelectItem value="archive">📦 Archive{archivedCount > 0 ? ` (${archivedCount})` : ""}</SelectItem>
-                                <SelectItem value="trash">🗑️ Trash{trashedCount > 0 ? ` (${trashedCount})` : ""}</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        {/* Sort Dropdown */}
-                        <Select value={sortMode} onValueChange={(v) => setSortMode(v as SortMode)}>
-                            <SelectTrigger className="h-8 w-auto min-w-[100px] px-2.5 text-xs sm:text-sm shrink-0">
-                                <ArrowUpDown className="w-3 h-3 mr-1 opacity-70" />
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="newest">Newest first</SelectItem>
-                                <SelectItem value="oldest">Oldest first</SelectItem>
-                                <SelectItem value="title-asc">Title A→Z</SelectItem>
-                                <SelectItem value="title-desc">Title Z→A</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        {/* Filter Menu */}
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl border border-amber-400/50 bg-amber-400/10 text-amber-500 hover:bg-amber-400/20 hover:text-amber-600 hover:border-amber-400 transition-all shadow-sm shrink-0">
+                                    <SlidersHorizontal className="w-4 h-4" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64 p-4" align="start">
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
+                                            <Filter className="w-3.5 h-3.5" />
+                                            View Mode
+                                        </h4>
+                                        <Select value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
+                                            <SelectTrigger className="w-full h-8 text-xs">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="notes">📝 Notes{totalNotes > 0 ? ` (${totalNotes})` : ""}</SelectItem>
+                                                <SelectItem value="archive">📦 Archive{archivedCount > 0 ? ` (${archivedCount})` : ""}</SelectItem>
+                                                <SelectItem value="trash">🗑️ Trash{trashedCount > 0 ? ` (${trashedCount})` : ""}</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
+                                            <ArrowUpDown className="w-3.5 h-3.5" />
+                                            Sort By
+                                        </h4>
+                                        <Select value={sortMode} onValueChange={(v) => setSortMode(v as SortMode)}>
+                                            <SelectTrigger className="w-full h-8 text-xs">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="newest">Newest first</SelectItem>
+                                                <SelectItem value="oldest">Oldest first</SelectItem>
+                                                <SelectItem value="title-asc">Title A→Z</SelectItem>
+                                                <SelectItem value="title-desc">Title Z→A</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+
+                        {/* Divider */}
+                        <div className="h-4 w-px bg-border/40 mx-1" />
                         {/* Search */}
                         <div className="relative flex-1 sm:flex-initial">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            <Input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 w-full sm:w-48 md:w-64 glass-input" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                            <Input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 w-full sm:w-48 md:w-64 bg-secondary/20 border border-border/40 ring-0 focus-visible:ring-1 focus-visible:ring-primary/20 transition-all placeholder:text-muted-foreground/50 text-xs sm:text-sm h-8 rounded-xl" />
                         </div>
                         {/* New Note */}
                         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                             <DialogTrigger asChild>
-                                <Button className="gap-2 shadow-lg shadow-primary/20 shrink-0"><Plus className="w-4 h-4" /><span className="hidden sm:inline">New Note</span><span className="sm:hidden">New</span></Button>
+                                <Button size="icon" className="h-8 w-8 rounded-xl shadow-lg shadow-primary/20 shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground"><Plus className="w-4 h-4" /></Button>
                             </DialogTrigger>
                             <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-xl border-white/[0.08] bg-gradient-to-b from-background to-background/95 backdrop-blur-xl shadow-2xl">
                                 <DialogHeader><DialogTitle className="flex items-center gap-2"><StickyNote className="w-4 h-4 text-primary" />Create Note</DialogTitle></DialogHeader>

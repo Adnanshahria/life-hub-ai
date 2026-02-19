@@ -103,6 +103,13 @@ export function BottomNav() {
                   layout
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 >
+                  {isActive && (
+                    <motion.div
+                      layoutId="nav-item-bg"
+                      className="absolute inset-0 bg-primary/10 rounded-full -z-10 border border-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.2)] dark:border-yellow-400/50 dark:shadow-[0_0_10px_rgba(250,204,21,0.2)]"
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    />
+                  )}
                   <item.icon className="w-[18px] h-[18px]" />
                   <AnimatePresence mode="wait">
                     {isActive && (
@@ -130,6 +137,13 @@ export function BottomNav() {
               layout
               transition={{ type: "spring", stiffness: 500, damping: 30 }}
             >
+              {(showMore || isMoreActive) && (
+                <motion.div
+                  layoutId="nav-item-bg"
+                  className="absolute inset-0 bg-primary/10 rounded-full -z-10 border border-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.2)] dark:border-yellow-400/50 dark:shadow-[0_0_10px_rgba(250,204,21,0.2)]"
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                />
+              )}
               <MoreHorizontal className="w-[18px] h-[18px]" />
               <AnimatePresence mode="wait">
                 {(showMore || isMoreActive) && (

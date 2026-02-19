@@ -225,6 +225,7 @@ Respond in this EXACT JSON format:
       accent: "#f59e0b", gradient: "from-amber-500/20 via-amber-400/10 to-yellow-500/5",
       borderColor: "border-amber-300/40 dark:border-amber-500/25",
       trend: budgetRemaining >= 0 ? { value: Math.round((budgetRemaining / (primaryBudget?.target_amount || 1)) * 100), up: true } : null,
+      className: "hidden sm:block",
     },
     {
       icon: PiggyBank, label: "Total Savings", value: `৳${totalSavings.toLocaleString()}`,
@@ -232,6 +233,7 @@ Respond in this EXACT JSON format:
       accent: "#10b981", gradient: "from-emerald-500/20 via-emerald-400/10 to-green-500/5",
       borderColor: "border-emerald-300/40 dark:border-emerald-500/25",
       trend: null,
+      className: "hidden sm:block",
     },
     {
       icon: ListTodo, label: "Pending Tasks", value: String(pendingTasks.length),

@@ -267,10 +267,10 @@ export default function StudyPage() {
                         <p className="text-sm text-muted-foreground ml-14">Organize subjects, chapters & parts</p>
                     </div>
 
-                    <div className="top-toolbar sm:w-auto">
+                    <div className="top-toolbar sm:w-auto flex items-center gap-2 rounded-2xl border border-border/40 bg-background/40 backdrop-blur-xl p-1.5 shadow-sm">
                         {/* Subject filter dropdown */}
                         <Select value={filterSubject} onValueChange={setFilterSubject}>
-                            <SelectTrigger className="h-8 w-auto min-w-[120px] px-2.5 text-xs sm:text-sm">
+                            <SelectTrigger className="h-7 w-auto min-w-[120px] px-2.5 text-xs sm:text-sm bg-transparent border-0 hover:bg-primary/10 hover:text-primary transition-colors focus:ring-0">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -288,12 +288,12 @@ export default function StudyPage() {
                                 placeholder="Search..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-8 h-8 text-xs sm:text-sm"
+                                className="pl-8 h-7 text-xs sm:text-sm bg-transparent border-0 ring-0 focus-visible:ring-0 focus-visible:bg-primary/5 transition-colors placeholder:text-muted-foreground/50"
                             />
                         </div>
 
                         {/* Manage Presets button */}
-                        <Button variant="outline" size="icon" className="h-8 w-8 sm:w-auto sm:px-3 sm:gap-1.5" onClick={() => {
+                        <Button variant="ghost" size="sm" className="h-7 w-auto px-2.5 gap-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10" onClick={() => {
                             if (filterSubject !== "all") setSelectedPresetSubjectId(filterSubject);
                             else if (study.subjects.length > 0) setSelectedPresetSubjectId(study.subjects[0].id);
                             setManagePresetsOpen(true);

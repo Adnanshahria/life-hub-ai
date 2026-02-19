@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     Plus, Flame, Check, Trash2, Target, TrendingUp, Zap,
     Lightbulb, Search, Brain, Sparkles, Edit2,
-    ChevronLeft, ChevronRight, Calendar as CalendarIcon, ArrowUpDown
+    ChevronLeft, ChevronRight, Calendar as CalendarIcon, ArrowUpDown, SlidersHorizontal, Filter
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -293,54 +293,98 @@ export default function HabitsPage() {
                         <p className="text-sm text-muted-foreground ml-14">Build lasting habits with streaks</p>
                     </div>
 
-                    <div className="top-toolbar sm:w-auto !gap-2 flex-nowrap overflow-x-auto no-scrollbar py-1">
-                        {/* Category Filter */}
-                        <Select value={activeCategory} onValueChange={setActiveCategory}>
-                            <SelectTrigger className="h-8 w-auto min-w-[90px] px-2.5 text-xs bg-background/50 border-dashed">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All</SelectItem>
-                                {HABIT_CATEGORIES.map(c => (
-                                    <SelectItem key={c.value} value={c.value}>{c.emoji} {c.label}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                    <div className="top-toolbar sm:w-auto flex items-center gap-2 flex-nowrap overflow-x-auto no-scrollbar rounded-2xl border border-border/40 bg-background/40 backdrop-blur-xl p-1.5 shadow-sm">
+                        {/* Filter Menu */}
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl border border-amber-400/50 bg-amber-400/10 text-amber-500 hover:bg-amber-400/20 hover:text-amber-600 hover:border-amber-400 transition-all shadow-sm shrink-0">
+                                    <SlidersHorizontal className="w-4 h-4" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64 p-4" align="start">
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
+                                            <Filter className="w-3.5 h-3.5" />
+                                            Category
+                                        </h4>
+                                        <Select value={activeCategory} onValueChange={setActiveCategory}>
+                                            <SelectTrigger className="w-full h-8 text-xs">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All</SelectItem>
+                                                {HABIT_CATEGORIES.map(c => (
+                                                    <SelectItem key={c.value} value={c.value}>{c.emoji} {c.label}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
 
-                        <div className="h-4 w-px bg-border/50 hidden sm:block" />
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
+                                            <CalendarIcon className="w-3.5 h-3.5" />
+                                            View Period
+                                        </h4>
+                                        <Select value={viewMode} onValueChange={(v) => setViewMode(v as typeof viewMode)}>
+                                            <SelectTrigger className="w-full h-8 text-xs">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="daily">Daily</SelectItem>
+                                                <SelectItem value="weekly">Weekly</SelectItem>
+                                                <SelectItem value="monthly">Monthly</SelectItem>
+                                                <SelectItem value="custom">Custom</SelectItem>
+                                                <SelectItem value="all">All Time</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
 
-                        {/* Period / View Mode */}
-                        <Select value={viewMode} onValueChange={(v) => setViewMode(v as typeof viewMode)}>
-                            <SelectTrigger className="h-8 w-auto min-w-[80px] px-2.5 text-xs bg-background/50">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="daily">Daily</SelectItem>
-                                <SelectItem value="weekly">Weekly</SelectItem>
-                                <SelectItem value="monthly">Monthly</SelectItem>
-                                <SelectItem value="custom">Custom</SelectItem>
-                                <SelectItem value="all">All Time</SelectItem>
-                            </SelectContent>
-                        </Select>
+                                    {viewMode === "weekly" && (
+                                        <div className="space-y-2">
+                                            <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
+                                                <CalendarIcon className="w-3.5 h-3.5" />
+                                                Start Week On
+                                            </h4>
+                                            <Select value={weekStart} onValueChange={(v) => setWeekStart(v as "monday" | "sunday" | "saturday")}>
+                                                <SelectTrigger className="w-full h-8 text-xs" title="Start of Week">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="saturday">Sat</SelectItem>
+                                                    <SelectItem value="sunday">Sun</SelectItem>
+                                                    <SelectItem value="monday">Mon</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
 
-                        {/* Start of Week Selector */}
-                        {/* Start of Week Selector - Only for weekly */}
-                        {viewMode === "weekly" && (
-                            <Select value={weekStart} onValueChange={(v) => setWeekStart(v as "monday" | "sunday" | "saturday")}>
-                                <SelectTrigger className="h-8 w-auto px-2 text-xs bg-background/50 border-dashed" title="Start of Week">
-                                    <span className="mr-1 text-muted-foreground opacity-50 hidden sm:inline">Start:</span>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="saturday">Sat</SelectItem>
-                                    <SelectItem value="sunday">Sun</SelectItem>
-                                    <SelectItem value="monday">Mon</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        )}
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
+                                            <ArrowUpDown className="w-3.5 h-3.5" />
+                                            Sort By
+                                        </h4>
+                                        <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+                                            <SelectTrigger className="w-full h-8 text-xs">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="default">Default</SelectItem>
+                                                <SelectItem value="streak">🔥 Streak</SelectItem>
+                                                <SelectItem value="name">🔤 Name</SelectItem>
+                                                <SelectItem value="category">📂 Category</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+
+                        {/* Divider */}
+                        <div className="h-4 w-px bg-border/40 mx-1" />
 
                         {/* Date Controls - Compact */}
-                        <div className="flex items-center gap-1 bg-secondary/30 p-0.5 rounded-lg border border-border/40">
+                        <div className="flex items-center gap-1 bg-secondary/20 p-0.5 rounded-xl border border-border/40">
                             <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-background/80 hover:shadow-sm" onClick={() => changeDate(-1)}>
                                 <ChevronLeft className="w-3.5 h-3.5" />
                             </Button>
@@ -442,19 +486,7 @@ export default function HabitsPage() {
 
                         <div className="flex-1" />
 
-                        {/* Sort */}
-                        <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-                            <SelectTrigger className="h-8 w-auto min-w-[85px] px-2.5 text-xs bg-background/50">
-                                <ArrowUpDown className="w-3 h-3 mr-1.5 opacity-70" />
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="default">Default</SelectItem>
-                                <SelectItem value="streak">🔥 Streak</SelectItem>
-                                <SelectItem value="name">🔤 Name</SelectItem>
-                                <SelectItem value="category">📂 Category</SelectItem>
-                            </SelectContent>
-                        </Select>
+
 
 
                         {/* Actions */}

@@ -337,38 +337,34 @@
 
   /* Mobile floating bottom nav */
   .bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 z-50 md:hidden;
-    padding: 0 14px 14px 14px;
-    pointer-events: none;
+    @apply fixed bottom-6 left-0 right-0 z-50 md:hidden flex justify-center pointer-events-none;
+    padding: 0 16px;
   }
 
   .floating-nav-container {
-    @apply flex items-center justify-around;
-    background: hsl(var(--card) / 0.95);
-    backdrop-filter: blur(24px) saturate(1.8);
-    -webkit-backdrop-filter: blur(24px) saturate(1.8);
-    border: 2px solid hsl(var(--border));
-    border-radius: 50px;
-    padding: 10px 8px;
-    pointer-events: auto;
-    box-shadow:
-      0 -2px 20px -2px rgba(0, 0, 0, 0.08),
-      0 8px 40px -4px rgba(0, 0, 0, 0.2),
-      0 4px 16px -2px rgba(0, 0, 0, 0.12);
+    @apply flex items-center gap-1 pointer-events-auto mx-auto;
+    @apply bg-white/80 border border-slate-200/50 shadow-lg shadow-slate-200/50;
+    @apply dark:bg-slate-900/65 dark:border-white/10 dark:shadow-black/50;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-radius: 9999px;
+    padding: 6px;
+    max-width: fit-content;
   }
 
   .floating-nav-item {
-    @apply flex items-center gap-1.5 rounded-full transition-all;
-    padding: 8px 12px;
+    @apply relative flex items-center justify-center gap-2 rounded-full cursor-pointer select-none transition-colors duration-300;
+    padding: 10px 16px;
     color: hsl(var(--muted-foreground));
+    /* Minimum touch target */
+    min-height: 44px;
   }
 
   .floating-nav-item.active {
-    background: hsl(var(--primary) / 0.15);
-    color: hsl(var(--primary));
-    padding: 8px 16px;
-    box-shadow: 0 0 12px hsl(var(--primary) / 0.15);
+    color: hsl(var(--foreground));
+    font-weight: 600;
   }
+
 
   /* Progress bar */
   .progress-bar {

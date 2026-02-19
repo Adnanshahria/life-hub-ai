@@ -6,7 +6,7 @@ import { useLocation } from "react-router-dom";
 import {
     Plus, Check, Clock, AlertTriangle, Trash2, Pin, PinOff, Edit,
     BookOpen, Wallet, Heart, Folder, Calendar, Timer, DollarSign,
-    ChevronDown, Filter, LayoutGrid, List, ArrowUpDown, Archive, Zap, CalendarClock, Package, Boxes, CheckSquare, GraduationCap, MoreVertical
+    ChevronDown, Filter, LayoutGrid, List, ArrowUpDown, Archive, Zap, CalendarClock, Package, Boxes, CheckSquare, GraduationCap, MoreVertical, SlidersHorizontal
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -522,67 +522,100 @@ export default function TasksPage() {
                     </div>
 
                     {/* Single-row controls - Top Toolbar */}
-                    <div className="top-toolbar sm:w-auto">
+                    <div className="top-toolbar sm:w-auto flex items-center gap-2 rounded-2xl border border-border/40 bg-background/40 backdrop-blur-xl p-1.5 shadow-sm">
 
-                        {/* Tab Dropdown */}
-                        <Select value={tabView} onValueChange={(v) => setTabView(v as typeof tabView)}>
-                            <SelectTrigger className="h-8 w-auto min-w-[100px] px-2.5 text-xs sm:text-sm">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="upcoming">Soon ({tabCounts.upcoming})</SelectItem>
-                                <SelectItem value="active">Active ({tabCounts.active})</SelectItem>
-                                <SelectItem value="archive">Archive</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        {/* Filter Menu */}
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl border border-amber-400/50 bg-amber-400/10 text-amber-500 hover:bg-amber-400/20 hover:text-amber-600 hover:border-amber-400 transition-all shadow-sm shrink-0">
+                                    <SlidersHorizontal className="w-4 h-4" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64 p-4" align="start">
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
+                                            <List className="w-3.5 h-3.5" />
+                                            View
+                                        </h4>
+                                        <Select value={tabView} onValueChange={(v) => setTabView(v as typeof tabView)}>
+                                            <SelectTrigger className="w-full h-8 text-xs">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="upcoming">Soon ({tabCounts.upcoming})</SelectItem>
+                                                <SelectItem value="active">Active ({tabCounts.active})</SelectItem>
+                                                <SelectItem value="archive">Archive</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
 
-                        {/* Context Filter */}
-                        <Select value={contextFilter} onValueChange={setContextFilter}>
-                            <SelectTrigger className="h-8 w-auto min-w-[80px] px-2.5 text-xs sm:text-sm">
-                                <Filter className="w-3 h-3 mr-1 opacity-70" />
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All</SelectItem>
-                                <SelectItem value="general">General</SelectItem>
-                                <SelectItem value="study">Study</SelectItem>
-                                <SelectItem value="finance">Finance</SelectItem>
-                                <SelectItem value="habit">Habit</SelectItem>
-                                <SelectItem value="inventory">Inventory</SelectItem>
-                            </SelectContent>
-                        </Select>
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
+                                            <Filter className="w-3.5 h-3.5" />
+                                            Context
+                                        </h4>
+                                        <Select value={contextFilter} onValueChange={setContextFilter}>
+                                            <SelectTrigger className="w-full h-8 text-xs">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All</SelectItem>
+                                                <SelectItem value="general">General</SelectItem>
+                                                <SelectItem value="study">Study</SelectItem>
+                                                <SelectItem value="finance">Finance</SelectItem>
+                                                <SelectItem value="habit">Habit</SelectItem>
+                                                <SelectItem value="inventory">Inventory</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
 
-                        {/* Sort Dropdown */}
-                        <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-                            <SelectTrigger className="h-8 w-auto min-w-[85px] px-2.5 text-xs sm:text-sm">
-                                <ArrowUpDown className="w-3 h-3 mr-1 opacity-70" />
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="priority">Priority</SelectItem>
-                                <SelectItem value="due_date">Due Date</SelectItem>
-                                <SelectItem value="created">Recent</SelectItem>
-                                <SelectItem value="alphabetical">A-Z</SelectItem>
-                            </SelectContent>
-                        </Select>
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
+                                            <ArrowUpDown className="w-3.5 h-3.5" />
+                                            Sort By
+                                        </h4>
+                                        <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+                                            <SelectTrigger className="w-full h-8 text-xs">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="priority">Priority</SelectItem>
+                                                <SelectItem value="due_date">Due Date</SelectItem>
+                                                <SelectItem value="created">Recent</SelectItem>
+                                                <SelectItem value="alphabetical">A-Z</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
 
-                        {/* View Toggle - Desktop only */}
-                        <div className="hidden md:flex bg-secondary rounded-lg p-0.5 shrink-0">
-                            <button
-                                onClick={() => setViewMode("list")}
-                                className={`p-1.5 rounded transition-colors ${viewMode === "list" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                                title="List View"
-                            >
-                                <List className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                                onClick={() => setViewMode("grid")}
-                                className={`p-1.5 rounded transition-colors ${viewMode === "grid" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                                title="Grid View"
-                            >
-                                <LayoutGrid className="w-3.5 h-3.5" />
-                            </button>
-                        </div>
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
+                                            <LayoutGrid className="w-3.5 h-3.5" />
+                                            Layout
+                                        </h4>
+                                        <div className="flex bg-secondary/30 rounded-lg p-0.5 border border-border/40">
+                                            <button
+                                                onClick={() => setViewMode("list")}
+                                                className={`flex-1 p-1.5 rounded transition-colors flex justify-center ${viewMode === "list" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                                                title="List View"
+                                            >
+                                                <List className="w-3.5 h-3.5" />
+                                            </button>
+                                            <button
+                                                onClick={() => setViewMode("grid")}
+                                                className={`flex-1 p-1.5 rounded transition-colors flex justify-center ${viewMode === "grid" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                                                title="Grid View"
+                                            >
+                                                <LayoutGrid className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+
+                        {/* Divider */}
+                        <div className="h-4 w-px bg-border/40 mx-1" />
 
                         {/* Import Study Button */}
                         <Button
