@@ -9,12 +9,14 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/hooks/useTheme";
 import { useNavPreferences } from "@/hooks/useNavPreferences";
+import { useAI } from "@/contexts/AIContext";
 
 export function BottomNav() {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const [showMore, setShowMore] = useState(false);
   const { mainNavItems, moreNavItems } = useNavPreferences();
+  const { isChatOpen } = useAI();
 
   // Check if any "more" item is active
   const isMoreActive = moreNavItems.some(item => location.pathname === item.path);
@@ -54,8 +56,8 @@ export function BottomNav() {
                       to={item.path}
                       onClick={() => setShowMore(false)}
                       className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all ${isActive
-                          ? "bg-primary/15 text-primary shadow-sm"
-                          : "hover:bg-secondary text-muted-foreground"
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "hover:bg-secondary text-muted-foreground"
                         }`}
                     >
                       <item.icon className="w-5 h-5" />
@@ -88,8 +90,8 @@ export function BottomNav() {
         )}
       </AnimatePresence>
 
-      {/* Floating Bottom Navigation */}
-      <nav className="bottom-nav">
+      {/* Floating Bottom Navigation - hidden when AI chat is open */}
+      <nav className="bottom-nav" style={isChatOpen ? { display: 'none' } : undefined}>
         <div className="floating-nav-container">
           {mainNavItems.map((item) => {
             const isActive = location.pathname === item.path;
