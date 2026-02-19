@@ -550,7 +550,7 @@ export default function FinancePage() {
                                 <Button variant="outline" size="icon" className="hidden md:inline-flex h-8 w-8" onClick={() => changeDate(-7)}>
                                     <ChevronLeft className="w-3.5 h-3.5" />
                                 </Button>
-                                <div className="px-3 py-1.5 bg-secondary rounded-lg text-xs sm:text-sm font-medium">
+                                <div className="px-3 py-1.5 bg-secondary rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap">
                                     {(() => {
                                         const range = getDateRange();
                                         const start = new Date(range.start + "T12:00:00");
@@ -635,13 +635,12 @@ export default function FinancePage() {
                             </>
                         )}
                         {viewMode === "custom" && (
-                            <div className="flex flex-wrap items-center gap-1.5">
-                                <span className="text-xs text-muted-foreground">From:</span>
+                            <div className="flex items-center gap-1.5 whitespace-nowrap">
                                 <Popover>
                                     <PopoverTrigger asChild>
-                                        <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
-                                            <CalendarIcon className="w-3.5 h-3.5" />
-                                            {format(new Date(customStartDate + "T12:00:00"), "MMM d, yyyy")}
+                                        <Button variant="outline" size="sm" className="gap-1 h-8 text-xs">
+                                            <CalendarIcon className="w-3 h-3" />
+                                            {format(new Date(customStartDate + "T12:00:00"), "MMM d")}
                                         </Button>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-auto p-0" align="start">
@@ -653,12 +652,12 @@ export default function FinancePage() {
                                         />
                                     </PopoverContent>
                                 </Popover>
-                                <span className="text-xs text-muted-foreground">To:</span>
+                                <span className="text-xs text-muted-foreground">→</span>
                                 <Popover>
                                     <PopoverTrigger asChild>
-                                        <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
-                                            <CalendarIcon className="w-3.5 h-3.5" />
-                                            {format(new Date(customEndDate + "T12:00:00"), "MMM d, yyyy")}
+                                        <Button variant="outline" size="sm" className="gap-1 h-8 text-xs">
+                                            <CalendarIcon className="w-3 h-3" />
+                                            {format(new Date(customEndDate + "T12:00:00"), "MMM d")}
                                         </Button>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-auto p-0" align="start">

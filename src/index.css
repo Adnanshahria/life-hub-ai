@@ -290,14 +290,7 @@
   /* Mobile/Tablet: Fixed floating pill */
   @media (max-width: 767px) {
     .top-toolbar {
-      @apply fixed top-6 z-40 justify-start w-fit max-w-[95vw] flex-nowrap overflow-x-auto;
-      /* Hide scrollbar */
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-
-      &::-webkit-scrollbar {
-        display: none;
-      }
+      @apply fixed top-6 z-40 justify-center w-fit max-w-[95vw] flex-wrap;
 
       left: 50%;
       transform: translateX(-50%);
@@ -306,10 +299,10 @@
       -webkit-backdrop-filter: blur(24px) saturate(1.8);
       border: 2px solid hsl(var(--border));
       border-top-color: hsl(var(--foreground) / 0.05);
-      border-radius: 50px;
+      border-radius: 24px;
       padding: 6px 16px;
       box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.2),
-      0 0 20px -5px rgba(0, 0, 0, 0.1);
+        0 0 20px -5px rgba(0, 0, 0, 0.1);
     }
   }
 
