@@ -85,7 +85,7 @@ export default function SettingsPage() {
                         <Settings className="w-8 h-8 text-primary" />
                         Settings
                     </h1>
-                    <p className="text-muted-foreground mt-1">Manage your LifeOS preferences</p>
+                    <p className="text-muted-foreground mt-1">Manage your LifeSolver preferences</p>
                 </div>
 
                 {/* Profile Section */}

@@ -20,8 +20,8 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["logo.svg", "favicon.ico", "favicon-32.png", "favicon-16.png", "apple-touch-icon.png", "logo-192.png", "logo-512.png"],
       manifest: {
-        name: "LifeOS - Personal Command Center",
-        short_name: "LifeOS",
+        name: "LifeSolver - Personal Command Center",
+        short_name: "LifeSolver",
         description: "Your AI-powered personal productivity and life management system",
         theme_color: "#0A0E1A",
         background_color: "#0A0E1A",

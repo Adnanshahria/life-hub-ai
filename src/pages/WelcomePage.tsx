@@ -143,7 +143,7 @@ export default function WelcomePage() {
 
     return (
         <div className="min-h-screen bg-background overflow-hidden">
-            <SEO title="Welcome to LifeOS" description="Your AI-powered personal operating system. Manage tasks, finances, studies, habits, and more — all in one place." />
+            <SEO title="Welcome to LifeSolver" description="Your AI-powered personal operating system. Manage tasks, finances, studies, habits, and more — all in one place." />
 
             {/* ===== SNOWFALL (Dark Mode Only) ===== */}
             {theme === 'dark' && <SnowfallLayer />}
@@ -186,9 +186,9 @@ export default function WelcomePage() {
                     {/* Logo */}
                     <div className="flex items-center gap-2.5 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                         <div className="relative w-8 h-8 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 flex items-center justify-center shadow-md shadow-sky-500/20 group-hover:scale-105 transition-transform duration-300 overflow-hidden">
-                            <img src="/logo.svg" alt="LifeOS Logo" className="w-full h-full object-cover" />
+                            <img src="/logo.svg" alt="LifeSolver Logo" className="w-full h-full object-cover" />
                         </div>
-                        <span className="font-bold text-lg tracking-tight">LifeOS</span>
+                        <span className="font-bold text-lg tracking-tight">LifeSolver</span>
                     </div>
 
                     {/* Center Links (Desktop) */}
@@ -667,7 +667,7 @@ export default function WelcomePage() {
                                 transition={{ duration: 4, repeat: Infinity }}
                                 className="inline-block mb-6"
                             >
-                                <img src="/logo.svg" alt="LifeOS" className="w-12 h-12" />
+                                <img src="/logo.svg" alt="LifeSolver" className="w-12 h-12" />
                             </motion.div>
                             <h2 className="text-3xl md:text-5xl font-bold mb-4">
                                 {t.cta.title} <span className="text-gradient-ice">{t.cta.titleHighlight}</span>?
@@ -689,12 +689,12 @@ export default function WelcomePage() {
                 <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-sky-400 to-cyan-500 flex items-center justify-center overflow-hidden">
-                            <img src="/logo.svg" alt="LifeOS Logo" className="w-full h-full object-cover" />
+                            <img src="/logo.svg" alt="LifeSolver Logo" className="w-full h-full object-cover" />
                         </div>
-                        <span className="font-semibold text-gradient-ice">LifeOS</span>
+                        <span className="font-semibold text-gradient-ice">LifeSolver</span>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                        © {new Date().getFullYear()} LifeOS. Built with ❄️ and AI.
+                        © {new Date().getFullYear()} LifeSolver. Built with ❄️ and AI.
                     </p>
                 </div >
             </footer >

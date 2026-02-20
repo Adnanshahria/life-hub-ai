@@ -1,6 +1,6 @@
 {
-    "name": "LifeOS - Your Personal Command Center",
-    "short_name": "LifeOS",
+    "name": "LifeSolver - Your Personal Command Center",
+    "short_name": "LifeSolver",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#09090b",

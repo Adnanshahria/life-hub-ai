@@ -7,7 +7,7 @@ import { useLocation } from "react-router-dom";
 import {
     Plus, Check, Clock, AlertTriangle, Trash2, Pin, PinOff, Edit,
     BookOpen, Wallet, Heart, Folder, Calendar as CalendarIcon, Timer, DollarSign,
-    ChevronDown, Filter, LayoutGrid, List, ArrowUpDown, Archive, Zap, CalendarClock, Package, Boxes, CheckSquare, GraduationCap, MoreVertical, SlidersHorizontal, ChevronLeft, ChevronRight
+    ChevronDown, Filter, LayoutGrid, List, ArrowUpDown, Archive, Zap, CalendarClock, Package, Boxes, CheckSquare, GraduationCap, MoreVertical, SlidersHorizontal, ChevronLeft, ChevronRight, Sparkles, Save, FileText
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -112,11 +112,6 @@ export default function TasksPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<Task | null>(null);
-    const [filter, setFilter] = useState<string>("all");
-    const [contextFilter, setContextFilter] = useState<string>("all");
-    const [viewMode, setViewMode] = useState<"list" | "grid">("list");
-    const [tabView, setTabView] = useState<"upcoming" | "active" | "archive">("active");
-    const [sortBy, setSortBy] = useState<"priority" | "due_date" | "created" | "alphabetical" | "duration">("due_date");
     const [newTask, setNewTask] = useState<NewTaskState>(defaultNewTask);
     // Time adjustment popup state
     const [showTimeAdjustPopup, setShowTimeAdjustPopup] = useState(false);
@@ -125,14 +120,22 @@ export default function TasksPage() {
     // Date Selection State
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
+    // Accordion expand state — only one card open at a time
+    const [expandedId, setExpandedId] = useState<string | null>(null);
+
     // Helpers
     const getTaskDateKey = (date: Date) => format(date, "yyyy-MM-dd");
 
+    // Format 24h time to 12h display
+    const formatTime12 = (time?: string) => {
+        if (!time) return "";
+        const [h, m] = time.split(":").map(Number);
+        const ampm = h >= 12 ? "PM" : "AM";
+        const hour12 = h % 12 || 12;
+        return `${hour12}:${String(m).padStart(2, "0")} ${ampm}`;
+    };
 
-    // Force list view on mobile (grid toggle is hidden on mobile)
-    useEffect(() => {
-        if (window.innerWidth < 768) setViewMode("list");
-    }, []);
+
 
     // Import Study State
     const [importStudyOpen, setImportStudyOpen] = useState(false);
@@ -443,9 +446,6 @@ export default function TasksPage() {
         const isToday = isSameDay(selectedDate, today);
 
         return tasks.filter(task => {
-            // Context Filter override
-            if (contextFilter !== "all" && task.context_type !== contextFilter) return false;
-
             // Date Logic
             if (task.due_date === selDateKey) return true; // Exact match
 
@@ -469,7 +469,7 @@ export default function TasksPage() {
 
             return 0;
         });
-    }, [tasks, selectedDate, contextFilter]);
+    }, [tasks, selectedDate]);
 
     // --- UI ---
 
@@ -505,74 +505,175 @@ export default function TasksPage() {
                         </div>
                     ) : (
                         <AnimatePresence mode="popLayout">
-                            {filteredTasks.map(task => (
+                            {filteredTasks.map(task => {
+                                const isExpanded = expandedId === task.id;
+                                const isOverdueTask = task.due_date && new Date(task.due_date) < startOfDay(new Date()) && task.status !== "done";
+                                const timeRange = task.start_time && task.end_time
+                                    ? `${formatTime12(task.start_time)} – ${formatTime12(task.end_time)}`
+                                    : task.start_time ? formatTime12(task.start_time) : null;
 
-                                <motion.div
-                                    key={task.id}
-                                    layout
-                                    initial={{ opacity: 0, scale: 0.98 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.95 }}
-                                    className="group bg-card/50 hover:bg-card/80 border border-border/40 hover:border-primary/20 backdrop-blur-sm rounded-xl p-3 transition-all duration-200"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        {/* Checkbox / Status */}
-                                        <button
-                                            onClick={() => handleStatusChange(task, task.status === "done" ? "todo" : "done")}
-                                            className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${task.status === "done"
-                                                ? "bg-primary border-primary text-primary-foreground"
-                                                : "border-muted-foreground/30 hover:border-primary/50"
-                                                }`}
+                                // Strict numeric checks to prevent "0" rendering
+                                const hasDuration = typeof task.estimated_duration === 'number' && task.estimated_duration > 0;
+                                const hasCost = typeof task.expected_cost === 'number' && task.expected_cost > 0;
+
+                                return (
+                                    <motion.div
+                                        key={task.id}
+                                        layout
+                                        initial={{ opacity: 0, scale: 0.98 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.95 }}
+                                        className={`task-card ${isExpanded ? "ring-1 ring-primary/20" : ""}`}
+                                    >
+                                        {/* Collapsed Row */}
+                                        <div
+                                            className="flex items-center gap-3 p-3 cursor-pointer"
+                                            onClick={() => setExpandedId(isExpanded ? null : task.id)}
                                         >
-                                            {task.status === "done" && <Check className="w-3.5 h-3.5" />}
-                                        </button>
+                                            {/* Circular Status Checkbox */}
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleStatusChange(task, task.status === "done" ? "todo" : "done"); }}
+                                                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 shrink-0 ${task.status === "done"
+                                                    ? "bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/20"
+                                                    : task.status === "in-progress"
+                                                        ? "border-amber-400 bg-amber-400/10"
+                                                        : "border-muted-foreground/30 hover:border-primary/50"
+                                                    }`}
+                                            >
+                                                {task.status === "done" && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
+                                                {task.status === "in-progress" && <div className="w-2 h-2 rounded-full bg-amber-400" />}
+                                            </button>
 
-                                        {/* Title & Meta */}
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <span className={`text-sm font-medium truncate ${task.status === "done" ? "text-muted-foreground line-through decoration-border" : "text-foreground"}`}>
-                                                    {task.title}
-                                                </span>
-                                                {task.is_pinned && <Pin className="w-3 h-3 text-primary/50" />}
+                                            {/* Title & Meta */}
+                                            <div className="flex-1 min-w-0">
+                                                {/* Title Row with Space Between */}
+                                                <div className="flex items-center justify-between gap-2 mb-0.5">
+                                                    {/* Left: Title + Pin + Overdue */}
+                                                    <div className="flex items-center gap-2 min-w-0">
+                                                        <span className={`text-sm font-medium truncate ${task.status === "done" ? "text-muted-foreground line-through decoration-border" : "text-foreground"}`}>
+                                                            {task.title}
+                                                        </span>
+                                                        {!!task.is_pinned && <Pin className="w-3 h-3 text-primary/60 shrink-0" />}
+                                                        {!!isOverdueTask && (
+                                                            <Badge variant="destructive" className="text-[9px] px-1.5 py-0 h-4 shrink-0">
+                                                                Overdue
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Right: Priority Badge */}
+                                                    <Badge className={`h-5 px-1.5 text-[10px] capitalize border shadow-none shrink-0 ${priorityColors[task.priority]}`}>
+                                                        {task.priority}
+                                                    </Badge>
+                                                </div>
+
+                                                {/* Sub-meta row */}
+                                                <div className="flex items-center gap-2.5 mt-1 flex-wrap">
+                                                    {/* Time Range */}
+                                                    {timeRange && (
+                                                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                                            <Clock className="w-3 h-3" />
+                                                            {timeRange}
+                                                        </span>
+                                                    )}
+
+                                                    {/* Duration Badge */}
+                                                    {hasDuration && (
+                                                        <span className="text-[10px] text-muted-foreground bg-secondary/40 px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                                                            <Timer className="w-2.5 h-2.5" />
+                                                            {task.estimated_duration}m
+                                                        </span>
+                                                    )}
+
+                                                    {/* Study task indicator */}
+                                                    {task.context_type === "study" && (
+                                                        <span className="text-[10px] text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                                                            📚 {hasDuration ? `${task.estimated_duration}m` : "Study"}
+                                                        </span>
+                                                    )}
+
+                                                    {/* 1-line truncated description */}
+                                                    {task.description && !isExpanded && (
+                                                        <span className="text-[10px] text-muted-foreground/60 truncate max-w-[120px] hidden sm:inline">
+                                                            {task.description}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
 
-                                            {/* Sub-meta row */}
-                                            <div className="flex items-center gap-3 mt-1">
-                                                {/* Priority Dot */}
-                                                <div className={`w-1.5 h-1.5 rounded-full ${task.priority === 'urgent' ? 'bg-red-500' :
-                                                    task.priority === 'high' ? 'bg-orange-500' :
-                                                        task.priority === 'medium' ? 'bg-yellow-500' : 'bg-blue-500'
-                                                    }`} />
+                                            {/* 3-dot menu */}
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                                    <button className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-secondary/50 transition-colors shrink-0 outline-none">
+                                                        <MoreVertical className="w-4 h-4 text-muted-foreground/60" />
+                                                    </button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="min-w-[140px]">
+                                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleStartEdit(task); }} className="gap-2 text-xs">
+                                                        <Edit className="w-3.5 h-3.5" /> Edit
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handlePinToggle(task); }} className="gap-2 text-xs">
+                                                        {task.is_pinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />}
+                                                        {task.is_pinned ? "Unpin" : "Pin"}
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); deleteTask.mutate(task.id); }} className="gap-2 text-xs text-destructive focus:text-destructive">
+                                                        <Trash2 className="w-3.5 h-3.5" /> Delete
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
 
-                                                {/* Time / Duration */}
-                                                {(task.start_time || task.estimated_duration) && (
-                                                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                                        <Clock className="w-3 h-3" />
-                                                        {task.start_time || ''} {task.estimated_duration ? `(${task.estimated_duration}m)` : ''}
-                                                    </span>
-                                                )}
-
-                                                {/* Context */}
-                                                {getContextName(task) && (
-                                                    <span className="text-[10px] text-muted-foreground bg-secondary/30 px-1.5 py-0.5 rounded">
-                                                        {getContextName(task)}
-                                                    </span>
-                                                )}
-                                            </div>
+                                            {/* Expand indicator */}
+                                            <ChevronDown className={`w-4 h-4 text-muted-foreground/40 transition-transform duration-300 shrink-0 ${isExpanded ? "rotate-180" : ""}`} />
                                         </div>
 
-                                        {/* Actions (Hover) */}
-                                        <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => handleStartEdit(task)}>
-                                                <Edit className="w-3.5 h-3.5 text-muted-foreground" />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => deleteTask.mutate(task.id)}>
-                                                <Trash2 className="w-3.5 h-3.5 text-muted-foreground hover:text-destructive" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            ))}
+                                        {/* Expanded Content */}
+                                        <AnimatePresence>
+                                            {isExpanded && (
+                                                <motion.div
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: "auto", opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                                                    className="overflow-hidden"
+                                                >
+                                                    <div className="px-3 pb-3 pt-1 space-y-3 border-t border-border/30">
+                                                        {/* Full description */}
+                                                        {task.description ? (
+                                                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                                                {task.description}
+                                                            </p>
+                                                        ) : (
+                                                            <p className="text-xs text-muted-foreground/50 italic">No description provided.</p>
+                                                        )}
+
+                                                        {/* Metadata grid - Simplified */}
+                                                        {(getContextName(task) || hasCost) && (
+                                                            <div className="flex flex-wrap gap-2 pt-1">
+                                                                {/* Context */}
+                                                                {getContextName(task) && (
+                                                                    <Badge variant="outline" className="text-[10px] gap-1">
+                                                                        {contextIcons[task.context_type || "general"]}
+                                                                        {getContextName(task)}
+                                                                    </Badge>
+                                                                )}
+
+                                                                {/* Budget/Cost */}
+                                                                {hasCost && (
+                                                                    <Badge variant="outline" className="text-[10px] gap-1 border-emerald-500/20 text-emerald-600 bg-emerald-500/5">
+                                                                        <DollarSign className="w-3 h-3" />
+                                                                        {task.finance_type === "income" ? "+" : "-"}৳{task.expected_cost}
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </motion.div>
+                                );
+                            })
+                            }
                         </AnimatePresence>
                     )}
                 </div>
@@ -581,57 +682,84 @@ export default function TasksPage() {
             {/* Add Task */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                    {/* Desktop Button */}
-                    <Button size="sm" className="hidden sm:flex gap-1.5 h-8 shadow-lg shadow-primary/20">
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>New</span>
-                    </Button>
+                    {/* Floating Action Button - Redesigned */}
+                    <button
+                        className="fixed right-6 bottom-24 sm:bottom-10 sm:right-28 z-50 w-16 h-16 rounded-full bg-gradient-to-tr from-cyan-500 to-violet-600 text-white shadow-xl shadow-cyan-500/30 flex items-center justify-center hover:scale-110 hover:rotate-90 hover:shadow-2xl hover:shadow-cyan-500/50 active:scale-95 transition-all duration-300 group"
+                    >
+                        <Plus className="w-8 h-8 stroke-[2.5] group-hover:rotate-180 transition-transform duration-500" />
+                    </button>
                 </DialogTrigger>
-                {/* Mobile Floating Button Removed */}
                 <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl sm:rounded-2xl p-0 gap-0 border-0 shadow-2xl">
-                    <div className="p-6 bg-gradient-to-b from-primary/5 via-background to-background">
-                        <DialogHeader className="mb-6 text-center">
-                            <DialogTitle className="text-xl font-bold tracking-tight">Create New Task</DialogTitle>
-                            <DialogDescription>Add a new task to your list. Fill in the details below.</DialogDescription>
-                        </DialogHeader>
+                    {/* ── Header ── */}
+                    <div className="px-6 pt-6 pb-4 bg-gradient-to-b from-primary/8 via-background to-background">
+                        <div className="flex flex-col items-center text-center">
+                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 flex items-center justify-center mb-3 shadow-inner border border-white/10">
+                                <Plus className="w-7 h-7 text-primary" />
+                            </div>
+                            <DialogHeader className="mb-1">
+                                <DialogTitle className="text-2xl font-bold tracking-tight">Create Task</DialogTitle>
+                                <DialogDescription className="text-xs text-muted-foreground/60">Plan it. Schedule it. Crush it.</DialogDescription>
+                            </DialogHeader>
+                        </div>
+                    </div>
 
-                        <div className="space-y-5">
-                            {/* Title & Description */}
-                            <div className="space-y-3">
-                                <Input
-                                    placeholder="Task title..."
-                                    value={newTask.title}
-                                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                                    className="h-12 text-base font-semibold rounded-xl border-input bg-background/60 shadow-sm placeholder:font-normal"
-                                />
-
+                    <div className="px-6 pb-2 space-y-4">
+                        {/* ── 📋 Details ── */}
+                        <div className="space-y-2">
+                            <p className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-widest ml-1">
+                                <FileText className="w-3 h-3" /> Details
+                            </p>
+                            <div className="bg-card/50 border border-border/40 rounded-2xl p-4 space-y-3">
+                                <div className="relative">
+                                    <Edit className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40" />
+                                    <Input
+                                        placeholder="What needs to be done?"
+                                        value={newTask.title}
+                                        onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                                        className="h-12 text-base font-semibold rounded-xl border-input bg-background/60 shadow-sm placeholder:font-normal pl-10"
+                                    />
+                                </div>
                                 <Textarea
-                                    placeholder="Add a description..."
+                                    placeholder="Add a description (optional)..."
                                     value={newTask.description}
                                     onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                                    className="min-h-[70px] rounded-xl bg-secondary/20 border-border/30 resize-none text-sm"
+                                    className="min-h-[60px] rounded-xl bg-secondary/20 border-border/30 resize-none text-sm"
                                     rows={2}
                                 />
                             </div>
+                        </div>
 
-                            {/* Priority & Date Grid */}
-                            <div className="grid grid-cols-2 gap-3">
+                        {/* ── 🎯 Priority & Date ── */}
+                        <div className="space-y-2">
+                            <p className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-widest ml-1">
+                                <Zap className="w-3 h-3" /> Priority & Date
+                            </p>
+                            <div className="bg-card/50 border border-border/40 rounded-2xl p-4 space-y-4">
+                                {/* Priority Pills */}
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-medium text-muted-foreground ml-1">Priority</label>
-                                    <Select value={newTask.priority} onValueChange={(val) => setNewTask({ ...newTask, priority: val as Task["priority"] })}>
-                                        <SelectTrigger className="h-11 rounded-xl">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="low">🟢 Low</SelectItem>
-                                            <SelectItem value="medium">🟡 Medium</SelectItem>
-                                            <SelectItem value="high">🟠 High</SelectItem>
-                                            <SelectItem value="urgent">🔴 Urgent</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <label className="text-[10px] font-medium text-muted-foreground/60 ml-0.5">Priority Level</label>
+                                    <div className="grid grid-cols-4 gap-1.5">
+                                        <button type="button" onClick={() => setNewTask({ ...newTask, priority: "low" })}
+                                            className={`py-2 rounded-xl text-[11px] font-semibold transition-all duration-200 ${newTask.priority === "low" ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/25 scale-[1.02]" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}>
+                                            🟢 Low
+                                        </button>
+                                        <button type="button" onClick={() => setNewTask({ ...newTask, priority: "medium" })}
+                                            className={`py-2 rounded-xl text-[11px] font-semibold transition-all duration-200 ${newTask.priority === "medium" ? "bg-amber-500 text-white shadow-md shadow-amber-500/25 scale-[1.02]" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}>
+                                            🟡 Med
+                                        </button>
+                                        <button type="button" onClick={() => setNewTask({ ...newTask, priority: "high" })}
+                                            className={`py-2 rounded-xl text-[11px] font-semibold transition-all duration-200 ${newTask.priority === "high" ? "bg-orange-500 text-white shadow-md shadow-orange-500/25 scale-[1.02]" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}>
+                                            🟠 High
+                                        </button>
+                                        <button type="button" onClick={() => setNewTask({ ...newTask, priority: "urgent" })}
+                                            className={`py-2 rounded-xl text-[11px] font-semibold transition-all duration-200 ${newTask.priority === "urgent" ? "bg-red-500 text-white shadow-md shadow-red-500/25 scale-[1.02]" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}>
+                                            🔴 Urgent
+                                        </button>
+                                    </div>
                                 </div>
+                                {/* Due Date */}
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-medium text-muted-foreground ml-1">Due Date</label>
+                                    <label className="text-[10px] font-medium text-muted-foreground/60 ml-0.5">Due Date</label>
                                     <DatePicker
                                         value={newTask.due_date.split('T')[0]}
                                         onChange={(date) => setNewTask({ ...newTask, due_date: date })}
@@ -640,12 +768,14 @@ export default function TasksPage() {
                                     />
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Module / Context */}
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-medium text-muted-foreground ml-1 flex items-center gap-1.5">
-                                    <Folder className="w-3.5 h-3.5" /> Link to Module
-                                </label>
+                        {/* ── 📂 Module / Context ── */}
+                        <div className="space-y-2">
+                            <p className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-widest ml-1">
+                                <Folder className="w-3 h-3" /> Link to Module
+                            </p>
+                            <div className="bg-card/50 border border-border/40 rounded-2xl p-4 space-y-3">
                                 <div className="flex gap-2">
                                     <Select value={newTask.context_type} onValueChange={(val) => {
                                         setNewTask({ ...newTask, context_type: val as Task["context_type"], context_id: "" });
@@ -666,7 +796,7 @@ export default function TasksPage() {
                                     <div className="flex-1">
                                         {newTask.context_type === "general" ? (
                                             <div className="h-11 flex items-center px-4 rounded-xl border border-dashed border-muted-foreground/20 text-muted-foreground text-sm bg-secondary/10 w-full">
-                                                No specific module linked
+                                                No specific module
                                             </div>
                                         ) : newTask.context_type === "study" ? (
                                             <Select value={studySubjectId} onValueChange={(val) => { setStudySubjectId(val); setStudyChapterId(""); setSelectedStudyParts([]); setNewTask({ ...newTask, context_id: "" }); }}>
@@ -699,7 +829,7 @@ export default function TasksPage() {
 
                                 {/* Study: Chapter selector + Part tree */}
                                 {newTask.context_type === "study" && studySubjectId && (
-                                    <div className="mt-2 space-y-2">
+                                    <div className="mt-1 space-y-2">
                                         <Select value={studyChapterId} onValueChange={(val) => { setStudyChapterId(val); setNewTask({ ...newTask, context_id: val }); setSelectedStudyParts([]); }}>
                                             <SelectTrigger className="h-10 rounded-xl">
                                                 <SelectValue placeholder="Select chapter..." />
@@ -785,24 +915,26 @@ export default function TasksPage() {
                                     </div>
                                 )}
                             </div>
+                        </div>
 
-                            {/* Finance Section */}
-                            {newTask.context_type === "finance" && (
-                                <div className="p-4 rounded-xl bg-secondary/20 border border-border/50 space-y-3">
-                                    <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                                        <DollarSign className="w-3.5 h-3.5" /> Budget & Cost
-                                    </label>
+                        {/* ── 💰 Finance Section (conditional) ── */}
+                        {newTask.context_type === "finance" && (
+                            <div className="space-y-2">
+                                <p className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-widest ml-1">
+                                    <DollarSign className="w-3 h-3" /> Budget & Cost
+                                </p>
+                                <div className="bg-card/50 border border-border/40 rounded-2xl p-4 space-y-3">
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="col-span-2 flex gap-2 mb-1">
-                                            <button
+                                            <button type="button"
                                                 onClick={() => setNewTask({ ...newTask, finance_type: "expense" })}
-                                                className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${newTask.finance_type === "expense" ? "bg-red-500 text-white shadow-md shadow-red-500/20" : "bg-secondary text-muted-foreground hover:bg-secondary/80"}`}
+                                                className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${newTask.finance_type === "expense" ? "bg-red-500 text-white shadow-md shadow-red-500/20" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}
                                             >
                                                 💸 Expense
                                             </button>
-                                            <button
+                                            <button type="button"
                                                 onClick={() => setNewTask({ ...newTask, finance_type: "income" })}
-                                                className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${newTask.finance_type === "income" ? "bg-green-500 text-white shadow-md shadow-green-500/20" : "bg-secondary text-muted-foreground hover:bg-secondary/80"}`}
+                                                className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${newTask.finance_type === "income" ? "bg-green-500 text-white shadow-md shadow-green-500/20" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}
                                             >
                                                 💰 Income
                                             </button>
@@ -811,8 +943,8 @@ export default function TasksPage() {
                                         {newTask.finance_type === "expense" && (
                                             <div className="col-span-1">
                                                 <Select value={newTask.budget_id} onValueChange={(val) => setNewTask({ ...newTask, budget_id: val })}>
-                                                    <SelectTrigger className="h-10 rounded-lg text-xs">
-                                                        <SelectValue placeholder="Select budget..." />
+                                                    <SelectTrigger className="h-10 rounded-xl text-xs">
+                                                        <SelectValue placeholder="Budget..." />
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         {budgets.filter(b => b.type === "budget").map(b => (
@@ -828,38 +960,46 @@ export default function TasksPage() {
                                                 placeholder={newTask.finance_type === "income" ? "Expected income" : "Expected cost"}
                                                 value={newTask.expected_cost}
                                                 onChange={(e) => setNewTask({ ...newTask, expected_cost: e.target.value })}
-                                                className="h-10 rounded-lg bg-background/50 pl-7 text-xs"
+                                                className="h-10 rounded-xl bg-background/50 pl-7 text-xs"
                                             />
                                             <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">৳</span>
                                         </div>
                                     </div>
                                 </div>
-                            )}
+                            </div>
+                        )}
 
-                            {/* Time Section - Single Row */}
-                            <div className="p-4 rounded-xl bg-secondary/20 border border-border/50 space-y-3">
-                                <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                                    <Clock className="w-3.5 h-3.5" /> Time Block
-                                </label>
+                        {/* ── ⏰ Schedule ── */}
+                        <div className="space-y-2">
+                            <p className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-widest ml-1">
+                                <Clock className="w-3 h-3" /> Schedule
+                            </p>
+                            <div className="bg-card/50 border border-border/40 rounded-2xl p-4">
                                 <div className="flex gap-2 items-end">
                                     <div className="flex-1 space-y-1">
-                                        <span className="text-[10px] text-muted-foreground ml-0.5">Start</span>
+                                        <span className="text-[10px] font-medium text-muted-foreground/60 ml-0.5">Start</span>
                                         <TimePicker
                                             value={newTask.start_time}
                                             onChange={(val) => handleStartTimeChange(val)}
                                             placeholder="Start"
                                         />
                                     </div>
+                                    <div className="flex items-center pb-2 text-muted-foreground/30">
+                                        <ChevronRight className="w-4 h-4" />
+                                    </div>
                                     <div className="flex-1 space-y-1">
-                                        <span className="text-[10px] text-muted-foreground ml-0.5">End</span>
+                                        <span className="text-[10px] font-medium text-muted-foreground/60 ml-0.5">End</span>
                                         <TimePicker
                                             value={newTask.end_time}
                                             onChange={(val) => handleEndTimeChange(val)}
                                             placeholder="End"
                                         />
                                     </div>
+                                    <div className="flex items-center pb-2 text-muted-foreground/30">
+                                        <Timer className="w-3.5 h-3.5" />
+                                    </div>
                                     <div className="flex-1 space-y-1 relative">
-                                        <span className="text-[10px] text-muted-foreground ml-0.5">Duration</span>
+                                        <span className="text-[10px] font-medium text-muted-foreground/60 ml-0.5">Duration</span>
                                         <Input
                                             type="number"
                                             placeholder="—"
@@ -873,12 +1013,15 @@ export default function TasksPage() {
                             </div>
                         </div>
                     </div>
-                    <div className="p-4 bg-secondary/30 border-t border-border/50">
+
+                    {/* ── Footer ── */}
+                    <div className="p-4 mt-2 bg-gradient-to-t from-secondary/40 to-transparent border-t border-border/30">
                         <Button
                             onClick={handleAddTask}
-                            className="w-full h-11 text-base font-semibold shadow-lg shadow-primary/25 rounded-xl bg-gradient-to-r from-primary to-primary/90 hover:to-primary"
+                            className="w-full h-12 text-base font-bold shadow-lg shadow-primary/25 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-600 hover:to-violet-700 transition-all duration-300 gap-2"
                             disabled={addTask.isPending}
                         >
+                            <Sparkles className="w-4.5 h-4.5" />
                             {addTask.isPending ? "Creating..." : "Create Task"}
                         </Button>
                     </div>
@@ -890,62 +1033,96 @@ export default function TasksPage() {
                 <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl sm:rounded-2xl p-0 gap-0 border-0 shadow-2xl">
                     {editingTask && (
                         <>
-                            <div className="p-6 bg-gradient-to-b from-primary/5 via-background to-background">
-                                <DialogHeader className="mb-6 text-center">
-                                    <DialogTitle className="text-xl font-bold tracking-tight">Edit Task</DialogTitle>
-                                    <DialogDescription>Modify the details of your existing task.</DialogDescription>
-                                </DialogHeader>
+                            {/* ── Header ── */}
+                            <div className="px-6 pt-6 pb-4 bg-gradient-to-b from-primary/8 via-background to-background">
+                                <div className="flex flex-col items-center text-center">
+                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center mb-3 shadow-inner border border-white/10">
+                                        <Edit className="w-7 h-7 text-primary" />
+                                    </div>
+                                    <DialogHeader className="mb-1">
+                                        <DialogTitle className="text-2xl font-bold tracking-tight">Edit Task</DialogTitle>
+                                        <DialogDescription className="text-xs text-muted-foreground/60">Fine-tune the details below.</DialogDescription>
+                                    </DialogHeader>
+                                </div>
+                            </div>
 
-                                <div className="space-y-5">
-                                    {/* Title & Description */}
-                                    <div className="space-y-3">
-                                        <Input
-                                            placeholder="Task title..."
-                                            value={editingTask.title}
-                                            onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
-                                            className="h-12 text-base font-semibold rounded-xl border-input bg-background/60 shadow-sm placeholder:font-normal"
-                                        />
-
+                            <div className="px-6 pb-2 space-y-4">
+                                {/* ── 📋 Details ── */}
+                                <div className="space-y-2">
+                                    <p className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-widest ml-1">
+                                        <FileText className="w-3 h-3" /> Details
+                                    </p>
+                                    <div className="bg-card/50 border border-border/40 rounded-2xl p-4 space-y-3">
+                                        <div className="relative">
+                                            <Edit className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40" />
+                                            <Input
+                                                placeholder="Task title..."
+                                                value={editingTask.title}
+                                                onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
+                                                className="h-12 text-base font-semibold rounded-xl border-input bg-background/60 shadow-sm placeholder:font-normal pl-10"
+                                            />
+                                        </div>
                                         <Textarea
                                             placeholder="Add a description..."
                                             value={editingTask.description || ""}
                                             onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })}
-                                            className="min-h-[70px] rounded-xl bg-secondary/20 border-border/30 resize-none text-sm"
+                                            className="min-h-[60px] rounded-xl bg-secondary/20 border-border/30 resize-none text-sm"
                                             rows={2}
                                         />
                                     </div>
+                                </div>
 
-                                    {/* Priority, Status & Date Grid */}
-                                    <div className="grid grid-cols-3 gap-3">
+                                {/* ── 🎯 Priority, Status & Date ── */}
+                                <div className="space-y-2">
+                                    <p className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-widest ml-1">
+                                        <Zap className="w-3 h-3" /> Priority, Status & Date
+                                    </p>
+                                    <div className="bg-card/50 border border-border/40 rounded-2xl p-4 space-y-4">
+                                        {/* Priority Pills */}
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-medium text-muted-foreground ml-1">Priority</label>
-                                            <Select value={editingTask.priority} onValueChange={(val) => setEditingTask({ ...editingTask, priority: val as Task["priority"] })}>
-                                                <SelectTrigger className="h-11 rounded-xl">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="low">🟢 Low</SelectItem>
-                                                    <SelectItem value="medium">🟡 Medium</SelectItem>
-                                                    <SelectItem value="high">🟠 High</SelectItem>
-                                                    <SelectItem value="urgent">🔴 Urgent</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                            <label className="text-[10px] font-medium text-muted-foreground/60 ml-0.5">Priority Level</label>
+                                            <div className="grid grid-cols-4 gap-1.5">
+                                                <button type="button" onClick={() => setEditingTask({ ...editingTask, priority: "low" })}
+                                                    className={`py-2 rounded-xl text-[11px] font-semibold transition-all duration-200 ${editingTask.priority === "low" ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/25 scale-[1.02]" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}>
+                                                    🟢 Low
+                                                </button>
+                                                <button type="button" onClick={() => setEditingTask({ ...editingTask, priority: "medium" })}
+                                                    className={`py-2 rounded-xl text-[11px] font-semibold transition-all duration-200 ${editingTask.priority === "medium" ? "bg-amber-500 text-white shadow-md shadow-amber-500/25 scale-[1.02]" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}>
+                                                    🟡 Med
+                                                </button>
+                                                <button type="button" onClick={() => setEditingTask({ ...editingTask, priority: "high" })}
+                                                    className={`py-2 rounded-xl text-[11px] font-semibold transition-all duration-200 ${editingTask.priority === "high" ? "bg-orange-500 text-white shadow-md shadow-orange-500/25 scale-[1.02]" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}>
+                                                    🟠 High
+                                                </button>
+                                                <button type="button" onClick={() => setEditingTask({ ...editingTask, priority: "urgent" })}
+                                                    className={`py-2 rounded-xl text-[11px] font-semibold transition-all duration-200 ${editingTask.priority === "urgent" ? "bg-red-500 text-white shadow-md shadow-red-500/25 scale-[1.02]" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}>
+                                                    🔴 Urgent
+                                                </button>
+                                            </div>
                                         </div>
+
+                                        {/* Status Pills */}
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-medium text-muted-foreground ml-1">Status</label>
-                                            <Select value={editingTask.status} onValueChange={(val) => setEditingTask({ ...editingTask, status: val as Task["status"] })}>
-                                                <SelectTrigger className="h-11 rounded-xl">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="todo">📋 To Do</SelectItem>
-                                                    <SelectItem value="in-progress">🔄 In Progress</SelectItem>
-                                                    <SelectItem value="done">✅ Done</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                            <label className="text-[10px] font-medium text-muted-foreground/60 ml-0.5">Status</label>
+                                            <div className="grid grid-cols-3 gap-1.5">
+                                                <button type="button" onClick={() => setEditingTask({ ...editingTask, status: "todo" })}
+                                                    className={`py-2 rounded-xl text-[11px] font-semibold transition-all duration-200 ${editingTask.status === "todo" ? "bg-slate-500 text-white shadow-md shadow-slate-500/25 scale-[1.02]" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}>
+                                                    📋 To Do
+                                                </button>
+                                                <button type="button" onClick={() => setEditingTask({ ...editingTask, status: "in-progress" })}
+                                                    className={`py-2 rounded-xl text-[11px] font-semibold transition-all duration-200 ${editingTask.status === "in-progress" ? "bg-amber-500 text-white shadow-md shadow-amber-500/25 scale-[1.02]" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}>
+                                                    🔄 In Progress
+                                                </button>
+                                                <button type="button" onClick={() => setEditingTask({ ...editingTask, status: "done" })}
+                                                    className={`py-2 rounded-xl text-[11px] font-semibold transition-all duration-200 ${editingTask.status === "done" ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/25 scale-[1.02]" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}>
+                                                    ✅ Done
+                                                </button>
+                                            </div>
                                         </div>
+
+                                        {/* Due Date */}
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-medium text-muted-foreground ml-1">Due Date</label>
+                                            <label className="text-[10px] font-medium text-muted-foreground/60 ml-0.5">Due Date</label>
                                             <DatePicker
                                                 value={editingTask.due_date ? editingTask.due_date.split('T')[0] : ""}
                                                 onChange={(date) => setEditingTask({ ...editingTask, due_date: date })}
@@ -954,12 +1131,14 @@ export default function TasksPage() {
                                             />
                                         </div>
                                     </div>
+                                </div>
 
-                                    {/* Module / Context */}
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-muted-foreground ml-1 flex items-center gap-1.5">
-                                            <Folder className="w-3.5 h-3.5" /> Link to Module
-                                        </label>
+                                {/* ── 📂 Module / Context ── */}
+                                <div className="space-y-2">
+                                    <p className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-widest ml-1">
+                                        <Folder className="w-3 h-3" /> Link to Module
+                                    </p>
+                                    <div className="bg-card/50 border border-border/40 rounded-2xl p-4 space-y-3">
                                         <div className="flex gap-2">
                                             <Select value={editingTask.context_type || "general"} onValueChange={(val) => setEditingTask({ ...editingTask, context_type: val as Task["context_type"], context_id: "" })}>
                                                 <SelectTrigger className="h-11 w-1/3 shrink-0 rounded-xl">
@@ -977,7 +1156,7 @@ export default function TasksPage() {
                                             <div className="flex-1">
                                                 {(!editingTask.context_type || editingTask.context_type === "general") ? (
                                                     <div className="h-11 flex items-center px-4 rounded-xl border border-dashed border-muted-foreground/20 text-muted-foreground text-sm bg-secondary/10 w-full">
-                                                        No specific module linked
+                                                        No specific module
                                                     </div>
                                                 ) : editingTask.context_type === "study" ? (
                                                     <Select value={editingTask.context_id || ""} onValueChange={(val) => setEditingTask({ ...editingTask, context_id: val })}>
@@ -1011,24 +1190,26 @@ export default function TasksPage() {
                                             </div>
                                         </div>
                                     </div>
+                                </div>
 
-                                    {/* Finance Section */}
-                                    {editingTask.context_type === "finance" && (
-                                        <div className="p-4 rounded-xl bg-secondary/20 border border-border/50 space-y-3">
-                                            <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                                                <DollarSign className="w-3.5 h-3.5" /> Budget & Cost
-                                            </label>
+                                {/* ── 💰 Finance Section (conditional) ── */}
+                                {editingTask.context_type === "finance" && (
+                                    <div className="space-y-2">
+                                        <p className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-widest ml-1">
+                                            <DollarSign className="w-3 h-3" /> Budget & Cost
+                                        </p>
+                                        <div className="bg-card/50 border border-border/40 rounded-2xl p-4 space-y-3">
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div className="col-span-2 flex gap-2 mb-1">
-                                                    <button
+                                                    <button type="button"
                                                         onClick={() => setEditingTask({ ...editingTask, finance_type: "expense" })}
-                                                        className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${(editingTask.finance_type || "expense") === "expense" ? "bg-red-500 text-white shadow-md shadow-red-500/20" : "bg-secondary text-muted-foreground hover:bg-secondary/80"}`}
+                                                        className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${(editingTask.finance_type || "expense") === "expense" ? "bg-red-500 text-white shadow-md shadow-red-500/20" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}
                                                     >
                                                         💸 Expense
                                                     </button>
-                                                    <button
+                                                    <button type="button"
                                                         onClick={() => setEditingTask({ ...editingTask, finance_type: "income" })}
-                                                        className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${editingTask.finance_type === "income" ? "bg-green-500 text-white shadow-md shadow-green-500/20" : "bg-secondary text-muted-foreground hover:bg-secondary/80"}`}
+                                                        className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${editingTask.finance_type === "income" ? "bg-green-500 text-white shadow-md shadow-green-500/20" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}
                                                     >
                                                         💰 Income
                                                     </button>
@@ -1037,8 +1218,8 @@ export default function TasksPage() {
                                                 {(editingTask.finance_type || "expense") === "expense" && (
                                                     <div className="col-span-1">
                                                         <Select value={editingTask.budget_id || ""} onValueChange={(val) => setEditingTask({ ...editingTask, budget_id: val })}>
-                                                            <SelectTrigger className="h-10 rounded-lg text-xs">
-                                                                <SelectValue placeholder="Select budget..." />
+                                                            <SelectTrigger className="h-10 rounded-xl text-xs">
+                                                                <SelectValue placeholder="Budget..." />
                                                             </SelectTrigger>
                                                             <SelectContent>
                                                                 {budgets.filter(b => b.type === "budget").map(b => (
@@ -1054,38 +1235,46 @@ export default function TasksPage() {
                                                         placeholder={editingTask.finance_type === "income" ? "Expected income" : "Expected cost"}
                                                         value={editingTask.expected_cost || ""}
                                                         onChange={(e) => setEditingTask({ ...editingTask, expected_cost: Number(e.target.value) || undefined })}
-                                                        className="h-10 rounded-lg bg-background/50 pl-7 text-xs"
+                                                        className="h-10 rounded-xl bg-background/50 pl-7 text-xs"
                                                     />
                                                     <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">৳</span>
                                                 </div>
                                             </div>
                                         </div>
-                                    )}
+                                    </div>
+                                )}
 
-                                    {/* Time Section - Single Row */}
-                                    <div className="p-4 rounded-xl bg-secondary/20 border border-border/50 space-y-3">
-                                        <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                                            <Clock className="w-3.5 h-3.5" /> Time Block
-                                        </label>
+                                {/* ── ⏰ Schedule ── */}
+                                <div className="space-y-2">
+                                    <p className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-widest ml-1">
+                                        <Clock className="w-3 h-3" /> Schedule
+                                    </p>
+                                    <div className="bg-card/50 border border-border/40 rounded-2xl p-4">
                                         <div className="flex gap-2 items-end">
                                             <div className="flex-1 space-y-1">
-                                                <span className="text-[10px] text-muted-foreground ml-0.5">Start</span>
+                                                <span className="text-[10px] font-medium text-muted-foreground/60 ml-0.5">Start</span>
                                                 <TimePicker
                                                     value={editingTask.start_time || ""}
                                                     onChange={(val) => setEditingTask({ ...editingTask, start_time: val || undefined })}
                                                     placeholder="Start"
                                                 />
                                             </div>
+                                            <div className="flex items-center pb-2 text-muted-foreground/30">
+                                                <ChevronRight className="w-4 h-4" />
+                                            </div>
                                             <div className="flex-1 space-y-1">
-                                                <span className="text-[10px] text-muted-foreground ml-0.5">End</span>
+                                                <span className="text-[10px] font-medium text-muted-foreground/60 ml-0.5">End</span>
                                                 <TimePicker
                                                     value={editingTask.end_time || ""}
                                                     onChange={(val) => setEditingTask({ ...editingTask, end_time: val || undefined })}
                                                     placeholder="End"
                                                 />
                                             </div>
+                                            <div className="flex items-center pb-2 text-muted-foreground/30">
+                                                <Timer className="w-3.5 h-3.5" />
+                                            </div>
                                             <div className="flex-1 space-y-1 relative">
-                                                <span className="text-[10px] text-muted-foreground ml-0.5">Duration</span>
+                                                <span className="text-[10px] font-medium text-muted-foreground/60 ml-0.5">Duration</span>
                                                 <Input
                                                     type="number"
                                                     placeholder="—"
@@ -1099,12 +1288,15 @@ export default function TasksPage() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="p-4 bg-secondary/30 border-t border-border/50">
+
+                            {/* ── Footer ── */}
+                            <div className="p-4 mt-2 bg-gradient-to-t from-secondary/40 to-transparent border-t border-border/30">
                                 <Button
                                     onClick={handleSaveEdit}
-                                    className="w-full h-11 text-base font-semibold shadow-lg shadow-primary/25 rounded-xl bg-gradient-to-r from-primary to-primary/90 hover:to-primary"
+                                    className="w-full h-12 text-base font-bold shadow-lg shadow-primary/25 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 transition-all duration-300 gap-2"
                                     disabled={updateTask.isPending}
                                 >
+                                    <Save className="w-4.5 h-4.5" />
                                     {updateTask.isPending ? "Saving..." : "Save Changes"}
                                 </Button>
                             </div>

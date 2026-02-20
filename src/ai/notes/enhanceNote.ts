@@ -10,7 +10,7 @@ interface NoteContext {
     tags?: string;
 }
 
-const SYSTEM_PROMPT = `You are an expert note-writing assistant in LifeOS. Your role is to enhance, rewrite, or generate notes based on user instructions.
+const SYSTEM_PROMPT = `You are an expert note-writing assistant in LifeSolver. Your role is to enhance, rewrite, or generate notes based on user instructions.
 
 FORMATTING RULES — you MUST use markdown formatting:
 - Use **bold** for important terms and headings

@@ -105,7 +105,10 @@ export function useTasks() {
                 });
             }
         },
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["tasks"] });
+            queryClient.invalidateQueries({ queryKey: ["study"] }); // Sync study page
+        },
     });
 
     const deleteTask = useMutation({
@@ -180,6 +183,7 @@ export function useTasks() {
             queryClient.invalidateQueries({ queryKey: ["tasks"] });
             queryClient.invalidateQueries({ queryKey: ["finance"] }); // Also refresh finance data
             queryClient.invalidateQueries({ queryKey: ["budgets"] }); // Also refresh budgets/savings
+            queryClient.invalidateQueries({ queryKey: ["study"] }); // Sync study page
         },
     });
 

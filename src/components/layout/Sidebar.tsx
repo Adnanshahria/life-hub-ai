@@ -44,10 +44,10 @@ export function Sidebar() {
       {/* Logo */}
       <div className="flex items-center gap-3 px-3 py-4 mb-6">
         <div className="w-10 h-10 rounded-xl overflow-hidden">
-          <img src="/logo.svg" alt="LifeOS" className="w-full h-full object-cover" />
+          <img src="/logo.svg" alt="LifeSolver" className="w-full h-full object-cover" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-gradient">LifeOS</h1>
+          <h1 className="text-xl font-bold text-gradient">LifeSolver</h1>
           <p className="text-xs text-muted-foreground">AI Command Center</p>
         </div>
       </div>

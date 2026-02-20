@@ -15,11 +15,11 @@ export function SEO({
     description,
     image,
     url,
-    keywords = ["LifeOS", "Productivity", "Finance", "Tasks", "Habits", "AI", "Personal Dashboard"],
+    keywords = ["LifeSolver", "Productivity", "Finance", "Tasks", "Habits", "AI", "Personal Dashboard"],
     author = "Adnan Shahria",
     noindex = false
 }: SEOProps) {
-    const siteTitle = "LifeOS - Your Personal Operating System";
+    const siteTitle = "LifeSolver - Your Personal Operating System";
     const siteDescription = "A comprehensive life management system with AI integration. Track your finances, habits, tasks, and studies in one premium dashboard.";
     const siteUrl = window.location.origin;
     const currentUrl = url || window.location.href;
@@ -27,7 +27,7 @@ export function SEO({
     return (
         <Helmet>
             {/* Standard Metadata */}
-            <title>{title} | LifeOS</title>
+            <title>{title} | LifeSolver</title>
             <meta name="description" content={description || siteDescription} />
             <meta name="keywords" content={keywords.join(", ")} />
             <meta name="author" content={author} />
@@ -36,7 +36,7 @@ export function SEO({
 
             {/* Open Graph / Facebook */}
             <meta property="og:type" content="website" />
-            <meta property="og:site_name" content="LifeOS" />
+            <meta property="og:site_name" content="LifeSolver" />
             <meta property="og:url" content={currentUrl} />
             <meta property="og:title" content={title} />
             <meta property="og:description" content={description || siteDescription} />

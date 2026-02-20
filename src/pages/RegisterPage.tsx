@@ -57,7 +57,7 @@ export default function RegisterPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
-            <SEO title="Register" description="Create a new LifeOS account to get started." />
+            <SEO title="Register" description="Create a new LifeSolver account to get started." />
             {/* Background gradient effects */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
@@ -79,7 +79,7 @@ export default function RegisterPage() {
                         <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center">
                             <Sparkles className="w-6 h-6 text-background" />
                         </div>
-                        <span className="text-3xl font-bold text-gradient">LifeOS</span>
+                        <span className="text-3xl font-bold text-gradient">LifeSolver</span>
                     </motion.div>
                     <p className="text-muted-foreground">Create your account to get started.</p>
                 </div>

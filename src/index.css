@@ -4,7 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* LifeOS Design System - Dark-first glassmorphism theme */
+/* LifeSolver Design System - Dark-first glassmorphism theme */
 
 @layer base {
   :root {
@@ -54,7 +54,7 @@
     --sidebar-border: 204 30% 86%;
     --sidebar-ring: 187 85% 43%;
 
-    /* Custom LifeOS tokens */
+    /* Custom LifeSolver tokens */
     --glow-primary: 187 85% 53%;
     --glass-bg: 204 50% 99% / 0.75;
     --glass-border: 204 40% 90% / 0.5;
@@ -107,7 +107,7 @@
     --sidebar-border: 222 30% 18%;
     --sidebar-ring: 187 85% 53%;
 
-    /* Custom LifeOS tokens - dark */
+    /* Custom LifeSolver tokens - dark */
     --glow-primary: 187 85% 53%;
     --glass-bg: 222 47% 11% / 0.6;
     --glass-border: 210 40% 96% / 0.08;
@@ -493,6 +493,63 @@
       0 0 0 1px rgba(56, 189, 248, 0.12),
       inset 0 1px 0 0 rgba(186, 230, 253, 0.1),
       0 0 50px -15px rgba(56, 189, 248, 0.2);
+  }
+
+  /* Hide scrollbar utility */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Date carousel — horizontal scroll with snap & fade edges */
+  .date-carousel {
+    @apply flex items-center gap-3 overflow-x-auto px-4 py-4;
+    scroll-snap-type: x mandatory;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .date-carousel::-webkit-scrollbar {
+    display: none;
+  }
+
+  .date-carousel>* {
+    scroll-snap-align: center;
+  }
+
+  /* Task card — glassmorphic with left priority stripe */
+  .task-card {
+    @apply relative overflow-hidden backdrop-blur-sm rounded-2xl border transition-all duration-200;
+    background: hsl(var(--glass-bg));
+    border-color: hsl(var(--glass-border));
+  }
+
+  .task-card:hover {
+    border-color: hsl(var(--primary) / 0.2);
+    box-shadow:
+      0 4px 20px -4px rgba(0, 0, 0, 0.1),
+      0 0 20px -8px hsl(var(--glow-primary) / 0.15);
+  }
+
+  /* Priority stripe variants */
+  .priority-stripe-low {
+    border-left: 3px solid #3b82f6;
+  }
+
+  .priority-stripe-medium {
+    border-left: 3px solid #eab308;
+  }
+
+  .priority-stripe-high {
+    border-left: 3px solid #f97316;
+  }
+
+  .priority-stripe-urgent {
+    border-left: 3px solid #ef4444;
   }
 }
 

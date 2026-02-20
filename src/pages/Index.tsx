@@ -207,7 +207,7 @@ const Index = () => {
     setIsSummaryLoading(true);
     setSummaryError(null);
     try {
-      const contextPrompt = `You are an intelligent daily briefing AI for a personal life management app called LifeOS. Analyze ALL of the user's data below and generate a concise, actionable daily summary.
+      const contextPrompt = `You are an intelligent daily briefing AI for a personal life management app called LifeSolver. Analyze ALL of the user's data below and generate a concise, actionable daily summary.
 
 Today's Date: ${today}
 Time: ${new Date().toLocaleTimeString()}

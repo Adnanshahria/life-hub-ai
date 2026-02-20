@@ -39,7 +39,7 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
-            <SEO title="Login" description="Sign in to LifeOS to access your dashboard." />
+            <SEO title="Login" description="Sign in to LifeSolver to access your dashboard." />
             {/* Background gradient effects */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
@@ -61,7 +61,7 @@ export default function LoginPage() {
                         <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center">
                             <Sparkles className="w-6 h-6 text-background" />
                         </div>
-                        <span className="text-3xl font-bold text-gradient">LifeOS</span>
+                        <span className="text-3xl font-bold text-gradient">LifeSolver</span>
                     </motion.div>
                     <p className="text-muted-foreground">Welcome back! Sign in to continue.</p>
                 </div>

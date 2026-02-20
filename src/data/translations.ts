@@ -47,7 +47,7 @@ export const translations = {
         },
         why: {
             title: "Why Choose ",
-            titleHighlight: "LifeOS",
+            titleHighlight: "LifeSolver",
             cards: [
                 {
                     title: "Privacy That Matters",
@@ -55,7 +55,7 @@ export const translations = {
                 },
                 {
                     title: "Seamless Integration",
-                    desc: "Say post-goodbye to app switching. LifeOS unifies tasks, finances, notes, and habits into a single, fluid ecosystem where every action is interconnected."
+                    desc: "Say post-goodbye to app switching. LifeSolver unifies tasks, finances, notes, and habits into a single, fluid ecosystem where every action is interconnected."
                 },
                 {
                     title: "AI That Works For You",
@@ -63,7 +63,7 @@ export const translations = {
                 },
                 {
                     title: "Lightning Fast",
-                    desc: "No loading spinners, no lag. LifeOS is built for speed, ensuring that managing your life feels instant and fluid, even on older devices."
+                    desc: "No loading spinners, no lag. LifeSolver is built for speed, ensuring that managing your life feels instant and fluid, even on older devices."
                 },
                 {
                     title: "Offline Access",
@@ -78,7 +78,7 @@ export const translations = {
         cta: {
             title: "Ready to ",
             titleHighlight: "level up",
-            desc: "Join LifeOS today and take control of your life with the power of AI.",
+            desc: "Join LifeSolver today and take control of your life with the power of AI.",
             button: "Get Started — It's Free"
         },
         footer: {
