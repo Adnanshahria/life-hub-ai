@@ -322,14 +322,22 @@ Respond in this EXACT JSON format:
 
         {/* Desktop Header */}
         <div className="hidden md:block">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-            <CalendarDays className="w-4 h-4" />
-            <span>{today}</span>
+          <div className="rounded-2xl border-2 border-primary/10 bg-gradient-to-br from-primary/5 via-card/80 to-transparent backdrop-blur-sm p-6 sm:p-8 relative overflow-hidden shadow-sm">
+            {/* Background Pattern */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-primary/10 rounded-full blur-2xl -ml-12 -mb-12 pointer-events-none"></div>
+
+            <div className="relative z-10 flex flex-col justify-center">
+              <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2 font-medium">
+                <CalendarDays className="w-4 h-4 text-primary/70" />
+                <span>{today}</span>
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
+                {greeting}, <span className="text-gradient">{user?.name?.split(" ")[0] || "User"}</span>
+              </h1>
+              <p className="text-muted-foreground text-sm">{aiSummary?.summary ? aiSummary.summary : "Here's your daily snapshot"}</p>
+            </div>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-            {greeting}, <span className="text-gradient">{user?.name?.split(" ")[0] || "User"}</span>
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm">Here's your daily snapshot</p>
         </div>
       </motion.div>
 

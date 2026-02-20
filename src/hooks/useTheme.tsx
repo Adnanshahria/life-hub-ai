@@ -7,9 +7,8 @@ export function useTheme() {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("lifeos-theme") as Theme;
       if (stored) return stored;
-      return window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
+      // Default to dark mode regardless of system preference if no stored preference exists
+      return "dark";
     }
     return "dark";
   });

@@ -10,7 +10,7 @@ export const translations = {
         hero: {
             badge: "AI-Powered Personal OS",
             titlePre: "Life",
-            titlePost: "OS",
+            titlePost: "Solver",
             subtitle: "Manage your tasks, finances, studies, and habits — all in one beautiful, AI-powered workspace. Meet Orbit, your personal assistant.",
             ctaStart: "Start Free",
             ctaLogin: "Sign In",
@@ -96,7 +96,7 @@ export const translations = {
         hero: {
             badge: "AI-চালিত পার্সোনাল OS",
             titlePre: "লাইফ",
-            titlePost: "OS",
+            titlePost: "Solver",
             subtitle: "আপনার কাজ, খরচ, পড়াশোনা এবং অভ্যাস সব এক জায়গায় ম্যানেজ করুন। সাথে আছে অরবিট, আপনার পার্সোনাল অ্যাসিস্ট্যান্ট।",
             ctaStart: "ফ্রি-তে শুরু করুন",
             ctaLogin: "লগ ইন",
@@ -133,7 +133,7 @@ export const translations = {
         },
         why: {
             title: "কেন বেছে নেবেন ",
-            titleHighlight: "লাইফOS",
+            titleHighlight: "LifeSolver",
             cards: [
                 {
                     title: "সর্বোচ্চ গোপনীয়তা",
@@ -164,7 +164,7 @@ export const translations = {
         cta: {
             title: "নিজেকে ",
             titleHighlight: "আপগ্রেড করতে",
-            desc: "আজই লাইফOS-এ যোগ দিন এবং AI-এর শক্তিতে নিজের জীবন নিয়ন্ত্রণ করুন।",
+            desc: "আজই LifeSolver-এ যোগ দিন এবং AI-এর শক্তিতে নিজের জীবন নিয়ন্ত্রণ করুন।",
             button: "বিনামূল্যে শুরু করুন"
         },
         footer: {

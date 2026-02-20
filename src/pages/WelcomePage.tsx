@@ -1,11 +1,11 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useMemo, useState, useEffect } from "react";
 import {
     Sparkles, Brain, ListTodo, Wallet, BookOpen, Target,
     ArrowRight, Zap, Shield, BarChart3, Clock, Flame,
     ChevronDown, Star, Package, Sun, Moon, Snowflake,
-    Gauge, WifiOff, Download
+    Gauge, WifiOff, Download, Menu, X, Globe, Layers, Trophy, MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/seo/SEO";
@@ -73,16 +73,16 @@ function FeatureCard({ icon: Icon, title, description, gradient, delay }: {
         <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
+            viewport={{ once: false, amount: 0.2, margin: "-50px" }}
             transition={{ duration: 0.6, delay }}
             whileHover={{ y: -8, transition: { duration: 0.3 } }}
-            className="glass-card-hover p-6 group cursor-default frost-card"
+            className="glass-card-hover p-4 sm:p-6 group cursor-default frost-card flex flex-col items-center sm:items-start text-center sm:text-left"
         >
-            <div className={`w-14 h-14 rounded-2xl ${gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                <Icon className="w-7 h-7 text-white" />
+            <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl ${gradient} flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                <Icon className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+            <h3 className="text-sm sm:text-lg font-semibold text-foreground mb-1.5 sm:mb-2">{title}</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{description}</p>
         </motion.div>
     );
 }
@@ -93,7 +93,7 @@ function StatCounter({ value, label, suffix = "" }: { value: string; label: stri
         <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
+            viewport={{ once: false, amount: 0.2 }}
             className="text-center"
         >
             <div className="text-4xl md:text-5xl font-bold text-gradient-ice mb-1">{value}{suffix}</div>
@@ -110,6 +110,29 @@ export default function WelcomePage() {
     const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
     const heroScale = useTransform(scrollYProgress, [0, 0.15], [1, 0.95]);
     const [activeSection, setActiveSection] = useState<string>('');
+
+    // 3D Tilt Effect State
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+    const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], ["7deg", "-7deg"]), { damping: 30, stiffness: 200 });
+    const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], ["-7deg", "7deg"]), { damping: 30, stiffness: 200 });
+
+    function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const width = rect.width;
+        const height = rect.height;
+        const mouseXOffset = e.clientX - rect.left;
+        const mouseYOffset = e.clientY - rect.top;
+        const xPct = mouseXOffset / width - 0.5;
+        const yPct = mouseYOffset / height - 0.5;
+        mouseX.set(xPct);
+        mouseY.set(yPct);
+    }
+
+    function handleMouseLeave() {
+        mouseX.set(0);
+        mouseY.set(0);
+    }
 
     // Scroll spy — track which section is in view
     useEffect(() => {
@@ -175,26 +198,25 @@ export default function WelcomePage() {
                 </div>
             )}
 
-            {/* ===== NAVBAR — Rounded Pill ===== */}
-            <motion.nav
-                initial={{ y: -40, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.1 }}
-                className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4"
-            >
-                <div className="glass-card rounded-full px-5 md:px-6 py-2.5 flex items-center gap-6 shadow-lg shadow-sky-900/5 border border-sky-300/15 dark:border-sky-400/10 backdrop-blur-xl">
+            {/* ===== DESKTOP NAVBAR ===== */}
+            <div className="hidden md:flex fixed top-4 left-0 right-0 z-50 justify-center pointer-events-none">
+                <motion.nav
+                    initial={{ y: -40, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.1 }}
+                    className="glass-card rounded-full px-6 py-2.5 flex items-center justify-between gap-6 shadow-lg shadow-sky-900/5 border border-sky-300/15 dark:border-sky-400/10 backdrop-blur-xl pointer-events-auto w-auto"
+                >
                     {/* Logo */}
-                    <div className="flex items-center gap-2.5 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                        <div className="relative w-8 h-8 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 flex items-center justify-center shadow-md shadow-sky-500/20 group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div className="flex items-center gap-2.5 cursor-pointer group shrink-0" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                        <div className="relative w-8 h-8 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 flex items-center justify-center shadow-md shadow-sky-500/20 group-hover:scale-105 transition-transform duration-300 overflow-hidden shrink-0">
                             <img src="/logo.svg" alt="LifeSolver Logo" className="w-full h-full object-cover" />
                         </div>
-                        <span className="font-bold text-lg tracking-tight">LifeSolver</span>
+                        <span className="font-bold text-lg tracking-tight whitespace-nowrap">LifeSolver</span>
                     </div>
 
-                    {/* Center Links (Desktop) */}
-                    <div className="hidden md:flex items-center gap-1 bg-secondary/40 rounded-full px-1.5 py-1 border border-white/5">
+                    {/* Center Links */}
+                    <div className="flex items-center gap-1 bg-secondary/40 rounded-full px-1.5 py-1 border border-white/5 shrink-0">
                         {[t.nav.features, t.nav.orbit, t.nav.why].map((item, index) => {
-                            // Map translated items back to IDs for scroll spy
                             const ids = ['features', 'orbit-ai', 'why'];
                             const id = ids[index];
                             const isActive = activeSection === id;
@@ -204,7 +226,7 @@ export default function WelcomePage() {
                                     onClick={() => {
                                         document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
                                     }}
-                                    className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-300 ${isActive
+                                    className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-300 whitespace-nowrap shrink-0 ${isActive
                                         ? 'bg-gradient-to-r from-sky-400 to-cyan-500 text-white shadow-md shadow-sky-500/20'
                                         : 'text-muted-foreground hover:text-foreground hover:bg-background/80'
                                         } `}
@@ -216,82 +238,176 @@ export default function WelcomePage() {
                     </div>
 
                     {/* Right Actions */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                         <button
                             onClick={toggleLanguage}
-                            className="p-2 rounded-full hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors font-medium text-xs"
+                            className="p-2 rounded-full hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors font-medium text-xs shrink-0"
                             aria-label="Toggle language"
                         >
                             {language.toUpperCase()}
                         </button>
                         <button
                             onClick={toggleTheme}
-                            className="p-2 rounded-full hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors"
+                            className="p-2 rounded-full hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors shrink-0"
                             aria-label="Toggle theme"
                         >
                             {theme === 'dark' ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
                         </button>
-                        <div className="h-5 w-px bg-border/40 hidden md:block" />
-                        <Link to="/register">
-                            <Button size="sm" className="rounded-full bg-gradient-to-r from-sky-400 to-cyan-500 text-white font-semibold hover:opacity-90 transition-opacity shadow-md shadow-sky-500/20 px-5">
+                        <div className="h-5 w-px bg-border/40 shrink-0" />
+                        <Link to="/register" className="shrink-0 ml-1">
+                            <Button size="sm" className="rounded-full bg-gradient-to-r from-sky-400 to-cyan-500 text-white font-semibold hover:opacity-90 transition-opacity shadow-md shadow-sky-500/20 px-5 h-9 text-sm whitespace-nowrap">
                                 {t.nav.getStarted}
                             </Button>
                         </Link>
                     </div>
-                </div>
-            </motion.nav>
+                </motion.nav>
+            </div>
+
+            {/* ===== MOBILE TOP NAVBAR ===== */}
+            <div className="md:hidden fixed top-4 left-4 right-4 z-50 pointer-events-none flex justify-center">
+                <motion.nav
+                    initial={{ y: -40, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.1 }}
+                    className="glass-card rounded-full px-4 py-2.5 flex items-center justify-between shadow-lg shadow-sky-900/5 border-2 border-violet-500/40 dark:border-violet-400/40 backdrop-blur-xl pointer-events-auto w-full max-w-sm bg-background/90"
+                >
+                    {/* Logo */}
+                    <div className="flex items-center gap-2 cursor-pointer group shrink-0" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                        <div className="relative w-7 h-7 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 flex items-center justify-center shadow-md shadow-sky-500/20 shrink-0 overflow-hidden">
+                            <img src="/logo.svg" alt="LifeSolver Logo" className="w-full h-full object-cover" />
+                        </div>
+                        <span className="font-bold text-sm tracking-tight whitespace-nowrap">LifeSolver</span>
+                    </div>
+
+                    {/* Right Actions */}
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button
+                            onClick={toggleTheme}
+                            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors border border-border/50 shrink-0"
+                            aria-label="Toggle theme"
+                        >
+                            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                        </button>
+                        <button
+                            onClick={toggleLanguage}
+                            className="flex items-center justify-center gap-1 h-8 px-3 rounded-full hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors font-medium text-xs border border-border/50 shrink-0"
+                            aria-label="Toggle language"
+                        >
+                            <Globe className="w-3.5 h-3.5 shrink-0" />
+                            {language === 'en' ? 'EN' : 'বাং'}
+                        </button>
+                    </div>
+                </motion.nav>
+            </div>
+
+            {/* ===== MOBILE BOTTOM NAVBAR ===== */}
+            <div className="md:hidden fixed bottom-6 left-0 right-0 z-50 flex justify-center pointer-events-none">
+                <motion.nav
+                    initial={{ y: 40, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.2 }}
+                    className="glass-card rounded-full px-3 py-2.5 flex items-center justify-center shadow-xl shadow-indigo-900/10 border-2 border-violet-500/40 dark:border-violet-400/40 backdrop-blur-xl pointer-events-auto bg-background/95"
+                >
+                    {[
+                        { id: 'features', label: t.nav.features, icon: Layers },
+                        { id: 'orbit-ai', label: t.nav.orbit, icon: MessageSquare },
+                        { id: 'why', label: t.nav.why, icon: Trophy }
+                    ].map((item) => {
+                        const isActive = activeSection === item.id;
+                        return (
+                            <button
+                                key={item.id}
+                                onClick={() => {
+                                    document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                className={`flex items-center mx-1 rounded-full transition-all duration-300 ease-out overflow-hidden ${isActive
+                                    ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 px-4 py-2'
+                                    : 'bg-transparent text-muted-foreground hover:text-foreground px-3 py-2'
+                                    }`}
+                            >
+                                <item.icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : ''}`} />
+                                <div className={`overflow-hidden transition-all duration-300 ease-out flex items-center ${isActive ? 'max-w-[120px] opacity-100 ml-2' : 'max-w-0 opacity-0 ml-0'}`}>
+                                    <span className="text-sm font-semibold whitespace-nowrap">{item.label}</span>
+                                </div>
+                            </button>
+                        );
+                    })}
+                </motion.nav>
+            </div>
 
             {/* ===== HERO SECTION ===== */}
             <motion.section
                 style={{ opacity: heroOpacity, scale: heroScale }}
-                className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-16"
+                className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-24 pb-12"
             >
                 {/* Animated badge */}
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card text-sm text-muted-foreground mb-8 border-sky-300/20 dark:border-sky-400/15"
+                    initial={{ opacity: 0, scale: 0.8, y: -20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ type: 'spring', stiffness: 100, delay: 0.2 }}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full glass-card text-sm text-muted-foreground mb-8 border-sky-300/30 dark:border-sky-400/20 shadow-lg shadow-sky-500/10 hover:shadow-sky-500/20 transition-all cursor-default"
                 >
-                    <Snowflake className="w-4 h-4 text-sky-400" />
-                    <span>{t.hero.badge}</span>
-                    <span className="px-2 py-0.5 rounded-full bg-sky-400/20 text-sky-400 text-xs font-medium">v2.0</span>
+                    <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    >
+                        <Snowflake className="w-4 h-4 text-sky-500 dark:text-sky-400" />
+                    </motion.div>
+                    <span className="font-medium text-foreground">{t.hero.badge}</span>
+                    <span className="px-2.5 py-1 rounded-full bg-gradient-to-r from-sky-400/20 to-cyan-500/20 text-sky-600 dark:text-sky-300 text-xs font-bold uppercase tracking-wider">v2.0</span>
                 </motion.div>
 
                 {/* Main heading */}
                 <motion.h1
-                    initial={{ opacity: 0, scale: 0.7, filter: 'blur(10px)' }}
-                    animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-                    transition={{ type: 'spring', stiffness: 80, damping: 18, delay: 0.4 }}
-                    className="text-5xl md:text-7xl lg:text-8xl font-black text-center max-w-5xl leading-[1.1] mb-6"
+                    initial={{ opacity: 0, scale: 0.8, filter: 'blur(15px)', y: 20 }}
+                    animate={{ opacity: 1, scale: 1, filter: 'blur(0px)', y: 0 }}
+                    transition={{ type: 'spring', stiffness: 70, damping: 20, delay: 0.3 }}
+                    className="text-6xl md:text-8xl lg:text-[7.5rem] font-black text-center max-w-5xl leading-[1.05] tracking-tight mb-8"
                 >
-                    {t.hero.titlePre}<span className="text-gradient-ice">{t.hero.titlePost}</span>
+                    {t.hero.titlePre}
+                    <motion.span
+                        className="text-gradient-ice inline-block ml-1"
+                        animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+                        transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                        style={{ backgroundSize: '200% auto' }}
+                    >
+                        {t.hero.titlePost}
+                    </motion.span>
                 </motion.h1>
 
                 {/* Subtitle */}
                 <motion.p
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6, duration: 0.6 }}
-                    className="text-lg md:text-xl text-muted-foreground text-center max-w-2xl mb-10 leading-relaxed"
+                    transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
+                    className="text-lg md:text-2xl text-muted-foreground text-center max-w-3xl mb-12 leading-relaxed font-medium"
                 >
                     {t.hero.subtitle}
                 </motion.p>
 
                 {/* CTA Buttons */}
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.8 }}
-                    className="flex flex-col sm:flex-row gap-4 mb-16"
+                    transition={{ type: "spring", stiffness: 100, delay: 0.7 }}
+                    className="flex flex-row items-center justify-center gap-3 sm:gap-6 mb-16 md:mb-24 px-4"
                 >
-                    <Link to="/register">
-                        <Button size="lg" className="bg-gradient-to-r from-sky-400 to-cyan-500 text-white font-semibold text-lg px-8 h-14 hover:opacity-90 transition-all hover:scale-105 shadow-xl shadow-sky-500/25">
-                            {t.hero.ctaStart} <ArrowRight className="w-5 h-5 ml-2" />
+                    <Link to="/register" className="block">
+                        <Button className="w-[150px] h-[56px] sm:w-[200px] sm:h-[68px] relative group overflow-hidden bg-gradient-to-r from-sky-400 to-cyan-500 text-white font-bold text-sm sm:text-lg rounded-2xl shadow-xl shadow-sky-500/30 hover:shadow-sky-500/50 transition-all duration-300 hover:scale-[1.03]">
+                            <span className="relative z-10 flex items-center justify-center gap-1.5 sm:gap-2">
+                                {t.hero.ctaStart}
+                                <motion.div
+                                    animate={{ x: [0, 5, 0] }}
+                                    transition={{ duration: 1.5, repeat: Infinity }}
+                                >
+                                    <ArrowRight className="w-4 h-4 sm:w-6 sm:h-6" />
+                                </motion.div>
+                            </span>
+                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out" />
                         </Button>
                     </Link>
-                    <Link to="/login">
-                        <Button size="lg" variant="outline" className="text-lg px-8 h-14 border-sky-300/30 dark:border-sky-400/20 hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-all">
+                    <Link to="/login" className="block">
+                        <Button variant="outline" className="w-[150px] h-[56px] sm:w-[200px] sm:h-[68px] text-sm sm:text-lg rounded-2xl border-2 border-sky-200 dark:border-sky-800 bg-background/50 backdrop-blur-sm hover:bg-sky-50 dark:hover:bg-sky-900/40 hover:border-sky-400 transition-all duration-300 font-semibold text-foreground/80 hover:text-foreground">
                             {t.hero.ctaLogin}
                         </Button>
                     </Link>
@@ -299,70 +415,95 @@ export default function WelcomePage() {
 
                 {/* Hero visual - Mock dashboard preview */}
                 <motion.div
-                    initial={{ opacity: 0, y: 60 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1, duration: 0.8, type: "spring", bounce: 0.3 }}
-                    className="relative w-full max-w-4xl"
+                    initial={{ opacity: 0, y: 80, rotateX: 10, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
+                    transition={{ delay: 0.9, duration: 1.2, type: "spring", bounce: 0.4 }}
+                    className="relative w-full max-w-5xl z-10"
+                    style={{ perspective: 1200 }}
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={handleMouseLeave}
                 >
-                    <div className="glass-card p-6 md:p-8 relative overflow-hidden frost-card">
+                    <motion.div
+                        style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+                        animate={{ y: [-10, 10, -10] }}
+                        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                        className="glass-card p-6 md:p-8 relative overflow-hidden frost-card rounded-[2rem] shadow-2xl shadow-sky-900/20 border border-sky-300/40 dark:border-sky-400/20 bg-background/60 backdrop-blur-2xl"
+                    >
                         {/* Frost border glow */}
-                        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-sky-400/15 via-transparent to-cyan-400/15 pointer-events-none" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-sky-400/10 via-transparent to-cyan-400/10 pointer-events-none" style={{ transform: "translateZ(-10px)" }} />
+
+                        {/* Shimmer effect */}
+                        <motion.div
+                            className="absolute top-0 -inset-full h-full w-1/2 z-0 block transform -skew-x-12 bg-gradient-to-r from-transparent to-white opacity-20 dark:opacity-10"
+                            animate={{ left: ['150%', '-50%'] }}
+                            transition={{ duration: 3, repeat: Infinity, repeatDelay: 5, ease: "easeInOut" }}
+                        />
 
                         {/* Mock Dashboard Grid */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6 relative z-10">
                             {[
-                                { label: t.stats.tasks, value: "24", icon: ListTodo, color: "text-sky-400" },
-                                { label: t.stats.budget, value: "৳12.5K", icon: Wallet, color: "text-teal-400" },
-                                { label: t.stats.study, value: "8.5h", icon: BookOpen, color: "text-indigo-400" },
-                                { label: t.stats.streak, value: "15🔥", icon: Flame, color: "text-cyan-400" },
+                                { label: t.stats.tasks, value: "24", icon: ListTodo, color: "text-sky-500 dark:text-sky-400", bg: "bg-sky-500/10" },
+                                { label: t.stats.budget, value: "৳12.5K", icon: Wallet, color: "text-teal-500 dark:text-teal-400", bg: "bg-teal-500/10" },
+                                { label: t.stats.study, value: "8.5h", icon: BookOpen, color: "text-indigo-500 dark:text-indigo-400", bg: "bg-indigo-500/10" },
+                                { label: t.stats.streak, value: "15🔥", icon: Flame, color: "text-orange-500 dark:text-orange-400", bg: "bg-orange-500/10" },
                             ].map((item, i) => (
                                 <motion.div
                                     key={item.label}
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ delay: 1.2 + i * 0.1 }}
-                                    className="glass-card p-4 text-center"
+                                    initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    transition={{ delay: 1.2 + i * 0.1, type: "spring" }}
+                                    whileHover={{ y: -5, scale: 1.05 }}
+                                    className="glass-card p-5 text-center flex flex-col items-center justify-center rounded-2xl cursor-default transition-all duration-300 hover:shadow-lg hover:shadow-sky-500/10 border border-black/5 dark:border-white/5"
                                 >
-                                    <item.icon className={`w-5 h-5 ${item.color} mx-auto mb-2`} />
-                                    <div className="text-xl md:text-2xl font-bold text-foreground">{item.value}</div>
-                                    <div className="text-xs text-muted-foreground">{item.label}</div>
+                                    <div className={`w-12 h-12 rounded-2xl ${item.bg} flex items-center justify-center mb-4`}>
+                                        <item.icon className={`w-6 h-6 ${item.color}`} />
+                                    </div>
+                                    <div className="text-2xl md:text-3xl font-black text-foreground tracking-tight">{item.value}</div>
+                                    <div className="text-sm text-muted-foreground font-medium mt-1">{item.label}</div>
                                 </motion.div>
                             ))}
                         </div>
 
                         {/* Mock progress bars */}
-                        <div className="space-y-3">
+                        <div className="space-y-4 relative z-10 bg-black/5 dark:bg-white/5 rounded-2xl p-5 md:p-6 border border-black/5 dark:border-white/5">
                             {[
-                                { label: t.stats.goals, progress: 78, color: "from-sky-400 to-blue-500" },
+                                { label: t.stats.goals, progress: 78, color: "from-sky-400 to-blue-600" },
                                 { label: t.stats.savings, progress: 62, color: "from-teal-400 to-cyan-500" },
-                            ].map((bar) => (
-                                <div key={bar.label} className="flex items-center gap-3">
-                                    <span className="text-xs text-muted-foreground w-24 shrink-0">{bar.label}</span>
-                                    <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                            ].map((bar, i) => (
+                                <div key={bar.label} className="flex items-center gap-4">
+                                    <span className="text-sm font-medium text-muted-foreground w-28 shrink-0">{bar.label}</span>
+                                    <div className="flex-1 h-3 md:h-4 bg-secondary/80 rounded-full overflow-hidden shadow-inner flex items-center">
                                         <motion.div
                                             initial={{ width: 0 }}
                                             animate={{ width: `${bar.progress}%` }}
-                                            transition={{ delay: 1.5, duration: 1, ease: "easeOut" }}
-                                            className={`h-full rounded-full bg-gradient-to-r ${bar.color}`}
-                                        />
+                                            transition={{ delay: 1.6 + i * 0.2, duration: 1.5, ease: "easeOut" }}
+                                            className={`h-full rounded-full bg-gradient-to-r ${bar.color} relative overflow-hidden`}
+                                        >
+                                            <motion.div
+                                                className="absolute inset-0 bg-white/20 blur-sm"
+                                                animate={{ x: ['-100%', '100%'] }}
+                                                transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                                                style={{ skewX: -20 }}
+                                            />
+                                        </motion.div>
                                     </div>
-                                    <span className="text-xs text-muted-foreground w-10 text-right">{bar.progress}%</span>
+                                    <span className="text-sm font-bold text-foreground w-12 text-right">{bar.progress}%</span>
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </motion.div>
                 </motion.div>
 
                 {/* Scroll indicator */}
                 <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 2 }}
-                    className="absolute bottom-8 flex flex-col items-center gap-1"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 2, duration: 1 }}
+                    className="absolute bottom-6 flex flex-col items-center gap-2"
                 >
-                    <span className="text-xs text-muted-foreground">{t.hero.scroll}</span>
-                    <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
-                        <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                    <span className="text-xs uppercase tracking-widest font-semibold text-muted-foreground opacity-70">{t.hero.scroll}</span>
+                    <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}>
+                        <ChevronDown className="w-5 h-5 text-sky-500 dark:text-sky-400" />
                     </motion.div>
                 </motion.div>
             </motion.section>
@@ -383,13 +524,13 @@ export default function WelcomePage() {
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
+                        viewport={{ once: false, amount: 0.2 }}
                         className="text-center mb-16"
                     >
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-400/10 text-sky-400 text-sm font-medium mb-4">
                             <Star className="w-4 h-4" /> {t.features.badge}
                         </div>
-                        <h2 className="text-3xl md:text-5xl font-bold mb-4">
+                        <h2 className="text-[1.35rem] xs:text-2xl sm:text-3xl md:text-5xl font-bold mb-4 whitespace-nowrap tracking-tight">
                             {t.features.title}
                             <span className="text-gradient-ice">{t.features.titleHighlight}</span>
                         </h2>
@@ -398,7 +539,7 @@ export default function WelcomePage() {
                         </p>
                     </motion.div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {features.map((feature, i) => (
                             <FeatureCard key={feature.title} {...feature} delay={i * 0.1} />
                         ))}
@@ -413,7 +554,7 @@ export default function WelcomePage() {
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
+                        viewport={{ once: false, amount: 0.2 }}
                         className="text-center mb-16"
                     >
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-400/10 text-indigo-400 text-sm font-medium mb-4 border border-indigo-400/20">
@@ -433,7 +574,7 @@ export default function WelcomePage() {
                         <motion.div
                             initial={{ opacity: 0, x: -40 }}
                             whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
+                            viewport={{ once: false, amount: 0.2 }}
                             transition={{ duration: 0.6 }}
                             className="glass-card p-1 relative overflow-hidden frost-card"
                         >
@@ -456,7 +597,7 @@ export default function WelcomePage() {
                                 <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
+                                    viewport={{ once: false, amount: 0.2 }}
                                     transition={{ delay: 0.3 }}
                                     className="flex justify-end"
                                 >
@@ -469,7 +610,7 @@ export default function WelcomePage() {
                                 <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
+                                    viewport={{ once: false, amount: 0.2 }}
                                     transition={{ delay: 0.6 }}
                                     className="flex justify-start gap-2"
                                 >
@@ -484,7 +625,7 @@ export default function WelcomePage() {
                                             <motion.div
                                                 initial={{ width: 0 }}
                                                 whileInView={{ width: '66%' }}
-                                                viewport={{ once: true }}
+                                                viewport={{ once: false, amount: 0.2 }}
                                                 transition={{ delay: 0.8, duration: 0.8 }}
                                                 className="h-full rounded-full bg-gradient-to-r from-sky-400 to-cyan-500"
                                             />
@@ -499,7 +640,7 @@ export default function WelcomePage() {
                                 <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
+                                    viewport={{ once: false, amount: 0.2 }}
                                     transition={{ delay: 0.9 }}
                                     className="flex justify-end"
                                 >
@@ -512,7 +653,7 @@ export default function WelcomePage() {
                                 <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
+                                    viewport={{ once: false, amount: 0.2 }}
                                     transition={{ delay: 1.2 }}
                                     className="flex justify-start gap-2"
                                 >
@@ -554,7 +695,7 @@ export default function WelcomePage() {
                         <motion.div
                             initial={{ opacity: 0, x: 40 }}
                             whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
+                            viewport={{ once: false, amount: 0.2 }}
                             transition={{ duration: 0.6, delay: 0.2 }}
                             className="grid grid-cols-2 gap-4"
                         >
@@ -568,7 +709,7 @@ export default function WelcomePage() {
                                     key={cap.label}
                                     initial={{ opacity: 0, y: 20 }}
                                     whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
+                                    viewport={{ once: false, amount: 0.2 }}
                                     transition={{ delay: 0.4 + i * 0.15 }}
                                     whileHover={{ y: -4, transition: { duration: 0.2 } }}
                                     className="glass-card p-5 frost-card group cursor-default"
@@ -585,7 +726,7 @@ export default function WelcomePage() {
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
+                                viewport={{ once: false, amount: 0.2 }}
                                 transition={{ delay: 1 }}
                                 className="col-span-2 glass-card p-5 frost-card"
                             >
@@ -615,7 +756,7 @@ export default function WelcomePage() {
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
+                        viewport={{ once: false, amount: 0.2 }}
                         className="text-center mb-12"
                     >
                         <h2 className="text-3xl md:text-5xl font-bold mb-4">
@@ -623,7 +764,7 @@ export default function WelcomePage() {
                         </h2>
                     </motion.div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
                         {[
                             { icon: Shield, title: t.why.cards[0].title, description: t.why.cards[0].desc, color: "text-teal-400" },
                             { icon: ListTodo, title: t.why.cards[1].title, description: t.why.cards[1].desc, color: "text-sky-400" },
@@ -636,15 +777,15 @@ export default function WelcomePage() {
                                 key={item.title}
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
+                                viewport={{ once: false, amount: 0.2 }}
                                 transition={{ delay: i * 0.15 }}
-                                className="text-center p-8 frost-card glass-card rounded-xl"
+                                className="text-center p-4 sm:p-6 flex flex-col items-center justify-start h-full glass-card frost-card border border-sky-200/50 dark:border-sky-800/50 rounded-2xl shadow-sm hover:shadow-md transition-shadow"
                             >
-                                <div className="w-16 h-16 rounded-2xl bg-sky-400/10 dark:bg-sky-950/40 flex items-center justify-center mx-auto mb-5 border border-sky-300/20 dark:border-sky-400/10">
-                                    <item.icon className={`w-8 h-8 ${item.color}`} />
+                                <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center mx-auto mb-3 sm:mb-4 shrink-0 shadow-sm border border-black/5 dark:border-white/5`}>
+                                    <item.icon className={`w-5 h-5 sm:w-6 sm:h-6 ${item.color}`} />
                                 </div>
-                                <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                                <p className="text-muted-foreground text-sm leading-relaxed">{item.description}</p>
+                                <h3 className="text-sm sm:text-lg font-bold mb-1.5 sm:mb-2 text-foreground">{item.title}</h3>
+                                <p className="text-[11px] sm:text-[13px] text-muted-foreground leading-relaxed sm:leading-relaxed">{item.description}</p>
                             </motion.div>
                         ))}
                     </div>
@@ -656,7 +797,7 @@ export default function WelcomePage() {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
+                    viewport={{ once: false, amount: 0.2 }}
                     className="max-w-3xl mx-auto text-center"
                 >
                     <div className="glass-card p-10 md:p-16 relative overflow-hidden frost-card">
@@ -693,8 +834,9 @@ export default function WelcomePage() {
                         </div>
                         <span className="font-semibold text-gradient-ice">LifeSolver</span>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                        © {new Date().getFullYear()} LifeSolver. Built with ❄️ and AI.
+                    <p className="text-sm text-muted-foreground text-center md:text-right">
+                        © {new Date().getFullYear()} LifeSolver. All rights are preserved by Orbit Saas. <br className="md:hidden" />
+                        Website - <a href="https://orbitsaas.cloud" target="_blank" rel="noopener noreferrer" className="hover:text-sky-400 transition-colors">orbitsaas.cloud</a>
                     </p>
                 </div >
             </footer >

@@ -1640,77 +1640,77 @@ export default function FinancePage() {
                             )
                         }
                     </motion.div>
+
+                    {/* Recent Transactions */}
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="relative overflow-hidden rounded-2xl p-6 bg-white/40 dark:bg-black/20 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-lg"
+                    >
+                        {/* Background gradients */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -z-10" />
+                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -z-10" />
+
+                        <h3 className="font-semibold mb-6 text-lg tracking-tight text-indigo-950 dark:text-white flex items-center gap-2">
+                            <History className="w-5 h-5 text-indigo-600" />
+                            {viewMode === "daily"
+                                ? `Transactions for ${formatDate(selectedDate)}`
+                                : viewMode === "all"
+                                    ? "All Transactions"
+                                    : `Transactions (${filteredEntries.length})`
+                            }
+                        </h3>
+                        <div className="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                            {isLoading ? (
+                                <p className="text-muted-foreground text-center py-8">Loading...</p>
+                            ) : filteredEntries.length === 0 ? (
+                                <div className="h-60 flex flex-col items-center justify-center text-center">
+                                    <div className="p-4 bg-indigo-100 dark:bg-indigo-900/30 rounded-full mb-3">
+                                        <CalendarX className="w-8 h-8 text-indigo-400/60" />
+                                    </div>
+                                    <p className="text-sm font-medium text-muted-foreground">No transactions found</p>
+                                    <p className="text-xs text-muted-foreground/60 mt-1">Transactions for this period will appear here</p>
+                                </div>
+                            ) : (
+                                filteredEntries.map((entry) => (
+                                    <div key={entry.id} className="group flex items-center justify-between p-3 rounded-xl bg-white/50 dark:bg-white/5 border border-white/20 hover:bg-white/80 dark:hover:bg-white/10 transition-all duration-300 shadow-sm">
+                                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                                            <div className={`p-2 rounded-full flex-shrink-0 ${entry.type === "income" ? "bg-green-500/10" : "bg-red-500/10"}`}>
+                                                {entry.type === "income" ? (
+                                                    <TrendingUp className="w-4 h-4 text-green-500" />
+                                                ) : (
+                                                    <TrendingDown className="w-4 h-4 text-red-500" />
+                                                )}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-sm font-semibold text-indigo-950 dark:text-indigo-100 truncate">{entry.category}</p>
+                                                {entry.description && (
+                                                    <p className="text-xs text-indigo-900/60 dark:text-indigo-300/60 truncate">{entry.description}</p>
+                                                )}
+                                                {!entry.description && (
+                                                    <p className="text-xs text-indigo-900/40 dark:text-indigo-300/40 italic">No description</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 flex-shrink-0">
+                                            <span className={`text-sm font-bold ${entry.type === "income" ? "text-green-500" : "text-red-500"}`}>
+                                                {entry.type === "income" ? "+" : "-"}৳{entry.amount.toLocaleString()}
+                                            </span>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-indigo-900/40 hover:text-red-500 hover:bg-red-500/10"
+                                                onClick={() => deleteEntry.mutate(entry.id)}
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </motion.div>
                 </div>
-
-                {/* Recent Transactions */}
-                <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="relative overflow-hidden rounded-2xl p-6 bg-white/40 dark:bg-black/20 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-lg"
-                >
-                    {/* Background gradients */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -z-10" />
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -z-10" />
-
-                    <h3 className="font-semibold mb-6 text-lg tracking-tight text-indigo-950 dark:text-white flex items-center gap-2">
-                        <History className="w-5 h-5 text-indigo-600" />
-                        {viewMode === "daily"
-                            ? `Transactions for ${formatDate(selectedDate)}`
-                            : viewMode === "all"
-                                ? "All Transactions"
-                                : `Transactions (${filteredEntries.length})`
-                        }
-                    </h3>
-                    <div className="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
-                        {isLoading ? (
-                            <p className="text-muted-foreground text-center py-8">Loading...</p>
-                        ) : filteredEntries.length === 0 ? (
-                            <div className="h-60 flex flex-col items-center justify-center text-center">
-                                <div className="p-4 bg-indigo-100 dark:bg-indigo-900/30 rounded-full mb-3">
-                                    <CalendarX className="w-8 h-8 text-indigo-400/60" />
-                                </div>
-                                <p className="text-sm font-medium text-muted-foreground">No transactions found</p>
-                                <p className="text-xs text-muted-foreground/60 mt-1">Transactions for this period will appear here</p>
-                            </div>
-                        ) : (
-                            filteredEntries.map((entry) => (
-                                <div key={entry.id} className="group flex items-center justify-between p-3 rounded-xl bg-white/50 dark:bg-white/5 border border-white/20 hover:bg-white/80 dark:hover:bg-white/10 transition-all duration-300 shadow-sm">
-                                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                                        <div className={`p-2 rounded-full flex-shrink-0 ${entry.type === "income" ? "bg-green-500/10" : "bg-red-500/10"}`}>
-                                            {entry.type === "income" ? (
-                                                <TrendingUp className="w-4 h-4 text-green-500" />
-                                            ) : (
-                                                <TrendingDown className="w-4 h-4 text-red-500" />
-                                            )}
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <p className="text-sm font-semibold text-indigo-950 dark:text-indigo-100 truncate">{entry.category}</p>
-                                            {entry.description && (
-                                                <p className="text-xs text-indigo-900/60 dark:text-indigo-300/60 truncate">{entry.description}</p>
-                                            )}
-                                            {!entry.description && (
-                                                <p className="text-xs text-indigo-900/40 dark:text-indigo-300/40 italic">No description</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2 flex-shrink-0">
-                                        <span className={`text-sm font-bold ${entry.type === "income" ? "text-green-500" : "text-red-500"}`}>
-                                            {entry.type === "income" ? "+" : "-"}৳{entry.amount.toLocaleString()}
-                                        </span>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-indigo-900/40 hover:text-red-500 hover:bg-red-500/10"
-                                            onClick={() => deleteEntry.mutate(entry.id)}
-                                        >
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </motion.div>
             </motion.div >
             {/* History Modal - Mobile Responsive */}
             <AnimatePresence>

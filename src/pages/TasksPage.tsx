@@ -483,12 +483,20 @@ export default function TasksPage() {
             >
                 {/* Header with DateStrip */}
                 <div className="flex flex-col gap-4">
-                    {/* Rollable Date Strip */}
-                    <DateStrip
-                        selectedDate={selectedDate}
-                        onSelectDate={setSelectedDate}
-                        taskCounts={dateStripCounts}
-                    />
+                    {/* Rollable Date Strip Container */}
+                    <div className="rounded-2xl border border-border/40 bg-card/60 backdrop-blur-sm shadow-sm p-4 relative overflow-hidden">
+                        {/* Subtle background glow */}
+                        <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
+                        <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-secondary/20 blur-3xl pointer-events-none" />
+
+                        <div className="relative z-10">
+                            <DateStrip
+                                selectedDate={selectedDate}
+                                onSelectDate={setSelectedDate}
+                                taskCounts={dateStripCounts}
+                            />
+                        </div>
+                    </div>
                 </div>
 
                 {/* Main Content */}
