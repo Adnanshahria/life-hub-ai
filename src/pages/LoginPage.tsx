@@ -215,82 +215,86 @@ export default function LoginPage() {
                         </div>
                     </div>
 
-                    {/* Form */}
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        {error && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -8 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="p-3.5 rounded-full bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center gap-2 px-5"
-                            >
-                                <div className="w-2 h-2 rounded-full bg-destructive shrink-0" />
-                                {error}
-                            </motion.div>
-                        )}
-
-                        <div className="space-y-2">
-                            <Label htmlFor="email" className="text-sm font-medium">Email</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                placeholder="you@example.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                autoComplete="email"
-                                className="h-12 rounded-full bg-secondary/30 border-border/50 focus:border-primary transition-colors px-5"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
-                                <Link to="/forgot-password" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors">
-                                    Forgot password?
-                                </Link>
-                            </div>
-                            <div className="relative">
-                                <Input
-                                    id="password"
-                                    type={showPassword ? "text" : "password"}
-                                    placeholder="••••••••"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    autoComplete="current-password"
-                                    className="h-12 pr-12 rounded-full bg-secondary/30 border-border/50 focus:border-primary transition-colors px-5"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-secondary/50"
+                    {/* Form Card */}
+                    <div className="rounded-3xl border border-border/60 bg-card/60 backdrop-blur-sm p-6 shadow-sm">
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            {error && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="p-3.5 rounded-full bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center gap-2 px-5"
                                 >
-                                    {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
-                                </button>
-                            </div>
-                        </div>
-
-                        <Button type="submit" className="w-full h-12 text-base rounded-full font-semibold group" disabled={isLoading}>
-                            {isLoading ? (
-                                <>
-                                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                                    Signing in...
-                                </>
-                            ) : (
-                                <>
-                                    Sign In
-                                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-0.5 transition-transform" />
-                                </>
+                                    <div className="w-2 h-2 rounded-full bg-destructive shrink-0" />
+                                    {error}
+                                </motion.div>
                             )}
-                        </Button>
-                    </form>
 
-                    <p className="mt-8 text-center text-sm text-muted-foreground">
-                        Don't have an account?{" "}
-                        <Link to="/register" className="text-primary hover:text-primary/80 font-semibold transition-colors">
-                            Create one
-                        </Link>
-                    </p>
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    placeholder="you@example.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                    autoComplete="email"
+                                    className="h-12 rounded-full bg-background border-border/50 focus:border-primary transition-colors px-5"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                                    <Link to="/forgot-password" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors">
+                                        Forgot password?
+                                    </Link>
+                                </div>
+                                <div className="relative">
+                                    <Input
+                                        id="password"
+                                        type={showPassword ? "text" : "password"}
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        autoComplete="current-password"
+                                        className="h-12 pr-12 rounded-full bg-background border-border/50 focus:border-primary transition-colors px-5"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-secondary/50"
+                                    >
+                                        {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <Button type="submit" className="w-full h-12 text-base rounded-full font-semibold group" disabled={isLoading}>
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                        Signing in...
+                                    </>
+                                ) : (
+                                    <>
+                                        Sign In
+                                        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-0.5 transition-transform" />
+                                    </>
+                                )}
+                            </Button>
+                        </form>
+                    </div>
+
+                    <div className="mt-5 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm py-4 px-6 text-center">
+                        <p className="text-sm text-muted-foreground">
+                            Don't have an account?{" "}
+                            <Link to="/register" className="text-primary hover:text-primary/80 font-semibold transition-colors">
+                                Create one
+                            </Link>
+                        </p>
+                    </div>
                 </motion.div>
             </div>
         </div>

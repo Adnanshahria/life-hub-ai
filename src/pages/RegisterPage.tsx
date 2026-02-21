@@ -231,121 +231,125 @@ export default function RegisterPage() {
                         </div>
                     </div>
 
-                    {/* Form */}
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        {error && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -8 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="p-3.5 rounded-full bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center gap-2 px-5"
-                            >
-                                <div className="w-2 h-2 rounded-full bg-destructive shrink-0" />
-                                {error}
-                            </motion.div>
-                        )}
+                    {/* Form Card */}
+                    <div className="rounded-3xl border border-border/60 bg-card/60 backdrop-blur-sm p-6 shadow-sm">
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            {error && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="p-3.5 rounded-full bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center gap-2 px-5"
+                                >
+                                    <div className="w-2 h-2 rounded-full bg-destructive shrink-0" />
+                                    {error}
+                                </motion.div>
+                            )}
 
-                        <div className="space-y-2">
-                            <Label htmlFor="name" className="text-sm font-medium">Full Name</Label>
-                            <Input
-                                id="name"
-                                type="text"
-                                placeholder="Adnan Shahria"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                required
-                                autoComplete="name"
-                                className="h-12 rounded-full bg-secondary/30 border-border/50 focus:border-primary transition-colors px-5"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="email" className="text-sm font-medium">Email</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                placeholder="you@example.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                autoComplete="email"
-                                className="h-12 rounded-full bg-secondary/30 border-border/50 focus:border-primary transition-colors px-5"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="password" className="text-sm font-medium">Password</Label>
-                            <div className="relative">
+                            <div className="space-y-2">
+                                <Label htmlFor="name" className="text-sm font-medium">Full Name</Label>
                                 <Input
-                                    id="password"
+                                    id="name"
+                                    type="text"
+                                    placeholder="Adnan Shahria"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    required
+                                    autoComplete="name"
+                                    className="h-12 rounded-full bg-background border-border/50 focus:border-primary transition-colors px-5"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    placeholder="you@example.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                    autoComplete="email"
+                                    className="h-12 rounded-full bg-background border-border/50 focus:border-primary transition-colors px-5"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                                <div className="relative">
+                                    <Input
+                                        id="password"
+                                        type={showPassword ? "text" : "password"}
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        autoComplete="new-password"
+                                        className="h-12 pr-12 rounded-full bg-background border-border/50 focus:border-primary transition-colors px-5"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-secondary/50"
+                                    >
+                                        {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</Label>
+                                <Input
+                                    id="confirmPassword"
                                     type={showPassword ? "text" : "password"}
                                     placeholder="••••••••"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
                                     required
                                     autoComplete="new-password"
-                                    className="h-12 pr-12 rounded-full bg-secondary/30 border-border/50 focus:border-primary transition-colors px-5"
+                                    className="h-12 rounded-full bg-background border-border/50 focus:border-primary transition-colors px-5"
                                 />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-secondary/50"
-                                >
-                                    {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
-                                </button>
                             </div>
-                        </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</Label>
-                            <Input
-                                id="confirmPassword"
-                                type={showPassword ? "text" : "password"}
-                                placeholder="••••••••"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                required
-                                autoComplete="new-password"
-                                className="h-12 rounded-full bg-secondary/30 border-border/50 focus:border-primary transition-colors px-5"
-                            />
-                        </div>
-
-                        {/* Password Strength Indicators */}
-                        {password && (
-                            <div className="space-y-1.5 pt-1">
-                                <div className={`flex items-center gap-2 text-sm ${passwordChecks.length ? "text-emerald-500" : "text-muted-foreground"}`}>
-                                    {passwordChecks.length ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
-                                    <span>At least 6 characters</span>
-                                </div>
-                                {confirmPassword && (
-                                    <div className={`flex items-center gap-2 text-sm ${passwordChecks.match ? "text-emerald-500" : "text-red-400"}`}>
-                                        {passwordChecks.match ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
-                                        <span>Passwords match</span>
+                            {/* Password Strength Indicators */}
+                            {password && (
+                                <div className="space-y-1.5 pt-1">
+                                    <div className={`flex items-center gap-2 text-sm ${passwordChecks.length ? "text-emerald-500" : "text-muted-foreground"}`}>
+                                        {passwordChecks.length ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
+                                        <span>At least 6 characters</span>
                                     </div>
-                                )}
-                            </div>
-                        )}
-
-                        <Button type="submit" className="w-full h-12 text-base rounded-full font-semibold group mt-2" disabled={isLoading || !canSubmit}>
-                            {isLoading ? (
-                                <>
-                                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                                    Creating account...
-                                </>
-                            ) : (
-                                <>
-                                    Create Account
-                                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-0.5 transition-transform" />
-                                </>
+                                    {confirmPassword && (
+                                        <div className={`flex items-center gap-2 text-sm ${passwordChecks.match ? "text-emerald-500" : "text-red-400"}`}>
+                                            {passwordChecks.match ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
+                                            <span>Passwords match</span>
+                                        </div>
+                                    )}
+                                </div>
                             )}
-                        </Button>
-                    </form>
 
-                    <p className="mt-8 text-center text-sm text-muted-foreground">
-                        Already have an account?{" "}
-                        <Link to="/login" className="text-primary hover:text-primary/80 font-semibold transition-colors">
-                            Sign in
-                        </Link>
-                    </p>
+                            <Button type="submit" className="w-full h-12 text-base rounded-full font-semibold group mt-2" disabled={isLoading || !canSubmit}>
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                        Creating account...
+                                    </>
+                                ) : (
+                                    <>
+                                        Create Account
+                                        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-0.5 transition-transform" />
+                                    </>
+                                )}
+                            </Button>
+                        </form>
+                    </div>
+
+                    <div className="mt-5 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm py-4 px-6 text-center">
+                        <p className="text-sm text-muted-foreground">
+                            Already have an account?{" "}
+                            <Link to="/login" className="text-primary hover:text-primary/80 font-semibold transition-colors">
+                                Sign in
+                            </Link>
+                        </p>
+                    </div>
                 </motion.div>
             </div>
         </div>
