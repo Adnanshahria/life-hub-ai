@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Google Fonts loaded via <link> in index.html for better performance */
 
 @tailwind base;
 @tailwind components;
@@ -172,6 +172,8 @@
     @apply relative backdrop-blur-xl border-2 rounded-xl;
     background: hsl(var(--glass-bg));
     border-color: hsl(var(--glass-border));
+    contain: layout style;
+    will-change: transform;
     box-shadow:
       0 4px 24px -4px rgba(0, 0, 0, 0.15),
       0 0 0 1px hsl(var(--glass-border)),

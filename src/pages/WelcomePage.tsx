@@ -165,7 +165,7 @@ export default function WelcomePage() {
     ];
 
     return (
-        <div className="min-h-screen bg-background overflow-hidden">
+        <main className="min-h-screen bg-background overflow-hidden">
             <SEO title="Welcome to LifeSolver" description="Your AI-powered personal operating system. Manage tasks, finances, studies, habits, and more — all in one place." />
 
             {/* ===== SNOWFALL (Dark Mode Only) ===== */}
@@ -840,6 +840,6 @@ export default function WelcomePage() {
                     </p>
                 </div >
             </footer >
-        </div >
+        </main >
     );
 }
