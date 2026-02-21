@@ -9,9 +9,14 @@ import { sendOtpEmail } from "./smtpService.js";
 import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Load .env logically depending on if we are in the api directory locally
-dotenv.config({ path: join(process.cwd(), ".env") });
-
+// Only load .env locally. Vercel automatically injects environment variables.
+if (process.env.NODE_ENV !== 'production') {
+    try {
+        dotenv.config({ path: join(process.cwd(), ".env") });
+    } catch (e) {
+        // Ignore errors in production
+    }
+}
 const app = express();
 app.use(cors());
 app.use(express.json());
