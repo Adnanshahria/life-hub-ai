@@ -157,7 +157,7 @@ export default function RegisterPage() {
             </div>
 
             {/* Right Form Panel */}
-            <div className="flex-1 flex items-center justify-center p-6 sm:p-8 relative overflow-y-auto">
+            <div className="flex-1 flex items-start lg:items-center justify-center px-4 py-6 sm:p-8 relative overflow-y-auto min-h-screen lg:min-h-0" style={{ paddingBottom: 'env(safe-area-inset-bottom, 16px)', paddingTop: 'env(safe-area-inset-top, 16px)' }}>
                 {/* Mobile-only background blobs */}
                 <div className="lg:hidden fixed inset-0 overflow-hidden pointer-events-none">
                     <div className="absolute top-1/4 right-1/4 w-80 h-80 bg-primary/15 rounded-full blur-3xl" />
@@ -168,30 +168,33 @@ export default function RegisterPage() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="w-full max-w-[420px] relative z-10 my-auto"
+                    className="w-full max-w-[420px] relative z-10 my-auto py-2"
                 >
-                    {/* Mobile Logo */}
-                    <div className="lg:hidden text-center mb-8">
-                        <motion.div
-                            initial={{ scale: 0.8 }}
-                            animate={{ scale: 1 }}
-                            className="inline-flex items-center gap-2.5 mb-3"
-                        >
-                            <div className="w-11 h-11 rounded-xl bg-gradient-primary flex items-center justify-center shadow-lg shadow-primary/30">
-                                <Sparkles className="w-6 h-6 text-white" />
-                            </div>
-                            <span className="text-3xl font-bold text-gradient">LifeSolver</span>
-                        </motion.div>
+                    {/* Header Card */}
+                    <div className="rounded-2xl sm:rounded-3xl border border-violet-300/60 dark:border-violet-500/30 bg-card/60 backdrop-blur-sm p-4 sm:p-6 shadow-sm mb-3 sm:mb-4">
+                        {/* Mobile Logo */}
+                        <div className="lg:hidden text-center mb-4 sm:mb-5">
+                            <motion.div
+                                initial={{ scale: 0.8 }}
+                                animate={{ scale: 1 }}
+                                className="inline-flex items-center gap-2.5 mb-3"
+                            >
+                                <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-sm">
+                                    <img src="/logo.svg" alt="LifeSolver" className="w-7 h-7 object-contain" />
+                                </div>
+                                <span className="text-2xl sm:text-3xl font-bold text-blue-800 dark:text-blue-400">LifeSolver</span>
+                            </motion.div>
+                        </div>
+
+                        {/* Title */}
+                        <div>
+                            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">Create account</h1>
+                            <p className="text-muted-foreground mt-1 sm:mt-1.5 text-sm sm:text-base">Fill in your details to get started.</p>
+                        </div>
                     </div>
 
-                    {/* Header */}
-                    <div className="mb-8">
-                        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Create account</h1>
-                        <p className="text-muted-foreground mt-1.5">Fill in your details to get started.</p>
-                    </div>
-
-                    {/* Google Button — custom pill overlay */}
-                    <div className="mb-6">
+                    {/* Google Card */}
+                    <div className="rounded-2xl sm:rounded-3xl border border-violet-300/60 dark:border-violet-500/30 bg-card/60 backdrop-blur-sm p-4 sm:p-5 shadow-sm mb-3 sm:mb-4">
                         <div className="relative h-12 w-full rounded-full overflow-hidden">
                             {/* Custom visual button */}
                             <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center gap-3 rounded-full bg-foreground text-background font-semibold text-sm border border-border/20 shadow-sm">
@@ -220,9 +223,9 @@ export default function RegisterPage() {
                     </div>
 
                     {/* Divider */}
-                    <div className="relative mb-6">
+                    <div className="relative mb-3 sm:mb-5">
                         <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t border-border" />
+                            <span className="w-full border-t border-violet-200/60 dark:border-violet-500/20" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
                             <span className="bg-background px-3 text-muted-foreground font-medium tracking-wider">
@@ -232,8 +235,8 @@ export default function RegisterPage() {
                     </div>
 
                     {/* Form Card */}
-                    <div className="rounded-3xl border border-border/60 bg-card/60 backdrop-blur-sm p-6 shadow-sm">
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="rounded-2xl sm:rounded-3xl border border-violet-300/60 dark:border-violet-500/30 bg-card/60 backdrop-blur-sm p-4 sm:p-6 shadow-sm">
+                        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
                             {error && (
                                 <motion.div
                                     initial={{ opacity: 0, y: -8 }}
@@ -255,7 +258,7 @@ export default function RegisterPage() {
                                     onChange={(e) => setName(e.target.value)}
                                     required
                                     autoComplete="name"
-                                    className="h-12 rounded-full bg-background border-border/50 focus:border-primary transition-colors px-5"
+                                    className="h-11 sm:h-12 rounded-full bg-background border-border/50 focus:border-primary transition-colors px-4 sm:px-5 text-sm sm:text-base"
                                 />
                             </div>
 
@@ -269,7 +272,7 @@ export default function RegisterPage() {
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
                                     autoComplete="email"
-                                    className="h-12 rounded-full bg-background border-border/50 focus:border-primary transition-colors px-5"
+                                    className="h-11 sm:h-12 rounded-full bg-background border-border/50 focus:border-primary transition-colors px-4 sm:px-5 text-sm sm:text-base"
                                 />
                             </div>
 
@@ -284,7 +287,7 @@ export default function RegisterPage() {
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
                                         autoComplete="new-password"
-                                        className="h-12 pr-12 rounded-full bg-background border-border/50 focus:border-primary transition-colors px-5"
+                                        className="h-11 sm:h-12 pr-12 rounded-full bg-background border-border/50 focus:border-primary transition-colors px-4 sm:px-5 text-sm sm:text-base"
                                     />
                                     <button
                                         type="button"
@@ -306,7 +309,7 @@ export default function RegisterPage() {
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     required
                                     autoComplete="new-password"
-                                    className="h-12 rounded-full bg-background border-border/50 focus:border-primary transition-colors px-5"
+                                    className="h-11 sm:h-12 rounded-full bg-background border-border/50 focus:border-primary transition-colors px-4 sm:px-5 text-sm sm:text-base"
                                 />
                             </div>
 
@@ -326,7 +329,7 @@ export default function RegisterPage() {
                                 </div>
                             )}
 
-                            <Button type="submit" className="w-full h-12 text-base rounded-full font-semibold group mt-2" disabled={isLoading || !canSubmit}>
+                            <Button type="submit" className="w-full h-11 sm:h-12 text-sm sm:text-base rounded-full font-semibold group mt-1 sm:mt-2 bg-blue-800 hover:bg-blue-900 text-white" disabled={isLoading || !canSubmit}>
                                 {isLoading ? (
                                     <>
                                         <Loader2 className="w-5 h-5 mr-2 animate-spin" />
@@ -342,13 +345,11 @@ export default function RegisterPage() {
                         </form>
                     </div>
 
-                    <div className="mt-5 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm py-4 px-6 text-center">
-                        <p className="text-sm text-muted-foreground">
-                            Already have an account?{" "}
-                            <Link to="/login" className="text-primary hover:text-primary/80 font-semibold transition-colors">
-                                Sign in
-                            </Link>
-                        </p>
+                    <div className="flex justify-center mt-3 sm:mt-5">
+                        <Link to="/login" className="inline-flex items-center gap-2 sm:gap-2.5 rounded-full bg-blue-800 hover:bg-blue-900 py-2.5 sm:py-3 px-4 sm:px-5 text-xs sm:text-sm font-medium text-white/80 transition-colors shadow-sm">
+                            Already have an account?
+                            <span className="bg-white text-blue-800 font-semibold px-3 py-1 rounded-full text-xs">Sign in</span>
+                        </Link>
                     </div>
                 </motion.div>
             </div>
