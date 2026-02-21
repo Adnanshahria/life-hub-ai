@@ -645,32 +645,32 @@ export function AIChatInterface() {
 
             const contextString = `
 [SYSTEM CONTEXT - GOD MODE - OMNISCIENT]
-â° Current Time: ${hour}:${String(minute).padStart(2, '0')} (${timePeriod})
-ðŸ“… Day: ${dayOfWeek}, ${now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-ðŸ“ Current Page: ${window.location.pathname}
-ðŸ“ Page Context: ${pageContext}
+⏰ Current Time: ${hour}:${String(minute).padStart(2, '0')} (${timePeriod})
+📅 Day: ${dayOfWeek}, ${now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+📍 Current Page: ${window.location.pathname}
+🔍 Page Context: ${pageContext}
 
-â•â•â• TASKS (${activeTasks.length} active) â•â•â•
-ðŸ”´ OVERDUE (${overdueTasks.length}): ${overdueTasks.map(t => `"${t.title}" (was due ${t.due_date})`).join(', ') || 'None'}
-ðŸŸ¡ DUE TODAY (${todayTasks.length}): ${todayTasks.map(t => `"${t.title}" [${t.priority}]`).join(', ') || 'None'}
-ðŸ”¥ URGENT/HIGH: ${urgentTasks.map(t => `"${t.title}" (due ${t.due_date || 'no date'})`).join(', ') || 'None'}
+═══ TASKS (${activeTasks.length} active) ═══
+🔴 OVERDUE (${overdueTasks.length}): ${overdueTasks.map(t => `"${t.title}" (was due ${t.due_date})`).join(', ') || 'None'}
+🟡 DUE TODAY (${todayTasks.length}): ${todayTasks.map(t => `"${t.title}" [${t.priority}]`).join(', ') || 'None'}
+🔥 URGENT/HIGH: ${urgentTasks.map(t => `"${t.title}" (due ${t.due_date || 'no date'})`).join(', ') || 'None'}
 All Active:
-${activeTasks.map(t => `- [${t.priority?.toUpperCase()}] ${t.title} (Due: ${t.due_date || 'none'}) [${t.context_type || 'general'}]${t.start_time ? ` â°${t.start_time}-${t.end_time}` : ''}`).join('\n') || '(no active tasks)'}
+${activeTasks.map(t => `- [${t.priority?.toUpperCase()}] ${t.title} (Due: ${t.due_date || 'none'}) [${t.context_type || 'general'}]${t.start_time ? ` ⏰${t.start_time}-${t.end_time}` : ''}`).join('\n') || '(no active tasks)'}
 Recently Completed: ${completedTasks.slice(0, 5).map(t => t.title).join(', ') || 'None'}
 
-â•â•â• HABITS (${completedHabits.length}/${habitsData.length} done today) â•â•â•
-âœ… Completed: ${completedHabits.map(h => `${h.name} (streak: ${h.streak})`).join(', ') || 'None yet'}
-â³ Pending: ${pendingHabits.map(h => `${h.name} (streak: ${h.streak}${h.streak >= 3 ? ' ðŸ”¥' : ''})`).join(', ') || 'All done!'}
+═══ HABITS (${completedHabits.length}/${habitsData.length} done today) ═══
+✅ Completed: ${completedHabits.map(h => `${h.name} (streak: ${h.streak})`).join(', ') || 'None yet'}
+⏳ Pending: ${pendingHabits.map(h => `${h.name} (streak: ${h.streak}${h.streak >= 3 ? ' 🔥' : ''})`).join(', ') || 'All done!'}
 
-â•â•â• FINANCE â•â•â•
-ðŸ’° Balance: à§³${balance} (Income: à§³${totalIncome}, Expenses: à§³${totalExpense})
-ðŸ“Š Today's Spending: à§³${todaySpending}
+═══ FINANCE ═══
+💰 Balance: BDT ${balance} (Income: BDT ${totalIncome}, Expenses: BDT ${totalExpense})
+📊 Today's Spending: BDT ${todaySpending}
 Recent 10 Transactions:
-${expenses?.slice(0, 10).map(t => `- ${t.date || 'N/A'}: ${t.type?.toUpperCase()} à§³${t.amount} (${t.category}) "${t.description}"`).join('\n') || '(no transactions)'}
-Budgets: ${budgets?.filter(b => b.type === 'budget').map(b => `${b.name}: à§³${b.target_amount}/${b.period}`).join(', ') || 'None'}
-Savings: ${savingsGoals?.map(s => `${s.name}: à§³${s.current_amount}/à§³${s.target_amount}`).join(', ') || 'None'}
+${expenses?.slice(0, 10).map(t => `- ${t.date || 'N/A'}: ${t.type?.toUpperCase()} BDT ${t.amount} (${t.category}) "${t.description}"`).join('\n') || '(no transactions)'}
+Budgets: ${budgets?.filter(b => b.type === 'budget').map(b => `${b.name}: BDT ${b.target_amount}/${b.period}`).join(', ') || 'None'}
+Savings: ${savingsGoals?.map(s => `${s.name}: BDT ${s.current_amount}/BDT ${s.target_amount}`).join(', ') || 'None'}
 
-â•â•â• STUDY â•â•â•
+═══ STUDY ═══
 ${subjects?.map(s => {
                 const sChapters = chapters?.filter(c => c.subject_id === s.id) || [];
                 const sParts = parts?.filter(p => sChapters.some(c => c.id === p.chapter_id)) || [];
@@ -679,11 +679,11 @@ ${subjects?.map(s => {
             }).join('\n') || '(no study data)'}
 Available Presets (Sub-Chapters): ${commonPresets?.filter(p => !p.parent_id).map(p => p.name).join(', ') || 'None'}
 
-â•â•â• NOTES (${notesData.length} total) â•â•â•
-${notesData.map(n => `- "${n.title}" [${n.tags || 'no tags'}]${n.checklist ? ` â˜‘ï¸${n.checklist}` : ''} â†’ ${n.preview.replace(/\n/g, ' ').substring(0, 80)}...`).join('\n') || '(no notes)'}
+═══ NOTES (${notesData.length} total) ═══
+${notesData.map(n => `- "${n.title}" [${n.tags || 'no tags'}]${n.checklist ? ` ✅${n.checklist}` : ''} → ${n.preview.replace(/\n/g, ' ').substring(0, 80)}...`).join('\n') || '(no notes)'}
 
-â•â•â• INVENTORY â•â•â•
-${items?.map(i => `- ${i.item_name} (x${i.quantity}) [${i.category || 'uncategorized'}] ${i.status === 'sold' ? '(SOLD)' : ''} ${i.cost ? `à§³${i.cost}` : ''}`).join('\n') || '(no items)'}
+═══ INVENTORY ═══
+${items?.map(i => `- ${i.item_name} (x${i.quantity}) [${i.category || 'uncategorized'}] ${i.status === 'sold' ? '(SOLD)' : ''} ${i.cost ? `BDT ${i.cost}` : ''}`).join('\n') || '(no items)'}
 `;
 
             // Process with history and context
