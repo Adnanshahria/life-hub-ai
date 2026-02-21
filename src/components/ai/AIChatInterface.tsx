@@ -801,7 +801,7 @@ ${items?.map(i => `- ${i.item_name} (x${i.quantity}) [${i.category || 'uncategor
                                             <span className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">ONLINE</span>
                                         </div>
                                     </div>
-                                    <div className="flex items-center">
+                                    <div className="flex items-center relative">
                                         <div className="flex items-center gap-1 px-2.5 py-1.5 border border-border/50 rounded-full">
                                             <button onClick={() => setShowMenu(!showMenu)} className="hover:bg-secondary/50 rounded-full p-0.5 transition-colors">
                                                 <MoreVertical className="w-4 h-4 text-muted-foreground" />
@@ -810,30 +810,26 @@ ${items?.map(i => `- ${i.item_name} (x${i.quantity}) [${i.category || 'uncategor
                                                 <ChevronDown className="w-4 h-4 text-muted-foreground" />
                                             </button>
                                         </div>
+
+                                        {/* Native Context Menu Dropdown */}
+                                        {showMenu && (
+                                            <>
+                                                {/* Click-away backdrop */}
+                                                <div className="fixed inset-0 z-[200]" onClick={() => setShowMenu(false)} />
+                                                {/* Menu */}
+                                                <div className="absolute top-full right-0 mt-2 z-[210] bg-background border border-border/50 rounded-xl shadow-xl min-w-[180px] py-1.5 overflow-hidden">
+                                                    <button
+                                                        onClick={clearConversation}
+                                                        className="flex items-center gap-2.5 w-full py-2.5 px-4 text-red-500 hover:bg-red-500/10 transition-colors text-[13px] font-medium"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                        Clear Conversation
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
-
-                                {/* Dropdown Menu */}
-                                <AnimatePresence>
-                                    {showMenu && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: -10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -10 }}
-                                            transition={{ duration: 0.15 }}
-                                            className="absolute top-[60px] left-0 right-0 z-[210] bg-background border-b border-border/30 shadow-lg px-5 py-3"
-                                        >
-                                            {/* Clear Conversation */}
-                                            <button
-                                                onClick={clearConversation}
-                                                className="flex items-center gap-2 w-full py-2 px-1 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                                <span className="text-xs font-semibold">Clear Conversation</span>
-                                            </button>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
 
                                 {/* Messages Area */}
                                 <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
