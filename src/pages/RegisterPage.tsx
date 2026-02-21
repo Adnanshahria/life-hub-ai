@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Loader2, Eye, EyeOff, Sparkles, Check, X, ArrowRight, Rocket, Star, Users } from "lucide-react";
+import { Loader2, Eye, EyeOff, Sparkles, Check, X, ArrowRight, Rocket, Star, Users, Cloud, Database, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -81,23 +81,31 @@ export default function RegisterPage() {
 
             {/* Left Branding Panel — hidden on mobile */}
             <div className="hidden lg:flex lg:w-[45%] xl:w-[50%] relative overflow-hidden flex-col justify-between p-10">
-                {/* Animated gradient background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-primary to-blue-600" />
+                {/* Dark cosmic gradient background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900" />
+
+                {/* Subtle dot pattern */}
+                <div className="absolute inset-0 opacity-[0.06]" style={{
+                    backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px)',
+                    backgroundSize: '24px 24px'
+                }} />
+
+                {/* Floating orbs */}
                 <div className="absolute inset-0">
                     <motion.div
                         animate={{ x: [0, -30, 0], y: [0, 20, 0] }}
-                        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute top-16 right-20 w-80 h-80 bg-white/10 rounded-full blur-3xl"
+                        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute top-16 right-20 w-72 h-72 bg-emerald-500/15 rounded-full blur-[100px]"
                     />
                     <motion.div
                         animate={{ x: [0, 20, 0], y: [0, -30, 0] }}
-                        transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute bottom-24 left-10 w-96 h-96 bg-white/5 rounded-full blur-3xl"
+                        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute bottom-24 left-10 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px]"
                     />
                     <motion.div
-                        animate={{ scale: [1, 1.15, 1] }}
-                        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute top-1/2 left-1/3 w-56 h-56 bg-white/10 rounded-full blur-2xl"
+                        animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.5, 0.2] }}
+                        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute top-1/2 left-1/2 w-56 h-56 bg-teal-500/10 rounded-full blur-[80px]"
                     />
                 </div>
 
@@ -109,50 +117,152 @@ export default function RegisterPage() {
                         transition={{ delay: 0.2 }}
                         className="flex items-center gap-3"
                     >
-                        <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
+                        <div className="w-11 h-11 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-lg shadow-emerald-500/10">
                             <img src="/logo.svg" alt="LifeSolver" className="w-7 h-7" />
                         </div>
                         <span className="text-2xl font-bold text-white tracking-tight">LifeSolver</span>
                     </motion.div>
                 </div>
 
-                <div className="relative z-10 space-y-8">
+                {/* Main visual area */}
+                <div className="relative z-10 flex-1 flex flex-col justify-center -mt-6">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
+                        transition={{ delay: 0.3 }}
                     >
-                        <h2 className="text-4xl xl:text-5xl font-bold text-white leading-tight">
-                            Start organizing<br />
-                            <span className="text-white/80">your life today.</span>
+                        <p className="text-emerald-300/80 text-sm font-semibold uppercase tracking-[0.2em] mb-3">Get started free</p>
+                        <h2 className="text-4xl xl:text-5xl font-bold text-white leading-[1.15] mb-4">
+                            One app for<br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-400 to-blue-400">your entire life.</span>
                         </h2>
-                        <p className="text-white/60 text-lg mt-4 max-w-md">
-                            Join LifeSolver and let AI handle the complexity. Focus on what matters most to you.
+                        <p className="text-white/50 text-base max-w-sm leading-relaxed">
+                            Tasks, finances, notes, and AI — beautifully unified.
                         </p>
                     </motion.div>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6 }}
-                        className="flex gap-6"
-                    >
-                        {highlights.map((f, i) => (
-                            <div key={i} className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
-                                    <f.icon className="w-5 h-5 text-white" />
-                                </div>
-                                <div>
-                                    <p className="text-white text-sm font-semibold">{f.title}</p>
-                                    <p className="text-white/50 text-xs">{f.desc}</p>
-                                </div>
+                    {/* Orbital Ring System */}
+                    <div className="mt-10 relative w-full max-w-[420px] h-[300px]">
+                        {/* Orbital rings */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] h-[240px]">
+                            <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                                className="absolute inset-0 rounded-full border border-white/10"
+                            />
+                            <motion.div
+                                animate={{ rotate: -360 }}
+                                transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
+                                className="absolute inset-[-30px] rounded-full border border-white/[0.06] border-dashed"
+                            />
+                            <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
+                                className="absolute inset-[-60px] rounded-full border border-white/[0.04]"
+                            />
+                        </div>
+
+                        {/* Center brain node */}
+                        <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: 0.5, type: "spring", stiffness: 200, damping: 15 }}
+                            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 z-30"
+                        >
+                            <div className="relative w-full h-full bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-900/50 border border-emerald-400/30">
+                                <Brain className="w-7 h-7 text-white" />
                             </div>
-                        ))}
-                    </motion.div>
+                            <motion.div
+                                animate={{ scale: [1, 1.4, 1], opacity: [0.4, 0, 0.4] }}
+                                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                className="absolute inset-0 rounded-2xl border-2 border-emerald-400/40"
+                            />
+                        </motion.div>
+
+                        {/* Orbiting Nodes */}
+                        {[
+                            { icon: Check, label: "Tasks", color: "from-blue-500 to-indigo-600", border: "border-blue-400/30", shadow: "shadow-blue-900/50", angle: 0, radius: 120, delay: 0.8 },
+                            { icon: Database, label: "Finance", color: "from-emerald-500 to-green-600", border: "border-emerald-400/30", shadow: "shadow-emerald-900/50", angle: 120, radius: 120, delay: 1.0 },
+                            { icon: Sparkles, label: "Notes", color: "from-amber-500 to-orange-600", border: "border-amber-400/30", shadow: "shadow-amber-900/50", angle: 240, radius: 120, delay: 1.2 },
+                        ].map((node, i) => {
+                            const x = Math.cos((node.angle * Math.PI) / 180) * node.radius;
+                            const y = Math.sin((node.angle * Math.PI) / 180) * node.radius;
+                            return (
+                                <motion.div
+                                    key={i}
+                                    initial={{ opacity: 0, scale: 0 }}
+                                    animate={{ opacity: 1, scale: 1, y: [0, -4, 0] }}
+                                    transition={{
+                                        opacity: { delay: node.delay, duration: 0.5 },
+                                        scale: { delay: node.delay, type: "spring", stiffness: 200 },
+                                        y: { duration: 3 + i, repeat: Infinity, ease: "easeInOut", delay: node.delay + 0.5 }
+                                    }}
+                                    className="absolute z-20"
+                                    style={{
+                                        top: `calc(50% + ${y}px - 24px)`,
+                                        left: `calc(50% + ${x}px - 24px)`,
+                                    }}
+                                >
+                                    <div className={`w-12 h-12 bg-gradient-to-br ${node.color} rounded-xl flex items-center justify-center shadow-lg ${node.shadow} border ${node.border}`}>
+                                        <node.icon className="w-5 h-5 text-white" />
+                                    </div>
+                                    <p className="text-white/60 text-[10px] font-semibold text-center mt-1.5 uppercase tracking-wider">{node.label}</p>
+                                </motion.div>
+                            );
+                        })}
+
+                        {/* Animated connection lines */}
+                        <svg className="absolute inset-0 w-full h-full z-10 pointer-events-none">
+                            {[0, 120, 240].map((angle, i) => {
+                                const x = Math.cos((angle * Math.PI) / 180) * 120;
+                                const y = Math.sin((angle * Math.PI) / 180) * 120;
+                                return (
+                                    <motion.line
+                                        key={i}
+                                        x1="50%" y1="50%"
+                                        x2={`calc(50% + ${x}px)`} y2={`calc(50% + ${y}px)`}
+                                        stroke="rgba(255,255,255,0.08)" strokeWidth="1"
+                                        strokeDasharray="4 4"
+                                        initial={{ pathLength: 0 }}
+                                        animate={{ pathLength: 1 }}
+                                        transition={{ delay: 1.5 + i * 0.2, duration: 1 }}
+                                    />
+                                );
+                            })}
+                        </svg>
+
+                        {/* Floating feature pills */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 30 }}
+                            animate={{ opacity: 1, x: 0, y: [0, -4, 0] }}
+                            transition={{ opacity: { delay: 1.8 }, y: { duration: 4, repeat: Infinity, ease: "easeInOut", delay: 2 } }}
+                            className="absolute -right-2 top-8 bg-white/10 backdrop-blur-md border border-white/15 rounded-full px-3 py-1.5 shadow-lg"
+                        >
+                            <p className="text-white/70 text-[10px] font-semibold">🚀 Set up in 2 min</p>
+                        </motion.div>
+
+                        <motion.div
+                            initial={{ opacity: 0, x: -30 }}
+                            animate={{ opacity: 1, x: 0, y: [0, 5, 0] }}
+                            transition={{ opacity: { delay: 2.2 }, y: { duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2.5 } }}
+                            className="absolute -left-2 bottom-12 bg-white/10 backdrop-blur-md border border-white/15 rounded-full px-3 py-1.5 shadow-lg"
+                        >
+                            <p className="text-white/70 text-[10px] font-semibold">⭐ Free forever</p>
+                        </motion.div>
+
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: [0, -3, 0] }}
+                            transition={{ opacity: { delay: 2.5 }, y: { duration: 6, repeat: Infinity, ease: "easeInOut", delay: 3 } }}
+                            className="absolute right-4 bottom-0 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-full px-3 py-1.5 shadow-lg shadow-emerald-900/50 border border-emerald-400/20"
+                        >
+                            <p className="text-white text-[10px] font-semibold">👥 1K+ Users</p>
+                        </motion.div>
+                    </div>
                 </div>
 
                 <div className="relative z-10">
-                    <p className="text-white/40 text-sm">© 2026 LifeSolver. All rights reserved.</p>
+                    <p className="text-white/30 text-sm">© 2026 LifeSolver. All rights reserved.</p>
                 </div>
             </div>
 
@@ -353,6 +463,6 @@ export default function RegisterPage() {
                     </div>
                 </motion.div>
             </div>
-        </div>
+        </div >
     );
 }

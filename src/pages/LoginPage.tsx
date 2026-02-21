@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Loader2, Eye, EyeOff, Sparkles, ArrowRight, Shield, Zap, Brain } from "lucide-react";
+import { Loader2, Eye, EyeOff, Sparkles, ArrowRight, Shield, Zap, Brain, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,23 +65,31 @@ export default function LoginPage() {
 
             {/* Left Branding Panel — hidden on mobile */}
             <div className="hidden lg:flex lg:w-[45%] xl:w-[50%] relative overflow-hidden flex-col justify-between p-10">
-                {/* Animated gradient background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/80 to-blue-600" />
+                {/* Dark premium gradient background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-violet-950 to-slate-900" />
+
+                {/* Subtle grid pattern */}
+                <div className="absolute inset-0 opacity-[0.04]" style={{
+                    backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+                    backgroundSize: '40px 40px'
+                }} />
+
+                {/* Floating orbs */}
                 <div className="absolute inset-0">
                     <motion.div
-                        animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
+                        animate={{ x: [0, 40, 0], y: [0, -30, 0] }}
+                        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute top-20 left-20 w-64 h-64 bg-violet-500/20 rounded-full blur-[100px]"
+                    />
+                    <motion.div
+                        animate={{ x: [0, -30, 0], y: [0, 40, 0] }}
+                        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute bottom-20 right-10 w-80 h-80 bg-blue-500/15 rounded-full blur-[100px]"
+                    />
+                    <motion.div
+                        animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
                         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute top-20 left-20 w-72 h-72 bg-white/10 rounded-full blur-3xl"
-                    />
-                    <motion.div
-                        animate={{ x: [0, -20, 0], y: [0, 30, 0] }}
-                        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute bottom-20 right-10 w-96 h-96 bg-white/5 rounded-full blur-3xl"
-                    />
-                    <motion.div
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/10 rounded-full blur-2xl"
+                        className="absolute top-1/2 left-1/3 w-48 h-48 bg-fuchsia-500/10 rounded-full blur-[80px]"
                     />
                 </div>
 
@@ -93,50 +101,177 @@ export default function LoginPage() {
                         transition={{ delay: 0.2 }}
                         className="flex items-center gap-3"
                     >
-                        <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
+                        <div className="w-11 h-11 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-lg shadow-violet-500/10">
                             <img src="/logo.svg" alt="LifeSolver" className="w-7 h-7" />
                         </div>
                         <span className="text-2xl font-bold text-white tracking-tight">LifeSolver</span>
                     </motion.div>
                 </div>
 
-                <div className="relative z-10 space-y-8">
+                {/* Main visual area */}
+                <div className="relative z-10 flex-1 flex flex-col justify-center -mt-6">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
+                        transition={{ delay: 0.3 }}
                     >
-                        <h2 className="text-4xl xl:text-5xl font-bold text-white leading-tight">
-                            Welcome back to<br />
-                            <span className="text-white/80">your command center.</span>
+                        <p className="text-violet-300/80 text-sm font-semibold uppercase tracking-[0.2em] mb-3">Welcome back</p>
+                        <h2 className="text-4xl xl:text-5xl font-bold text-white leading-[1.15] mb-4">
+                            Your second<br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-fuchsia-400 to-blue-400">brain, reimagined.</span>
                         </h2>
-                        <p className="text-white/60 text-lg mt-4 max-w-md">
-                            Manage your life with AI-powered tools. Tasks, finances, notes, and more — all in one place.
+                        <p className="text-white/50 text-base max-w-sm leading-relaxed">
+                            AI-powered productivity that adapts to you.
                         </p>
                     </motion.div>
 
+                    {/* 3D Tilted App Mockup */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6 }}
-                        className="flex gap-6"
+                        initial={{ opacity: 0, y: 40, rotateX: 5 }}
+                        animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                        transition={{ delay: 0.6, duration: 0.8, type: "spring" }}
+                        className="mt-10 relative"
+                        style={{ perspective: '1200px' }}
                     >
-                        {features.map((f, i) => (
-                            <div key={i} className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
-                                    <f.icon className="w-5 h-5 text-white" />
+                        <motion.div
+                            animate={{ y: [0, -6, 0] }}
+                            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                            className="relative"
+                            style={{ transform: 'rotateX(8deg) rotateY(-3deg)', transformStyle: 'preserve-3d' }}
+                        >
+                            {/* Holographic glow under card */}
+                            <div className="absolute -inset-4 bg-gradient-to-r from-violet-600/30 via-fuchsia-500/20 to-blue-500/30 rounded-3xl blur-2xl opacity-60" />
+
+                            {/* Main mockup card */}
+                            <div className="relative bg-slate-800/80 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+                                {/* Mockup header bar */}
+                                <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-3 h-3 rounded-full bg-red-400/80" />
+                                        <div className="w-3 h-3 rounded-full bg-amber-400/80" />
+                                        <div className="w-3 h-3 rounded-full bg-emerald-400/80" />
+                                    </div>
+                                    <p className="text-white/30 text-[10px] font-mono">lifesolver.app/dashboard</p>
+                                    <div className="w-12" />
                                 </div>
-                                <div>
-                                    <p className="text-white text-sm font-semibold">{f.title}</p>
-                                    <p className="text-white/50 text-xs">{f.desc}</p>
+
+                                {/* Mockup body */}
+                                <div className="p-5 space-y-4">
+                                    {/* Stats row */}
+                                    <div className="grid grid-cols-3 gap-3">
+                                        {[
+                                            { label: "Tasks Done", value: "18", change: "+5", color: "text-emerald-400" },
+                                            { label: "Focus Time", value: "4.2h", change: "+1.3h", color: "text-blue-400" },
+                                            { label: "AI Actions", value: "32", change: "+12", color: "text-violet-400" },
+                                        ].map((stat, i) => (
+                                            <motion.div
+                                                key={i}
+                                                initial={{ opacity: 0, scale: 0.9 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                transition={{ delay: 1 + i * 0.15 }}
+                                                className="bg-white/5 rounded-xl p-3 border border-white/5"
+                                            >
+                                                <p className="text-white/40 text-[10px] uppercase tracking-wider">{stat.label}</p>
+                                                <div className="flex items-baseline gap-1.5 mt-1">
+                                                    <p className="text-white font-bold text-lg">{stat.value}</p>
+                                                    <span className={`text-[10px] font-semibold ${stat.color}`}>{stat.change}</span>
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                    </div>
+
+                                    {/* Mini SVG line chart */}
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ delay: 1.5 }}
+                                        className="bg-white/5 rounded-xl p-4 border border-white/5"
+                                    >
+                                        <div className="flex justify-between items-center mb-3">
+                                            <p className="text-white/50 text-xs font-medium">Weekly Overview</p>
+                                            <div className="flex gap-1">
+                                                {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
+                                                    <span key={i} className="text-[8px] text-white/20 w-4 text-center">{d}</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <svg viewBox="0 0 280 60" className="w-full h-12">
+                                            <defs>
+                                                <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+                                                    <stop offset="0%" stopColor="#8b5cf6" />
+                                                    <stop offset="50%" stopColor="#d946ef" />
+                                                    <stop offset="100%" stopColor="#3b82f6" />
+                                                </linearGradient>
+                                                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.3" />
+                                                    <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
+                                                </linearGradient>
+                                            </defs>
+                                            <motion.path
+                                                d="M 0 45 Q 20 35 40 30 T 80 20 T 120 35 T 160 15 T 200 25 T 240 10 T 280 18"
+                                                fill="none" stroke="url(#lineGrad)" strokeWidth="2.5" strokeLinecap="round"
+                                                initial={{ pathLength: 0 }}
+                                                animate={{ pathLength: 1 }}
+                                                transition={{ delay: 1.8, duration: 2, ease: "easeOut" }}
+                                            />
+                                            <motion.path
+                                                d="M 0 45 Q 20 35 40 30 T 80 20 T 120 35 T 160 15 T 200 25 T 240 10 T 280 18 V 60 H 0 Z"
+                                                fill="url(#areaGrad)"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                transition={{ delay: 2.5, duration: 1 }}
+                                            />
+                                            {/* Glowing dot at end */}
+                                            <motion.circle
+                                                cx="280" cy="18" r="4" fill="#8b5cf6"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: [0, 1, 0.6, 1] }}
+                                                transition={{ delay: 3.5, duration: 2, repeat: Infinity }}
+                                            />
+                                            <motion.circle
+                                                cx="280" cy="18" r="8" fill="#8b5cf6" opacity="0.3"
+                                                initial={{ opacity: 0, scale: 0 }}
+                                                animate={{ opacity: [0, 0.4, 0], scale: [0.5, 1.5, 0.5] }}
+                                                transition={{ delay: 3.5, duration: 2, repeat: Infinity }}
+                                            />
+                                        </svg>
+                                    </motion.div>
+
+                                    {/* AI typing bar */}
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 2 }}
+                                        className="flex items-center gap-3 bg-gradient-to-r from-violet-500/10 to-blue-500/10 rounded-xl px-4 py-3 border border-violet-500/20"
+                                    >
+                                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shrink-0">
+                                            <Sparkles className="w-3 h-3 text-white" />
+                                        </div>
+                                        <div className="flex-1 overflow-hidden">
+                                            <motion.p
+                                                className="text-violet-200/80 text-xs font-medium"
+                                                initial={{ width: 0 }}
+                                                animate={{ width: "100%" }}
+                                                transition={{ delay: 2.5, duration: 2, ease: "easeOut" }}
+                                                style={{ whiteSpace: "nowrap", overflow: "hidden" }}
+                                            >
+                                                ✨ "You have 3 tasks due today. Want me to prioritize?"
+                                            </motion.p>
+                                        </div>
+                                        <motion.div
+                                            animate={{ opacity: [1, 0] }}
+                                            transition={{ duration: 0.6, repeat: Infinity }}
+                                            className="w-0.5 h-4 bg-violet-400 shrink-0"
+                                        />
+                                    </motion.div>
                                 </div>
                             </div>
-                        ))}
+                        </motion.div>
                     </motion.div>
                 </div>
 
                 <div className="relative z-10">
-                    <p className="text-white/40 text-sm">© 2026 LifeSolver. All rights reserved.</p>
+                    <p className="text-white/30 text-sm">© 2026 LifeSolver. All rights reserved.</p>
                 </div>
             </div>
 
