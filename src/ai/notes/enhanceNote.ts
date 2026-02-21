@@ -32,6 +32,7 @@ WRITING STYLE:
 
 IMPORTANT:
 - Return ONLY the note content (no meta-commentary, no "here's your note", no markdown code fences around the entire response)
+- ONLY consider and modify the CURRENT NOTE provided. Do NOT analyze or include information from "ALL USER'S NOTES FOR CONTEXT" UNLESS the user explicitly asks you to (e.g., "Summarize all my notes on this topic").
 - If the user asks to analyze data from their notes, synthesize insights and present them clearly
 - If the user asks to enhance existing content, improve it while keeping the user's intent
 - If the user asks to generate new content, create comprehensive, well-organized notes`;

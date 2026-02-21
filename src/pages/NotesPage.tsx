@@ -329,7 +329,7 @@ function renderFormattingInline(text: string, keyOffset: number = 0): React.Reac
             parts.push(<HiddenSyntax key={`ifmt-${key++}`}>![</HiddenSyntax>);
             parts.push(<span key={`ifmt-${key++}`} className="text-primary">{imgMatch[2]}</span>);
             parts.push(<HiddenSyntax key={`ifmt-${key++}`}>](</HiddenSyntax>);
-            parts.push(<span key={`ifmt-${key++}`} className="text-muted-foreground/50 underline decoration-dotted text-xs">{imgMatch[3]}</span>);
+            parts.push(<span key={`ifmt-${key++}`} className="text-muted-foreground/50 underline decoration-dotted break-all">{imgMatch[3]}</span>);
             parts.push(<HiddenSyntax key={`ifmt-${key++}`}>{")"}</HiddenSyntax>);
             remaining = imgMatch[4]; continue;
         }
@@ -726,7 +726,9 @@ function NoteCard({ note, serialNumber, onSelect, onExpand, onToggleCheckbox, on
                 colorClasses.light, colorClasses.dark,
                 note.is_pinned
                     ? "border-primary/30 shadow-md shadow-primary/10"
-                    : "border-black/[0.08] dark:border-white/[0.08] hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-white/5",
+                    : note.color === "default"
+                        ? "border-black/[0.08] dark:border-white/[0.08] hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-white/5"
+                        : "border-black/[0.08] dark:border-transparent hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-white/5",
             )}
         >
             <div className="p-4">

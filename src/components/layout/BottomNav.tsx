@@ -49,7 +49,7 @@ export function BottomNav() {
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-4 gap-3 mb-4">
                 {moreNavItems.map((item) => {
                   const isActive = location.pathname === item.path;
                   return (
@@ -67,6 +67,29 @@ export function BottomNav() {
                     </Link>
                   );
                 })}
+              </div>
+              <div className="h-[1px] bg-border/20 w-full mb-4" />
+              <div className="grid grid-cols-4 gap-3">
+                <button
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent("openGlobalSearch"));
+                    setShowMore(false);
+                  }}
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all hover:bg-secondary text-muted-foreground"
+                >
+                  <Search className="w-5 h-5" />
+                  <span className="text-[10px] font-medium">Search</span>
+                </button>
+                <button
+                  onClick={() => {
+                    toggleTheme();
+                    setShowMore(false);
+                  }}
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all hover:bg-secondary text-muted-foreground"
+                >
+                  {theme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                  <span className="text-[10px] font-medium">Theme</span>
+                </button>
               </div>
 
             </motion.div>
@@ -140,17 +163,6 @@ export function BottomNav() {
 
           {/* Utility Buttons Logic */}
           <div className="flex items-center gap-1 bg-secondary/80 dark:bg-secondary/50 rounded-full px-2 py-1 border border-border/50 dark:border-white/5 backdrop-blur-sm shadow-sm">
-            <button onClick={() => window.dispatchEvent(new CustomEvent("openGlobalSearch"))} className="relative">
-              <motion.div
-                className="floating-nav-item"
-                whileTap={{ scale: 0.92 }}
-                layout
-                transition={{ type: "spring", stiffness: 500, damping: 30 }}
-              >
-                <Search className="w-4 h-4" />
-              </motion.div>
-            </button>
-
             {/* AI Button */}
             <button onClick={() => setChatOpen(!isChatOpen)} className="relative">
               <motion.div
@@ -167,32 +179,6 @@ export function BottomNav() {
                   />
                 )}
                 <Sparkles className="w-4 h-4" />
-              </motion.div>
-            </button>
-
-            {/* Theme Toggle Button */}
-            <button onClick={toggleTheme} className="relative">
-              <motion.div
-                className="floating-nav-item"
-                whileTap={{ scale: 0.92 }}
-                layout
-                transition={{ type: "spring", stiffness: 500, damping: 30 }}
-              >
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={theme}
-                    initial={{ rotate: -90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: 90, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {theme === "dark" ? (
-                      <Moon className="w-4 h-4" />
-                    ) : (
-                      <Sun className="w-4 h-4" />
-                    )}
-                  </motion.div>
-                </AnimatePresence>
               </motion.div>
             </button>
           </div>

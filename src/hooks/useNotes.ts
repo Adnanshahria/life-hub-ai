@@ -17,18 +17,18 @@ export type NoteColor =
     | "chalk";
 
 export const NOTE_COLORS: Record<NoteColor, { light: string; dark: string; label: string }> = {
-    default: { light: "bg-white", dark: "dark:bg-zinc-900", label: "Default" },
-    coral: { light: "bg-red-100", dark: "dark:bg-red-950/60", label: "Coral" },
-    peach: { light: "bg-orange-100", dark: "dark:bg-orange-950/60", label: "Peach" },
-    sand: { light: "bg-yellow-100", dark: "dark:bg-yellow-950/60", label: "Sand" },
-    mint: { light: "bg-green-100", dark: "dark:bg-green-950/60", label: "Mint" },
-    sage: { light: "bg-teal-100", dark: "dark:bg-teal-950/60", label: "Sage" },
-    fog: { light: "bg-gray-100", dark: "dark:bg-gray-800/60", label: "Fog" },
-    storm: { light: "bg-blue-100", dark: "dark:bg-blue-950/60", label: "Storm" },
-    dusk: { light: "bg-indigo-100", dark: "dark:bg-indigo-950/60", label: "Dusk" },
-    blossom: { light: "bg-purple-100", dark: "dark:bg-purple-950/60", label: "Blossom" },
-    clay: { light: "bg-amber-100", dark: "dark:bg-amber-950/60", label: "Clay" },
-    chalk: { light: "bg-stone-100", dark: "dark:bg-stone-800/60", label: "Chalk" },
+    default: { light: "bg-white", dark: "dark:bg-secondary/40", label: "Default" },
+    coral: { light: "bg-red-100", dark: "dark:bg-red-500/15 dark:border-red-500/20", label: "Coral" },
+    peach: { light: "bg-orange-100", dark: "dark:bg-orange-500/15 dark:border-orange-500/20", label: "Peach" },
+    sand: { light: "bg-yellow-100", dark: "dark:bg-yellow-500/15 dark:border-yellow-500/20", label: "Sand" },
+    mint: { light: "bg-green-100", dark: "dark:bg-green-500/15 dark:border-green-500/20", label: "Mint" },
+    sage: { light: "bg-teal-100", dark: "dark:bg-teal-500/15 dark:border-teal-500/20", label: "Sage" },
+    fog: { light: "bg-gray-100", dark: "dark:bg-gray-500/15 dark:border-gray-500/20", label: "Fog" },
+    storm: { light: "bg-blue-100", dark: "dark:bg-blue-500/15 dark:border-blue-500/20", label: "Storm" },
+    dusk: { light: "bg-indigo-100", dark: "dark:bg-indigo-500/15 dark:border-indigo-500/20", label: "Dusk" },
+    blossom: { light: "bg-purple-100", dark: "dark:bg-purple-500/15 dark:border-purple-500/20", label: "Blossom" },
+    clay: { light: "bg-amber-100", dark: "dark:bg-amber-500/15 dark:border-amber-500/20", label: "Clay" },
+    chalk: { light: "bg-stone-100", dark: "dark:bg-stone-500/15 dark:border-stone-500/20", label: "Chalk" },
 };
 
 export interface Note {
