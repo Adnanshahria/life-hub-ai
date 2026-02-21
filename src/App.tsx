@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AIProvider } from "@/contexts/AIContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import TasksPage from "./pages/TasksPage";
@@ -29,6 +30,7 @@ import { db } from "@/Database/client";
 import { initStudyTable } from "@/Database/schemas/study";
 
 const queryClient = new QueryClient();
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "no-client-id";
 
 const AppContent = () => {
   const location = useLocation();
@@ -107,26 +109,28 @@ const App = () => {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner
-            theme="system"
-            toastOptions={{
-              style: {
-                background: "hsl(var(--card))",
-                border: "1px solid hsl(var(--border))",
-                color: "hsl(var(--foreground))",
-              },
-            }}
-          />
-          <BrowserRouter>
-            <AppContent />
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner
+              theme="system"
+              toastOptions={{
+                style: {
+                  background: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
+                  color: "hsl(var(--foreground))",
+                },
+              }}
+            />
+            <BrowserRouter>
+              <AppContent />
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </GoogleOAuthProvider>
   );
 };
 

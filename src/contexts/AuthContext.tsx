@@ -18,6 +18,7 @@ export interface AuthContextType {
     verifyOtp: (email: string, otp: string) => Promise<{ success: boolean; error?: string }>;
     forgotPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
     resetPassword: (email: string, otp: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
+    googleLogin: (credential: string) => Promise<{ success: boolean; error?: string }>;
     logout: () => void;
 }
 
@@ -124,6 +125,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     }, []);
 
+    const googleLogin = useCallback(async (credential: string) => {
+        try {
+            const res = await fetch(`${API_URL}/google`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ credential }),
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                setUser(data.user);
+                localStorage.setItem("lifeos-user", JSON.stringify(data.user));
+                return { success: true };
+            }
+            return { success: false, error: data.error };
+        } catch (error) {
+            console.error("Google Login failed:", error);
+            return { success: false, error: "Network error." };
+        }
+    }, []);
+
     const logout = useCallback(() => {
         setUser(null);
         localStorage.removeItem("lifeos-user");
@@ -140,6 +162,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 verifyOtp,
                 forgotPassword,
                 resetPassword,
+                googleLogin,
                 logout,
             }}
         >

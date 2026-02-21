@@ -214,6 +214,68 @@ app.post("/api/auth/reset-password", async (req, res) => {
     }
 });
 
+// 6. Google OAuth Login/Register
+import { OAuth2Client } from "google-auth-library";
+const googleClient = new OAuth2Client(process.env.VITE_GOOGLE_CLIENT_ID);
+
+app.post("/api/auth/google", async (req, res) => {
+    try {
+        const { credential } = req.body;
+
+        // Verify the Google JWT token
+        const ticket = await googleClient.verifyIdToken({
+            idToken: credential,
+            audience: process.env.VITE_GOOGLE_CLIENT_ID,
+        });
+
+        const payload = ticket.getPayload();
+        if (!payload || !payload.email) {
+            return res.status(400).json({ error: "Invalid Google token" });
+        }
+
+        const email = payload.email;
+        const name = payload.name || "Google User";
+
+        // Check if user exists
+        const existing = await db.execute({
+            sql: "SELECT id, name, email FROM users WHERE email = ?",
+            args: [email],
+        });
+
+        if (existing.rows.length > 0) {
+            // User exists, log them in (even if they originally registered with email/password)
+            // Mark them as verified just in case they weren't
+            await db.execute({
+                sql: "UPDATE users SET is_verified = 1 WHERE email = ?",
+                args: [email],
+            });
+            const user = existing.rows[0];
+            return res.json({ success: true, user: { id: user.id, name: user.name, email: user.email } });
+        } else {
+            // User doesn't exist, create account automatically
+            const id = generateId();
+            // Create a random impossibly long password hash since they use Google
+            const randomPassword = crypto.randomBytes(32).toString('hex');
+            const passwordHash = await hashPassword(randomPassword);
+
+            await db.execute({
+                sql: "INSERT INTO users (id, name, email, password_hash, is_verified) VALUES (?, ?, ?, ?, 1)",
+                args: [id, name, email, passwordHash],
+            });
+
+            await db.execute({
+                sql: "INSERT INTO settings (id, user_id) VALUES (?, ?)",
+                args: [generateId(), id],
+            });
+
+            return res.json({ success: true, user: { id, name, email } });
+        }
+    } catch (error: any) {
+        console.error("Google Auth Error:", error);
+        res.status(500).json({ error: "Google Authentication failed" });
+    }
+});
+
 const PORT = process.env.VITE_BACKEND_PORT || 4000;
 app.listen(PORT, () => {
     console.log(`Auth Backend running on port ${PORT}`);

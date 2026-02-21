@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { SEO } from "@/components/seo/SEO";
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -15,11 +16,24 @@ export default function LoginPage() {
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
-    const { login } = useAuth();
+    const { login, googleLogin } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
     const from = location.state?.from?.pathname || "/";
+
+    const handleGoogleSuccess = async (credentialResponse: any) => {
+        if (!credentialResponse.credential) return;
+        setIsLoading(true);
+        setError("");
+        const result = await googleLogin(credentialResponse.credential);
+        if (result.success) {
+            navigate(from, { replace: true });
+        } else {
+            setError(result.error || "Google login failed");
+        }
+        setIsLoading(false);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -133,6 +147,27 @@ export default function LoginPage() {
                                 "Sign In"
                             )}
                         </Button>
+
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t border-muted/30" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-background px-2 text-muted-foreground">
+                                    Or continue with
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-center w-full">
+                            <GoogleLogin
+                                onSuccess={handleGoogleSuccess}
+                                onError={() => setError("Google Sign In Failed")}
+                                useOneTap
+                                shape="rectangular"
+                                theme="filled_black"
+                            />
+                        </div>
                     </form>
 
                     <div className="mt-6 text-center text-sm text-muted-foreground">
