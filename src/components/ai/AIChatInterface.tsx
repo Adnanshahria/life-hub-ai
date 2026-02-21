@@ -91,7 +91,6 @@ export function AIChatInterface() {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [viewportHeight, setViewportHeight] = useState<number | null>(null);
     const [showMenu, setShowMenu] = useState(false);
-    const [language, setLanguage] = useState<"en" | "bn">("en");
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -799,7 +798,7 @@ ${items?.map(i => `- ${i.item_name} (x${i.quantity}) [${i.category || 'uncategor
                                         <h3 className="font-bold text-[15px] tracking-tight text-foreground">LifeSolver AI</h3>
                                         <div className="flex items-center gap-1.5 mt-0.5">
                                             <motion.div animate={{ scale: [1, 1.3, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                            <span className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">{language === 'bn' ? 'অনলাইন' : 'ONLINE'}</span>
+                                            <span className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">ONLINE</span>
                                         </div>
                                     </div>
                                     <div className="flex items-center">
@@ -822,29 +821,15 @@ ${items?.map(i => `- ${i.item_name} (x${i.quantity}) [${i.category || 'uncategor
                                             animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0, y: -10 }}
                                             transition={{ duration: 0.15 }}
-                                            className="absolute top-[60px] left-0 right-0 z-[210] bg-background border-b border-border/30 shadow-lg px-5 py-4 space-y-3"
+                                            className="absolute top-[60px] left-0 right-0 z-[210] bg-background border-b border-border/30 shadow-lg px-5 py-3"
                                         >
-                                            {/* Language Toggle */}
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs font-semibold text-muted-foreground">Language</span>
-                                                <div className="flex items-center bg-secondary/60 rounded-full p-0.5 border border-border/30">
-                                                    <button
-                                                        onClick={() => { setLanguage('en'); setShowMenu(false); }}
-                                                        className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all ${language === 'en' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-                                                    >English</button>
-                                                    <button
-                                                        onClick={() => { setLanguage('bn'); setShowMenu(false); }}
-                                                        className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all ${language === 'bn' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-                                                    >বাংলা</button>
-                                                </div>
-                                            </div>
                                             {/* Clear Conversation */}
                                             <button
                                                 onClick={clearConversation}
                                                 className="flex items-center gap-2 w-full py-2 px-1 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
                                             >
                                                 <Trash2 className="w-4 h-4" />
-                                                <span className="text-xs font-semibold">{language === 'bn' ? 'কথোপকথন মুছুন' : 'Clear Conversation'}</span>
+                                                <span className="text-xs font-semibold">Clear Conversation</span>
                                             </button>
                                         </motion.div>
                                     )}
@@ -859,21 +844,7 @@ ${items?.map(i => `- ${i.item_name} (x${i.quantity}) [${i.category || 'uncategor
                                             </div>
                                             <div className="p-4 rounded-[20px] rounded-tl-sm bg-primary/5 text-foreground w-[85%]">
                                                 <h4 className="text-xl font-bold text-primary mb-2">Welcome!</h4>
-                                                <p className="text-[13px] text-foreground/80 mb-5 font-medium leading-relaxed">Please select your preferred language to begin:</p>
-                                                <div className="flex items-center gap-2.5">
-                                                    <button
-                                                        onClick={() => setInput("English")}
-                                                        className="px-5 py-2 bg-primary text-primary-foreground text-xs font-semibold rounded-full shadow-sm hover:opacity-90 transition-opacity"
-                                                    >
-                                                        English
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setInput("বাংলা")}
-                                                        className="px-5 py-2 bg-background border border-border/60 text-muted-foreground hover:text-foreground text-[11px] font-semibold rounded-full hover:bg-secondary/50 transition-colors"
-                                                    >
-                                                        বাংলা
-                                                    </button>
-                                                </div>
+                                                <p className="text-[13px] text-foreground/80 font-medium leading-relaxed">I'm your AI assistant. Ask me anything about your tasks, finances, notes, habits, or anything else!</p>
                                             </div>
                                         </div>
                                     )}
@@ -943,7 +914,7 @@ ${items?.map(i => `- ${i.item_name} (x${i.quantity}) [${i.category || 'uncategor
                                                     handleSend();
                                                 }
                                             }}
-                                            placeholder={language === 'bn' ? 'আমাকে কিছু জিজ্ঞেস করুন...' : 'Ask me anything about our services...'}
+                                            placeholder="Ask me anything about our services..."
                                             autoFocus={false}
                                             className="flex-1 bg-primary/5 border border-primary/20 rounded-2xl py-3.5 px-4 text-[13.5px] focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all resize-none min-h-[48px] max-h-[120px] font-medium placeholder:text-muted-foreground"
                                             disabled={isLoading}
